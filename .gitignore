@@ -1,0 +1,6 @@
+/dados/*
+/env
+/extracoes/*
+/modelos/*
+*.pickle
+.DS_Store

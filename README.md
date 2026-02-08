@@ -1,4 +1,4 @@
-# Como concatenar os arquivos de Notas Fiscais do [Portal da Transparência](https://portaldatransparencia.gov.br/)
+# Concatenação dos arquivos de Notas Fiscais do [Portal da Transparência](https://portaldatransparencia.gov.br/) para consultas rápidas em SQL, usando DuckDB
 
 ## Preparação do ambiente de desenvolvimento
 
@@ -27,13 +27,13 @@ Instalar as bibliotecas necessárias, executando:
 pip install -r requirements.txt
 ```
 
-## Obter os microdados das notas fiscais
+## Obtenção dos microdados das notas fiscais
 
 Os arquivos de notas fiscais eletrônicas são disponibilizados mensalmente em: https://portaldatransparencia.gov.br/download-de-dados/notas-fiscais
 
 Baixar os arquivos `.zip` referentes aos meses de interesse no diretório `dados/nfe`.
 
-## Concatenar os arquivos em um único .parquet e remover duplicatas
+## Concatenação dos arquivos em um único .parquet e remover duplicatas
 
 Executar o script `concatenar_nfs.py` para concatenar os arquivos `.zip` baixados, executando:
 

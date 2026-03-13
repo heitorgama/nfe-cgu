@@ -109,6 +109,12 @@ def converter_dados(df: pd.DataFrame, tipos_de_dados: dict) -> pd.DataFrame:
     return df
 
 
+# Brief: renomeia todas as colunas do DataFrame para snake_case
+def converter_colunas_para_snake_case(df: pd.DataFrame) -> pd.DataFrame:
+    df.columns = [slugify(col, separator='_') for col in df.columns]
+    return df
+
+
 # Brief: remove duplicatas de itens mantendo uma linha por chave de acesso + número do produto
 def deduplicar_itens(df: pd.DataFrame) -> pd.DataFrame:
     cols = ['CHAVE DE ACESSO', 'NÚMERO PRODUTO']
@@ -146,6 +152,7 @@ def main():
             df = deduplicar_itens(df)
         elif nome == 'nf':
             df = deduplicar_nf(df)
+        df = converter_colunas_para_snake_case(df)
         df.to_parquet(os.path.join(DIRETORIO_SILVER, f'{nome}.parquet'), compression='snappy')
         imprimir_mensagem(f"{nome}: {len(df)} linhas.")
 

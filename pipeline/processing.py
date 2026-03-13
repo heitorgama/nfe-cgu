@@ -90,6 +90,23 @@ def imprimir_mensagem(mensagem: str) -> None:
     print(f"[{ts}] {mensagem}")
 
 
+# Brief: separa a coluna CPF/CNPJ em duas colunas distintas com base na presença de ***
+def separar_cpf_cnpj(df: pd.DataFrame) -> pd.DataFrame:
+    pares = [
+        ('CPF/CNPJ Emitente', 'CPF Emitente', 'CNPJ Emitente'),
+        ('CNPJ DESTINATÁRIO', 'CPF Destinatário', 'CNPJ Destinatário'),
+    ]
+    for col_orig, col_cpf, col_cnpj in pares:
+        if col_orig not in df.columns:
+            continue
+        s = df[col_orig].astype(str)
+        tem_asterisco = s.str.contains(r'\*', na=False)
+        df.insert(df.columns.get_loc(col_orig), col_cpf,  s.where(tem_asterisco))
+        df.insert(df.columns.get_loc(col_orig), col_cnpj, s.where(~tem_asterisco))
+        df = df.drop(columns=[col_orig])
+    return df
+
+
 # Brief: converte colunas do DataFrame para os tipos definidos em tipos_de_dados
 def converter_dados(df: pd.DataFrame, tipos_de_dados: dict) -> pd.DataFrame:
     for coluna, tipo in tipos_de_dados.items():
@@ -147,6 +164,7 @@ def main():
     ]
     for nome, tipos in tabelas:
         df = pd.read_parquet(os.path.join(DIRETORIO_BRONZE, f'{nome}.parquet'))
+        df = separar_cpf_cnpj(df)
         df = converter_dados(df, tipos)
         if nome == 'itens':
             df = deduplicar_itens(df)

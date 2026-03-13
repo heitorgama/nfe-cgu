@@ -40,6 +40,16 @@ def gerar_url(periodo: str) -> str:
     return f"{URL_BASE}/{periodo}_NFe.zip"
 
 
+# Brief: retorna os períodos da lista que ainda não existem como arquivo em diretorio
+def identificar_periodos_faltantes(diretorio: str, periodos: list[str]) -> list[str]:
+    existentes = {
+        re.match(r'^\d{6}', a).group(0)
+        for a in listar_arquivos_DIRETORIO_DADOS(diretorio)
+        if re.match(r'^\d{6}', a)
+    }
+    return [p for p in periodos if p not in existentes]
+
+
 # Brief: baixa um único arquivo zip de url e salva em destino
 def baixar_zip(url: str, destino: str) -> None:
     os.makedirs(os.path.dirname(destino), exist_ok=True)
@@ -50,11 +60,12 @@ def baixar_zip(url: str, destino: str) -> None:
             f.write(chunk)
 
 
-# Brief: baixa todos os zips de PERIODO_INICIO até o mês anterior ao atual
-def baixar_zips(diretorio: str = DIRETORIO_DADOS) -> None:
+# Brief: baixa todos os zips faltantes de PERIODO_INICIO até o mês anterior ao atual
+def baixar_zips_faltantes(diretorio: str = DIRETORIO_DADOS) -> None:
     periodos = gerar_periodos(PERIODO_INICIO, periodo_anterior())
-    imprimir_mensagem(f"{len(periodos)} períodos para baixar.")
-    for periodo in (pbar := tqdm(periodos)):
+    faltantes = identificar_periodos_faltantes(diretorio, periodos)
+    imprimir_mensagem(f"{len(faltantes)} períodos para baixar.")
+    for periodo in (pbar := tqdm(faltantes)):
         url = gerar_url(periodo)
         destino = os.path.join(diretorio, f"{periodo}_NFe.zip")
         pbar.set_description(f"[{formatar_hora_atual()}] {periodo}")
@@ -95,6 +106,11 @@ def mapear_arquivos_e_periodos(diretorio: str) -> dict[str, str]:
     return mapa
 
 
+# Brief: converte 'YYYYMM' para 'YYYY-MM'
+def formatar_periodo(periodo_raw: str) -> str:
+    return periodo_raw[:4] + '-' + periodo_raw[4:6]
+
+
 # Brief: identifica itens, eventos e nf numa lista de 3 arquivos extraídos do zip
 def identificar_arquivos_zip(arquivos: list[str]) -> tuple[str, str, str]:
     itens   = [a for a in arquivos if 'item' in a.lower()][0]
@@ -113,29 +129,46 @@ def ler_csvs(diretorio: str, arq_itens: str, arq_eventos: str, arq_nf: str) -> t
     )
 
 
-# Brief: baixa todos os zips, extrai CSVs e salva o bronze
+# Brief: retorna o conjunto de períodos 'YYYY-MM' já presentes no bronze
+def periodos_no_bronze(diretorio: str) -> set[str]:
+    caminho = os.path.join(diretorio, 'itens.parquet')
+    if not os.path.exists(caminho):
+        return set()
+    return set(pd.read_parquet(caminho, columns=['periodo'])['periodo'].unique())
+
+
+# Brief: baixa zips faltantes, extrai CSVs dos períodos novos e incrementa o bronze
 def main():
     imprimir_mensagem("Iniciando extração bronze...")
-    baixar_zips()
+    baixar_zips_faltantes()
     mapa = mapear_arquivos_e_periodos(DIRETORIO_DADOS)
     imprimir_mensagem(f"Arquivos encontrados: {len(mapa)}")
 
+    ja_no_bronze = periodos_no_bronze(DIRETORIO_EXTRACAO)
+    mapa_novo = {p: a for p, a in mapa.items() if formatar_periodo(p) not in ja_no_bronze}
+
+    if not mapa_novo:
+        imprimir_mensagem("Bronze já está atualizado.")
+        return
+
+    imprimir_mensagem(f"{len(mapa_novo)} períodos novos para processar.")
     dfs_itens, dfs_eventos, dfs_nf = [], [], []
 
-    for periodo, arquivo in (pbar := tqdm(mapa.items())):
-        pbar.set_description(f"Extraindo {periodo}")
+    for periodo_raw, arquivo in (pbar := tqdm(mapa_novo.items())):
+        pbar.set_description(f"Extraindo {periodo_raw}")
         with tempfile.TemporaryDirectory() as tmp:
             with zipfile.ZipFile(os.path.join(DIRETORIO_DADOS, arquivo), 'r') as z:
                 z.extractall(tmp)
 
             arquivos = os.listdir(tmp)
             if len(arquivos) != 3:
-                print(f"Erro: esperado 3 arquivos, encontrado {len(arquivos)} em {periodo}.")
+                print(f"Erro: esperado 3 arquivos, encontrado {len(arquivos)} em {periodo_raw}.")
                 continue
 
             arq_itens, arq_eventos, arq_nf = identificar_arquivos_zip(arquivos)
             df_itens, df_eventos, df_nf = ler_csvs(tmp, arq_itens, arq_eventos, arq_nf)
 
+        periodo = formatar_periodo(periodo_raw)
         for df in (df_itens, df_eventos, df_nf):
             df['periodo'] = periodo
 
@@ -146,9 +179,12 @@ def main():
     imprimir_mensagem("Concatenando e salvando bronze...")
     os.makedirs(DIRETORIO_EXTRACAO, exist_ok=True)
 
-    for nome, dfs in [('itens', dfs_itens), ('eventos', dfs_eventos), ('nf', dfs_nf)]:
+    for nome, dfs_novo in [('itens', dfs_itens), ('eventos', dfs_eventos), ('nf', dfs_nf)]:
         caminho = os.path.join(DIRETORIO_EXTRACAO, f'{nome}.parquet')
-        pd.concat(dfs, ignore_index=True).to_parquet(caminho, compression='snappy')
+        df_novo = pd.concat(dfs_novo, ignore_index=True)
+        if os.path.exists(caminho):
+            df_novo = pd.concat([pd.read_parquet(caminho), df_novo], ignore_index=True)
+        df_novo.to_parquet(caminho, compression='snappy')
 
     imprimir_mensagem("Bronze salvo.")
 

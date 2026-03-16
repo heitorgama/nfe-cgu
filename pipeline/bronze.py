@@ -11,19 +11,18 @@ DIRETORIO_DADOS = 'dados/nfe'
 DIRETORIO_EXTRACAO = 'extracoes/bronze'
 URL_BASE = 'https://dadosabertos-download.cgu.gov.br/PortalDaTransparencia/saida/nfe'
 PERIODO_INICIO = '202601'
-PERIODO_FIM    = '202512'
 
 
-# Brief: retorna 'YYYYMM' do mês anterior ao atual
 def periodo_anterior() -> str:
+    """Retorna 'YYYYMM' do mês anterior ao atual."""
     hoje = datetime.today()
     if hoje.month == 1:
         return f"{hoje.year - 1}12"
     return f"{hoje.year}{hoje.month - 1:02d}"
 
 
-# Brief: gera lista de períodos 'YYYYMM' de inicio até fim
 def gerar_periodos(inicio: str, fim: str) -> list[str]:
+    """Gera lista de períodos 'YYYYMM' de inicio até fim."""
     atual = datetime.strptime(inicio, '%Y%m')
     fim_dt = datetime.strptime(fim, '%Y%m')
     periodos = []
@@ -36,13 +35,13 @@ def gerar_periodos(inicio: str, fim: str) -> list[str]:
     return periodos
 
 
-# Brief: retorna a URL de download do zip para um período 'YYYYMM'
 def gerar_url(periodo: str) -> str:
+    """Retorna a URL de download do zip para um período 'YYYYMM'."""
     return f"{URL_BASE}/{periodo}_NFe.zip"
 
 
-# Brief: retorna os períodos da lista que ainda não existem como arquivo em diretorio
 def identificar_periodos_faltantes(diretorio: str, periodos: list[str]) -> list[str]:
+    """Retorna os períodos da lista que ainda não existem como arquivo em diretorio."""
     existentes = {
         re.match(r'^\d{6}', a).group(0)
         for a in listar_arquivos_DIRETORIO_DADOS(diretorio)
@@ -51,8 +50,8 @@ def identificar_periodos_faltantes(diretorio: str, periodos: list[str]) -> list[
     return [p for p in periodos if p not in existentes]
 
 
-# Brief: baixa um único arquivo zip de url e salva em destino
 def baixar_zip(url: str, destino: str) -> None:
+    """Baixa um único arquivo zip de url e salva em destino."""
     os.makedirs(os.path.dirname(destino), exist_ok=True)
     response = requests.get(url, stream=True)
     response.raise_for_status()
@@ -61,8 +60,8 @@ def baixar_zip(url: str, destino: str) -> None:
             f.write(chunk)
 
 
-# Brief: baixa todos os zips faltantes de PERIODO_INICIO até o mês anterior ao atual
 def baixar_zips_faltantes(diretorio: str = DIRETORIO_DADOS) -> None:
+    """Baixa todos os zips faltantes de PERIODO_INICIO até o mês anterior ao atual."""
     periodos = gerar_periodos(PERIODO_INICIO, periodo_anterior())
     faltantes = identificar_periodos_faltantes(diretorio, periodos)
     imprimir_mensagem(f"{len(faltantes)} períodos para baixar.")
@@ -76,18 +75,18 @@ def baixar_zips_faltantes(diretorio: str = DIRETORIO_DADOS) -> None:
             tqdm.write(f"Erro ao baixar {url}: {e}")
 
 
-# Brief: retorna a hora atual formatada como 'YYYY-MM-DD HH:MM:SS'
 def formatar_hora_atual() -> str:
+    """Retorna a hora atual formatada como 'YYYY-MM-DD HH:MM:SS'."""
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
-# Brief: imprime mensagem com timestamp no formato '[YYYY-MM-DD HH:MM:SS] mensagem'
 def imprimir_mensagem(mensagem: str) -> None:
+    """Imprime mensagem com timestamp no formato '[YYYY-MM-DD HH:MM:SS] mensagem'."""
     print(f"[{formatar_hora_atual()}] {mensagem}")
 
 
-# Brief: retorna lista de arquivos em diretorio; retorna [] se não encontrado
 def listar_arquivos_DIRETORIO_DADOS(diretorio: str) -> list[str]:
+    """Retorna lista de arquivos em diretorio; retorna [] se não encontrado."""
     try:
         arquivos = os.listdir(diretorio)
         return [arquivo for arquivo in arquivos if os.path.isfile(os.path.join(diretorio, arquivo))]
@@ -96,8 +95,8 @@ def listar_arquivos_DIRETORIO_DADOS(diretorio: str) -> list[str]:
         return []
 
 
-# Brief: retorna dict {periodo: nome_arquivo} para arquivos cujo nome começa com 6 dígitos
 def mapear_arquivos_e_periodos(diretorio: str) -> dict[str, str]:
+    """Retorna dict {periodo: nome_arquivo} para arquivos cujo nome começa com 6 dígitos."""
     arquivos = listar_arquivos_DIRETORIO_DADOS(diretorio)
     mapa = {}
     for nome_do_arquivo in arquivos:
@@ -107,21 +106,21 @@ def mapear_arquivos_e_periodos(diretorio: str) -> dict[str, str]:
     return mapa
 
 
-# Brief: converte 'YYYYMM' para 'YYYY-MM'
 def formatar_periodo(periodo_raw: str) -> str:
+    """Converte 'YYYYMM' para 'YYYY-MM'."""
     return periodo_raw[:4] + '-' + periodo_raw[4:6]
 
 
-# Brief: identifica itens, eventos e nf numa lista de 3 arquivos extraídos do zip
 def identificar_arquivos_zip(arquivos: list[str]) -> tuple[str, str, str]:
+    """Identifica itens, eventos e nf numa lista de 3 arquivos extraídos do zip."""
     itens   = [a for a in arquivos if 'item' in a.lower()][0]
     eventos = [a for a in arquivos if 'evento' in a.lower()][0]
     nf      = [a for a in arquivos if a not in [itens, eventos]][0]
     return itens, eventos, nf
 
 
-# Brief: lê os 3 CSVs de um período extraído e retorna os DataFrames (itens, eventos, nf) com todas as colunas como string
 def ler_csvs(diretorio: str, arq_itens: str, arq_eventos: str, arq_nf: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Lê os 3 CSVs de um período extraído e retorna os DataFrames (itens, eventos, nf) com todas as colunas como string."""
     kwargs = dict(sep=';', encoding='windows-1252', dtype=str)
     return (
         pd.read_csv(os.path.join(diretorio, arq_itens),   **kwargs),
@@ -130,16 +129,16 @@ def ler_csvs(diretorio: str, arq_itens: str, arq_eventos: str, arq_nf: str) -> t
     )
 
 
-# Brief: retorna o conjunto de períodos 'YYYY-MM' já presentes no bronze
 def periodos_no_bronze(diretorio: str) -> set[str]:
+    """Retorna o conjunto de períodos 'YYYY-MM' já presentes no bronze."""
     caminho = os.path.join(diretorio, 'itens.parquet')
     if not os.path.exists(caminho):
         return set()
     return set(pd.read_parquet(caminho, columns=['periodo'])['periodo'].unique())
 
 
-# Brief: baixa zips faltantes, extrai CSVs dos períodos novos e incrementa o bronze
 def main():
+    """Baixa zips faltantes, extrai CSVs dos períodos novos e incrementa o bronze."""
     imprimir_mensagem("Iniciando extração bronze...")
     baixar_zips_faltantes()
     mapa = mapear_arquivos_e_periodos(DIRETORIO_DADOS)

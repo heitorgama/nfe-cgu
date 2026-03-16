@@ -1,10 +1,12 @@
 import os
 from datetime import datetime
 
+import duckdb
 import pandas as pd
 
 DIRETORIO_SILVER = 'extracoes/silver'
 DIRETORIO_GOLD = 'extracoes/gold'
+GOLD_DB = 'extracoes/gold/gold.duckdb'
 
 
 def imprimir_mensagem(mensagem: str) -> None:
@@ -12,8 +14,8 @@ def imprimir_mensagem(mensagem: str) -> None:
     print(f"[{ts}] {mensagem}")
 
 
-# Brief: adiciona colunas 'tipo_emitente' e 'tipo_destinatario' ('PF' ou 'PJ') com base em qual coluna está preenchida
 def adicionar_tipo_pessoa(df: pd.DataFrame) -> pd.DataFrame:
+    """Adiciona colunas 'tipo_emitente' e 'tipo_destinatario' ('PF' ou 'PJ') com base em qual coluna está preenchida."""
     pares = [
         ('cnpj_emitente', 'cpf_emitente', 'tipo_emitente'),
         ('cnpj_destinatario', 'cpf_destinatario', 'tipo_destinatario'),
@@ -29,16 +31,20 @@ def adicionar_tipo_pessoa(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# Brief: lê parquet do silver, adiciona colunas de tipo de pessoa e salva em gold
 def main():
+    """Lê parquet do silver, adiciona colunas de tipo de pessoa e salva em gold (parquet + duckdb)."""
     os.makedirs(DIRETORIO_GOLD, exist_ok=True)
+
+    con = duckdb.connect(GOLD_DB)
 
     for nome in ('itens', 'nf'):
         df = pd.read_parquet(os.path.join(DIRETORIO_SILVER, f'{nome}.parquet'))
         df = adicionar_tipo_pessoa(df)
         df.to_parquet(os.path.join(DIRETORIO_GOLD, f'{nome}.parquet'), compression='snappy')
+        con.execute(f"CREATE OR REPLACE TABLE {nome} AS SELECT * FROM df")
         imprimir_mensagem(f"{nome}: {len(df)} linhas.")
 
+    con.close()
     imprimir_mensagem("Gold salvo.")
 
 

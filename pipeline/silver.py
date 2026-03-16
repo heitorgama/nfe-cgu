@@ -132,25 +132,14 @@ def converter_colunas_para_snake_case(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# Brief: remove duplicatas de itens mantendo uma linha por chave de acesso + número do produto
+# Brief: remove duplicatas de itens mantendo uma linha por combinação única de todos os campos
 def deduplicar_itens(df: pd.DataFrame) -> pd.DataFrame:
-    cols = ['CHAVE DE ACESSO', 'NÚMERO PRODUTO']
-    if not all(c in df.columns for c in cols):
-        return df
-    return df.drop_duplicates(subset=cols, keep='first').reset_index(drop=True)
+    return df.drop_duplicates().reset_index(drop=True)
 
 
 # Brief: remove duplicatas de nf mantendo a linha com o evento mais recente por chave de acesso
 def deduplicar_nf(df: pd.DataFrame) -> pd.DataFrame:
-    col_chave = 'CHAVE DE ACESSO'
-    col_data = 'DATA/HORA EVENTO MAIS RECENTE'
-    if col_chave not in df.columns or col_data not in df.columns:
-        return df
-    return (
-        df.sort_values(col_data, ascending=False)
-          .drop_duplicates(subset=col_chave, keep='first')
-          .reset_index(drop=True)
-    )
+    return df.drop_duplicates().reset_index(drop=True)
 
 
 # Brief: lê parquet do bronze, converte tipos, deduplica e salva em silver

@@ -86,8 +86,6 @@ def test_identificar_periodos_faltantes_diretorio_vazio(tmp_path):
     assert faltantes == ["202201", "202202"]
 
 
-# --- periodos_no_bronze ---
-
 def test_periodos_no_bronze_sem_arquivo_retorna_vazio(tmp_path):
     assert periodos_no_bronze(str(tmp_path)) == set()
 

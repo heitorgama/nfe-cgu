@@ -10,7 +10,8 @@ from tqdm import tqdm
 DIRETORIO_DADOS = 'dados/nfe'
 DIRETORIO_EXTRACAO = 'extracoes/bronze'
 URL_BASE = 'https://dadosabertos-download.cgu.gov.br/PortalDaTransparencia/saida/nfe'
-PERIODO_INICIO = '202601' # 01/2022
+PERIODO_INICIO = '202601'
+PERIODO_FIM    = '202512'
 
 
 # Brief: retorna 'YYYYMM' do mês anterior ao atual

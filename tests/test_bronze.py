@@ -1,7 +1,7 @@
 import re
 import pandas as pd
 import pytest
-from pipeline.ingestion import (
+from pipeline.bronze import (
     formatar_periodo,
     identificar_arquivos_zip,
     mapear_arquivos_e_periodos,

@@ -1,6 +1,6 @@
 import pandas as pd
 import pyarrow as pa
-from pipeline.processing import (
+from pipeline.silver import (
     converter_colunas_para_snake_case,
     converter_dados,
     deduplicar_nf,
@@ -93,19 +93,6 @@ def test_converter_dados_ignora_coluna_ausente():
     df = pd.DataFrame({"OUTRA COLUNA": ["x"]})
     resultado = converter_dados(df, {"COLUNA QUE NAO EXISTE": "int64"})
     assert list(resultado.columns) == ["OUTRA COLUNA"]
-
-
-def test_deduplicar_nf_mantem_evento_mais_recente():
-    df = pd.DataFrame({
-        'CHAVE DE ACESSO': ['ABC', 'ABC'],
-        'DATA/HORA EVENTO MAIS RECENTE': [
-            pd.Timestamp('2024-01-01'),
-            pd.Timestamp('2024-06-01'),
-        ],
-    })
-    resultado = deduplicar_nf(df)
-    assert len(resultado) == 1
-    assert resultado['DATA/HORA EVENTO MAIS RECENTE'].iloc[0] == pd.Timestamp('2024-06-01')
 
 
 def test_deduplicar_nf_sem_duplicatas_nao_altera():

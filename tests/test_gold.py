@@ -1,6 +1,6 @@
 import pandas as pd
 
-from pipeline.curation import adicionar_tipo_pessoa
+from pipeline.gold import adicionar_tipo_pessoa
 
 
 def _df(**kwargs):

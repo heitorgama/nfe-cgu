@@ -1,12 +1,13 @@
 import os
 from datetime import datetime
+from pathlib import Path
 
-import pandas as pd
-import pyarrow as pa
+import duckdb
 from slugify import slugify
 
 DIRETORIO_BRONZE = 'extracoes/bronze'
 DIRETORIO_SILVER = 'extracoes/silver'
+SILVER_DB = 'extracoes/silver/silver.duckdb'
 
 TIPOS_DE_DADOS_ITENS = {
     'CHAVE DE ACESSO':                 'str',
@@ -82,69 +83,64 @@ TIPOS_DE_DADOS_EVENTOS = {
     'periodo':                          'str',
 }
 
-TIPO_DECIMAL_CNPJ = pd.ArrowDtype(pa.decimal128(14, 0))
-
 
 def imprimir_mensagem(mensagem: str) -> None:
     ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"[{ts}] {mensagem}")
 
 
-# Brief: separa a coluna CPF/CNPJ em duas colunas distintas com base na presença de ***
-def separar_cpf_cnpj(df: pd.DataFrame) -> pd.DataFrame:
+def separar_cpf_cnpj(rel: duckdb.DuckDBPyRelation, con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
+    """Separa a coluna CPF/CNPJ em duas colunas distintas com base na presença de ***"""
     pares = [
         ('CPF/CNPJ Emitente', 'CPF Emitente', 'CNPJ Emitente'),
         ('CNPJ DESTINATÁRIO', 'CPF Destinatário', 'CNPJ Destinatário'),
     ]
     for col_orig, col_cpf, col_cnpj in pares:
-        if col_orig not in df.columns:
+        if col_orig not in rel.columns:
             continue
-        s = df[col_orig].astype(str)
-        tem_asterisco = s.str.contains(r'\*', na=False)
-        df.insert(df.columns.get_loc(col_orig), col_cpf,  s.where(tem_asterisco))
-        df.insert(df.columns.get_loc(col_orig), col_cnpj, s.where(~tem_asterisco))
-        df = df.drop(columns=[col_orig])
-    return df
+        select_parts = []
+        for c in rel.columns:
+            if c == col_orig:
+                select_parts.append(f"CASE WHEN \"{c}\" LIKE '%*%' THEN \"{c}\" END AS \"{col_cpf}\"")
+                select_parts.append(f"CASE WHEN \"{c}\" NOT LIKE '%*%' THEN \"{c}\" END AS \"{col_cnpj}\"")
+            else:
+                select_parts.append(f'"{c}"')
+        rel = con.sql(f'SELECT {", ".join(select_parts)} FROM rel')
+    return rel
 
 
-# Brief: converte colunas do DataFrame para os tipos definidos em tipos_de_dados
-def converter_dados(df: pd.DataFrame, tipos_de_dados: dict) -> pd.DataFrame:
-    for coluna, tipo in tipos_de_dados.items():
-        if coluna not in df.columns:
-            continue
+def converter_dados(rel: duckdb.DuckDBPyRelation, tipos_de_dados: dict, con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
+    """Converte colunas da relation para os tipos definidos em tipos_de_dados"""
+    select_parts = []
+    for c in rel.columns:
+        tipo = tipos_de_dados.get(c)
         if tipo == 'datetime64[ns]':
-            df[coluna] = pd.to_datetime(df[coluna], dayfirst=True, errors='coerce')
+            expr = (
+                f"COALESCE("
+                f"TRY_STRPTIME(\"{c}\", '%d/%m/%Y %H:%M:%S'), "
+                f"TRY_STRPTIME(\"{c}\", '%d/%m/%Y')"
+                f")"
+            )
         elif tipo == 'int64':
-            s = df[coluna].astype(str).str.replace('.', '', regex=False).str.replace(',', '.', regex=False)
-            df[coluna] = pd.to_numeric(s, errors='coerce')
+            expr = f"TRY_CAST(REPLACE(REPLACE(\"{c}\", '.', ''), ',', '.') AS BIGINT)"
         elif tipo == 'decimal':
-            s = df[coluna].astype(str).str.replace(r'\D', '', regex=True)
-            s = s.where(s != '', other=None)
-            df[coluna] = s.astype(TIPO_DECIMAL_CNPJ)
-        elif tipo == 'str':
-            df[coluna] = df[coluna].astype(str)
-    return df
+            expr = f"TRY_CAST(NULLIF(REGEXP_REPLACE(\"{c}\", '\\D', '', 'g'), '') AS DECIMAL(14,0))"
+        else:
+            expr = f'"{c}"'
+        select_parts.append(f'{expr} AS "{c}"')
+    return con.sql(f'SELECT {", ".join(select_parts)} FROM rel')
 
 
-# Brief: renomeia todas as colunas do DataFrame para snake_case
-def converter_colunas_para_snake_case(df: pd.DataFrame) -> pd.DataFrame:
-    df.columns = [slugify(col, separator='_') for col in df.columns]
-    return df
+def converter_colunas_para_snake_case(rel: duckdb.DuckDBPyRelation, con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
+    """Renomeia todas as colunas da relation para snake_case."""
+    select_parts = [f'"{c}" AS {slugify(c, separator="_")}' for c in rel.columns]
+    return con.sql(f'SELECT {", ".join(select_parts)} FROM rel')
 
 
-# Brief: remove duplicatas de itens mantendo uma linha por combinação única de todos os campos
-def deduplicar_itens(df: pd.DataFrame) -> pd.DataFrame:
-    return df.drop_duplicates().reset_index(drop=True)
-
-
-# Brief: remove duplicatas de nf mantendo a linha com o evento mais recente por chave de acesso
-def deduplicar_nf(df: pd.DataFrame) -> pd.DataFrame:
-    return df.drop_duplicates().reset_index(drop=True)
-
-
-# Brief: lê parquet do bronze, converte tipos, deduplica e salva em silver
 def main():
+    """Lê parquet do bronze, converte tipos, deduplica e salva em silver (parquet + duckdb)"""
     os.makedirs(DIRETORIO_SILVER, exist_ok=True)
+    con = duckdb.connect(SILVER_DB)
 
     tabelas = [
         ('itens', TIPOS_DE_DADOS_ITENS),
@@ -152,17 +148,20 @@ def main():
         ('eventos', TIPOS_DE_DADOS_EVENTOS),
     ]
     for nome, tipos in tabelas:
-        df = pd.read_parquet(os.path.join(DIRETORIO_BRONZE, f'{nome}.parquet'))
-        df = separar_cpf_cnpj(df)
-        df = converter_dados(df, tipos)
-        if nome == 'itens':
-            df = deduplicar_itens(df)
-        elif nome == 'nf':
-            df = deduplicar_nf(df)
-        df = converter_colunas_para_snake_case(df)
-        df.to_parquet(os.path.join(DIRETORIO_SILVER, f'{nome}.parquet'), compression='snappy')
-        imprimir_mensagem(f"{nome}: {len(df)} linhas.")
+        caminho_bronze = Path(DIRETORIO_BRONZE, f'{nome}.parquet').as_posix()
+        rel = con.sql(f"SELECT * FROM read_parquet('{caminho_bronze}')")
+        rel = separar_cpf_cnpj(rel, con)
+        rel = converter_dados(rel, tipos, con)
+        if nome in ('itens', 'nf'):
+            rel = rel.distinct()
+        rel = converter_colunas_para_snake_case(rel, con)
+        con.sql(f"CREATE OR REPLACE TABLE {nome} AS SELECT * FROM rel")
+        caminho_silver = Path(DIRETORIO_SILVER, f'{nome}.parquet').as_posix()
+        con.execute(f"COPY {nome} TO '{caminho_silver}' (FORMAT PARQUET, COMPRESSION SNAPPY)")
+        count = con.execute(f"SELECT COUNT(*) FROM {nome}").fetchone()[0]
+        imprimir_mensagem(f"{nome}: {count} linhas.")
 
+    con.close()
     imprimir_mensagem("Silver salvo.")
 
 

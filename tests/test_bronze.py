@@ -1,9 +1,15 @@
 import re
+import duckdb
 import pandas as pd
 import pytest
+import pipeline.bronze as bronze
 from pipeline.bronze import (
     formatar_periodo,
     identificar_arquivos_zip,
+    inserir_no_duckdb,
+    exportar_parquets,
+    ler_csvs,
+    listar_arquivos_DIRETORIO_DADOS,
     mapear_arquivos_e_periodos,
     gerar_periodos,
     gerar_url,
@@ -86,15 +92,64 @@ def test_identificar_periodos_faltantes_diretorio_vazio(tmp_path):
     assert faltantes == ["202201", "202202"]
 
 
-def test_periodos_no_bronze_sem_arquivo_retorna_vazio(tmp_path):
-    assert periodos_no_bronze(str(tmp_path)) == set()
+def test_periodos_no_bronze_sem_tabela_retorna_vazio():
+    con = duckdb.connect()
+    assert periodos_no_bronze(con) == set()
 
 
-def test_periodos_no_bronze_retorna_periodos_existentes(tmp_path):
-    df = pd.DataFrame({'periodo': ['2022-01', '2022-02', '2022-01']})
-    df.to_parquet(tmp_path / 'itens.parquet')
-    assert periodos_no_bronze(str(tmp_path)) == {'2022-01', '2022-02'}
+def test_periodos_no_bronze_retorna_periodos_existentes():
+    con = duckdb.connect()
+    con.execute("CREATE TABLE itens (periodo VARCHAR)")
+    con.execute("INSERT INTO itens VALUES ('2022-01'), ('2022-02'), ('2022-01')")
+    assert periodos_no_bronze(con) == {'2022-01', '2022-02'}
 
 
-def test_periodos_no_bronze_diretorio_inexistente():
-    assert periodos_no_bronze('/nao/existe') == set()
+def test_listar_arquivos_retorna_somente_arquivos(tmp_path):
+    (tmp_path / "a.zip").touch()
+    (tmp_path / "b.csv").touch()
+    (tmp_path / "subdir").mkdir()
+    resultado = listar_arquivos_DIRETORIO_DADOS(str(tmp_path))
+    assert set(resultado) == {"a.zip", "b.csv"}
+
+
+def test_listar_arquivos_diretorio_inexistente():
+    assert listar_arquivos_DIRETORIO_DADOS("/caminho/que/nao/existe") == []
+
+
+def test_ler_csvs_retorna_dataframes_com_colunas_string(tmp_path):
+    conteudo = "chave;valor\n001;abc\n002;def\n"
+    for nome in ("itens.csv", "eventos.csv", "nf.csv"):
+        (tmp_path / nome).write_text(conteudo, encoding="latin-1")
+    df_i, df_e, df_n = ler_csvs(str(tmp_path), "itens.csv", "eventos.csv", "nf.csv")
+    for df in (df_i, df_e, df_n):
+        assert list(df.columns) == ["chave", "valor"]
+        assert df.dtypes["chave"] == object
+        assert len(df) == 2
+
+
+def test_inserir_no_duckdb_cria_tabela_e_insere():
+    con = duckdb.connect()
+    df = pd.DataFrame({"a": ["1", "2"], "b": ["x", "y"]})
+    inserir_no_duckdb(con, "teste", df)
+    resultado = con.execute("SELECT * FROM teste").fetchdf()
+    assert len(resultado) == 2
+    assert list(resultado.columns) == ["a", "b"]
+
+
+def test_inserir_no_duckdb_acumula_em_tabela_existente():
+    con = duckdb.connect()
+    df1 = pd.DataFrame({"a": ["1"], "b": ["x"]})
+    df2 = pd.DataFrame({"a": ["2"], "b": ["y"]})
+    inserir_no_duckdb(con, "teste", df1)
+    inserir_no_duckdb(con, "teste", df2)
+    assert len(con.execute("SELECT * FROM teste").fetchdf()) == 2
+
+
+def test_exportar_parquets_cria_arquivos(tmp_path, monkeypatch):
+    monkeypatch.setattr(bronze, "DIRETORIO_EXTRACAO", str(tmp_path))
+    monkeypatch.setattr(bronze, "TABELAS", ["itens"])
+    con = duckdb.connect()
+    con.execute("CREATE TABLE itens (periodo VARCHAR)")
+    con.execute("INSERT INTO itens VALUES ('2025-01')")
+    exportar_parquets(con)
+    assert (tmp_path / "itens.parquet").exists()

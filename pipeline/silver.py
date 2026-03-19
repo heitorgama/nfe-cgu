@@ -33,7 +33,7 @@ TIPOS_DE_DADOS_ITENS = {
     'PRESENÇA DO COMPRADOR':           'str',
     'NÚMERO PRODUTO':                  'int64',
     'DESCRIÇÃO DO PRODUTO/SERVIÇO':    'str',
-    'CÓDIGO NCM/SH':                   'int64',
+    'CÓDIGO NCM/SH':                   'str',
     'NCM/SH (TIPO DE PRODUTO)':        'str',
     'CFOP':                            'int64',
     'QUANTIDADE':                      'int64',

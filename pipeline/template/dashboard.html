@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compras Públicas — Cadeias NIB</title>
+<title>Compras Públicas — Grupo A &amp; B</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Source+Sans+3:wght@300;400;600;700&display=swap');
 
@@ -18,6 +18,7 @@
     --accent-dim: #2a4a8a;
     --green: #34d399;
     --yellow: #fbbf24;
+    --purple: #a78bfa;
     --font-body: 'Source Sans 3', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
   }
@@ -99,6 +100,7 @@
   .card-value.accent { color: var(--accent); }
   .card-value.green  { color: var(--green); }
   .card-value.yellow { color: var(--yellow); }
+  .card-value.purple { color: var(--purple); }
 
   table {
     width: 100%;
@@ -134,7 +136,6 @@
   }
 
   tbody tr:hover { background: var(--surface-hover); }
-  tbody tr.clickable { cursor: pointer; }
 
   .num { text-align: right; font-family: var(--font-mono); font-size: 0.8rem; }
 
@@ -145,111 +146,75 @@
     border-radius: 8px;
   }
 
-  .tabs {
+  .group-tabs {
     display: flex;
     gap: 0;
     margin-bottom: 1.5rem;
     border-bottom: 2px solid var(--border);
   }
 
-  .tab {
-    padding: 0.6rem 1.4rem;
+  .group-tab {
+    padding: 0.6rem 1.8rem;
     cursor: pointer;
     color: var(--text-muted);
-    font-weight: 600;
-    font-size: 0.85rem;
+    font-weight: 700;
+    font-size: 0.9rem;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
     transition: all 0.15s;
+    letter-spacing: 0.03em;
   }
 
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .group-tab:hover { color: var(--text); }
+  .group-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .group-panel { display: none; }
+  .group-panel.active { display: block; }
 
   .hidden { display: none; }
-
-  .overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .overlay.visible { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.8rem;
-    max-width: 640px;
-    width: 90%;
-    position: relative;
-  }
-
-  .modal-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; }
-  .modal-sub   { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.2rem; }
-
-  .modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1.2rem;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-size: 1.2rem;
-  }
-
-  .modal-close:hover { color: var(--text); }
 </style>
 </head>
 <body>
 
-<h1>Compras Públicas — Cadeias NIB</h1>
-<p class="subtitle">Histórico 2024–2025 · Notas Fiscais Eletrônicas do Executivo Federal · Fonte: Portal da Transparência (CGU)</p>
+<h1>Compras Públicas — Grupo A &amp; B</h1>
+<p class="subtitle">Histórico 2022–2025 · Notas Fiscais Eletrônicas do Executivo Federal · Fonte: Portal da Transparência (CGU)</p>
 
 <div id="loading">Carregando DuckDB-WASM e dados…</div>
 
 <div id="app" class="hidden">
-  <div class="controls">
-    <select id="selCadeia"><option value="">Todas as cadeias</option></select>
+
+  <div class="group-tabs">
+    <div class="group-tab active" data-group="a">Grupo A — Por Tipo</div>
+    <div class="group-tab"        data-group="b">Grupo B — Por Palavras-chave</div>
   </div>
 
-  <div class="cards" id="cards"></div>
-
-  <div class="tabs">
-    <div class="tab active" data-tab="cnae">Por CNAE</div>
-    <div class="tab" data-tab="resumo">Resumo por Cadeia</div>
-    <div class="tab" data-tab="detalhado">Detalhado</div>
+  <!-- GRUPO A -->
+  <div class="group-panel active" id="panel-a">
+    <div class="controls">
+      <select id="selTipo"><option value="">Todos os tipos</option></select>
+      <select id="selAnoA"><option value="">Todos os anos</option></select>
+    </div>
+    <div class="cards" id="cardsA"></div>
+    <div class="table-wrap">
+      <table id="tblA"><thead></thead><tbody></tbody></table>
+    </div>
   </div>
 
-  <div id="tab-cnae">
-    <div class="table-wrap"><table id="tblCnae"><thead></thead><tbody></tbody></table></div>
+  <!-- GRUPO B -->
+  <div class="group-panel" id="panel-b">
+    <div class="controls">
+      <select id="selAnoB"><option value="">Todos os anos</option></select>
+    </div>
+    <div class="cards" id="cardsB"></div>
+    <div class="table-wrap">
+      <table id="tblB"><thead></thead><tbody></tbody></table>
+    </div>
   </div>
 
-  <div id="tab-resumo" class="hidden">
-    <div class="table-wrap"><table id="tblResumo"><thead></thead><tbody></tbody></table></div>
-  </div>
-
-  <div id="tab-detalhado" class="hidden">
-    <div class="table-wrap"><table id="tblDetalhe"><thead></thead><tbody></tbody></table></div>
-  </div>
-</div>
-
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="modal-close" id="modalClose">✕</div>
-    <div class="modal-title" id="modalTitle"></div>
-    <div class="modal-sub"   id="modalSub"></div>
-  </div>
 </div>
 
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
-
-const TABELA_NIB = 'cnae_cadeia.parquet';
 
 (async () => {
   const bundle = await duckdb.selectBundle(duckdb.getJsDelivrBundles());
@@ -269,161 +234,147 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
     await db.registerFileBuffer(file, buf);
   }
 
-  await registerParquet('resumo_cadeia.parquet');
-  await registerParquet('detalhado_cadeia.parquet');
-  await registerParquet('totais_globais.parquet');
-  await registerParquet(TABELA_NIB);
+  await registerParquet('resumo_grupo_a.parquet');
+  await registerParquet('resumo_grupo_b.parquet');
 
-  const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
-  const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
+  // ── Formatters ──
+  const fmt  = v => (v == null || v === '') ? '' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+  const fmtN = v => (v == null || v === '') ? '' : Number(v).toLocaleString('pt-BR');
+  const fmtS = v => v ?? '';
 
-  function buildTable(tableEl, rows, cols, onRowClick) {
+  // ── Generic table builder ──
+  function buildTable(tableEl, rows, cols) {
     const thead = tableEl.querySelector('thead');
     const tbody = tableEl.querySelector('tbody');
     thead.innerHTML = '<tr>' + cols.map(c => `<th>${c.label}</th>`).join('') + '</tr>';
-    tbody.innerHTML = rows.map((r, i) =>
-      `<tr${onRowClick ? ' class="clickable"' : ''} data-idx="${i}">` +
-      cols.map(c => {
+    tbody.innerHTML = rows.map(r =>
+      '<tr>' + cols.map(c => {
         const v = r[c.key];
         const cls = c.numeric ? ' class="num"' : '';
-        const display = c.fmt ? c.fmt(v) : (v ?? '—');
+        const display = c.fmt ? c.fmt(v) : fmtS(v);
         return `<td${cls}>${display}</td>`;
       }).join('') + '</tr>'
     ).join('');
-    if (onRowClick) {
-      tbody.querySelectorAll('tr').forEach(tr => {
-        tr.addEventListener('click', () => onRowClick(rows[+tr.dataset.idx]));
-      });
-    }
   }
 
-  const overlay    = document.getElementById('overlay');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalSub   = document.getElementById('modalSub');
+  // ── Populate selects ──
+  async function populateSelect(selectId, query, valKey) {
+    const sel  = document.getElementById(selectId);
+    const rows = (await conn.query(query)).toArray();
+    rows.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r[valKey] ?? '';
+      opt.textContent = r[valKey] ?? '';
+      sel.appendChild(opt);
+    });
+  }
 
-  document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('visible'));
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('visible'); });
+  await populateSelect('selTipo',
+    `SELECT DISTINCT tipo FROM 'resumo_grupo_a.parquet' WHERE tipo IS NOT NULL ORDER BY tipo`,
+    'tipo');
+  await populateSelect('selAnoA',
+    `SELECT DISTINCT ano FROM 'resumo_grupo_a.parquet' ORDER BY ano`,
+    'ano');
+  await populateSelect('selAnoB',
+    `SELECT DISTINCT ano FROM 'resumo_grupo_b.parquet' ORDER BY ano`,
+    'ano');
 
-  // Select cadeias
-  const cadeias = (await conn.query(
-    "SELECT DISTINCT codigo_cadeia || ' — ' || cadeia AS label, codigo_cadeia AS value FROM 'resumo_cadeia.parquet' ORDER BY codigo_cadeia"
-  )).toArray();
-  const sel = document.getElementById('selCadeia');
-  cadeias.forEach(r => {
-    const opt = document.createElement('option');
-    opt.value = r.value;
-    opt.textContent = r.label;
-    sel.appendChild(opt);
-  });
+  // ── GRUPO A ──
+  async function refreshA() {
+    const tipo = document.getElementById('selTipo').value;
+    const ano  = document.getElementById('selAnoA').value;
+    const conds = [];
+    if (tipo) conds.push(`tipo = '${tipo.replace(/'/g, "''")}'`);
+    if (ano)  conds.push(`ano = '${ano}'`);
+    const where = conds.length ? 'WHERE ' + conds.join(' AND ') : '';
 
-  async function refresh() {
-    const cadeia = sel.value;
-    const wBase  = cadeia ? `WHERE codigo_cadeia = '${cadeia}'` : '';
-    const wNib   = cadeia ? `WHERE "Código da Cadeia" = '${cadeia}'` : '';
+    const agg = (await conn.query(`
+      SELECT
+        COALESCE(SUM("Valor Total"), 0)::DOUBLE            AS total,
+        COALESCE(SUM("Fornecedores Distintos"), 0)::DOUBLE AS forn,
+        COUNT(DISTINCT tipo)::DOUBLE                       AS tipos
+      FROM 'resumo_grupo_a.parquet' ${where}
+    `)).toArray()[0];
 
-    // Cards — sem filtro usa totais_globais (sem dupla contagem entre cadeias)
-    //         com filtro usa resumo_cadeia (correto pois SELECT DISTINCT deduplica dentro da cadeia)
-    let total, fornecedores, itens, ncadeias;
-    if (!cadeia) {
-      const g = (await conn.query(`
-        SELECT
-          valor_total_global::DOUBLE  AS total,
-          fornecedores_global::DOUBLE AS fornecedores,
-          itens_global::DOUBLE        AS itens
-        FROM 'totais_globais.parquet'
-      `)).toArray()[0];
-      const nc = (await conn.query(
-        "SELECT COUNT(*)::DOUBLE AS n FROM 'resumo_cadeia.parquet'"
-      )).toArray()[0];
-      total = g.total; fornecedores = g.fornecedores; itens = g.itens; ncadeias = nc.n;
-    } else {
-      const s = (await conn.query(`
-        SELECT
-          COALESCE(SUM(valor_total_adquirido), 0)::DOUBLE  AS total,
-          COALESCE(SUM(fornecedores_distintos), 0)::DOUBLE AS fornecedores,
-          COALESCE(SUM(quantidade_itens), 0)::DOUBLE       AS itens,
-          COUNT(*)::DOUBLE                                 AS ncadeias
-        FROM 'resumo_cadeia.parquet' ${wBase}
-      `)).toArray()[0];
-      total = s.total; fornecedores = s.fornecedores; itens = s.itens; ncadeias = s.ncadeias;
-    }
-
-    document.getElementById('cards').innerHTML = `
-      <div class="card"><div class="card-label">Valor Total (2024–2025)</div><div class="card-value accent">${fmt(total)}</div></div>
-      <div class="card"><div class="card-label">Fornecedores</div><div class="card-value green">${fmtN(fornecedores)}</div></div>
-      <div class="card"><div class="card-label">Itens de NF-e</div><div class="card-value yellow">${fmtN(itens)}</div></div>
-      <div class="card"><div class="card-label">Cadeias NIB</div><div class="card-value">${fmtN(ncadeias)}</div></div>
+    document.getElementById('cardsA').innerHTML = `
+      <div class="card"><div class="card-label">Valor Total</div>
+        <div class="card-value accent">${fmt(agg.total)}</div></div>
+      <div class="card"><div class="card-label">Fornecedores Distintos</div>
+        <div class="card-value green">${fmtN(agg.forn)}</div></div>
+      <div class="card"><div class="card-label">Tipos</div>
+        <div class="card-value purple">${fmtN(agg.tipos)}</div></div>
     `;
 
-    // Por CNAE — aba principal
-    const cnaeRows = (await conn.query(
-      `SELECT * FROM '${TABELA_NIB}' ${wNib} ORDER BY "Código da Cadeia", "Valor Total" DESC`
-    )).toArray();
-    buildTable(document.getElementById('tblCnae'), cnaeRows, [
-      { key: 'Número da Missão',       label: 'Missão' },
-      { key: 'Código da Cadeia',       label: 'Código' },
-      { key: 'Cadeia Prioritária',     label: 'Cadeia' },
-      { key: 'CNAE',                   label: 'CNAE' },
-      { key: 'Descrição da CNAE',      label: 'Descrição CNAE' },
-      { key: 'Critério',               label: 'Critério' },
-      { key: 'Missões',                label: 'Missões' },
-      { key: 'ICP',                    label: 'ICP', numeric: true },
-      { key: 'Seção CNAE',             label: 'Seção CNAE' },
-      { key: 'SH Correspondente',      label: 'SH Correspondente' },
-      { key: 'Valor Total',            label: 'Valor Total',   numeric: true, fmt },
-      { key: 'Número de Fornecedores', label: 'Fornecedores',  numeric: true, fmt: fmtN },
-      { key: 'Número de Notas Fiscais',label: 'NFs',           numeric: true, fmt: fmtN },
-      { key: 'Número de Itens',        label: 'Itens',         numeric: true, fmt: fmtN },
-    ]);
+    const rows = (await conn.query(`
+      SELECT tipo, ano, "Valor Total", "Fornecedores Distintos"
+      FROM 'resumo_grupo_a.parquet' ${where}
+      ORDER BY ano DESC, "Valor Total" DESC
+    `)).toArray();
 
-    // Resumo por cadeia
-    const resumoRows = (await conn.query(
-      `SELECT * FROM 'resumo_cadeia.parquet' ${wBase} ORDER BY valor_total_adquirido DESC`
-    )).toArray();
-    buildTable(document.getElementById('tblResumo'), resumoRows, [
-      { key: 'missao',                 label: 'Missão' },
-      { key: 'codigo_cadeia',          label: 'Código' },
-      { key: 'cadeia',                 label: 'Cadeia' },
-      { key: 'valor_total_adquirido',  label: 'Valor Total',  numeric: true, fmt },
-      { key: 'fornecedores_distintos', label: 'Fornecedores', numeric: true, fmt: fmtN },
-      { key: 'quantidade_itens',       label: 'Itens',        numeric: true, fmt: fmtN },
-    ]);
-
-    // Detalhado
-    const detalheRows = (await conn.query(
-      `SELECT * FROM 'detalhado_cadeia.parquet' ${wBase} ORDER BY valor_total DESC LIMIT 500`
-    )).toArray();
-    buildTable(document.getElementById('tblDetalhe'), detalheRows, [
-      { key: 'codigo_cadeia',                label: 'Código' },
-      { key: 'cadeia',                       label: 'Cadeia' },
-      { key: 'cnae',                         label: 'CNAE' },
-      { key: 'criterio',                     label: 'Critério' },
-      { key: 'icp',                          label: 'ICP',        numeric: true },
-      { key: 'codigo_ncm_sh',                label: 'NCM/SH',     numeric: true },
-      { key: 'descricao_do_produto_servico',  label: 'Descrição' },
-      { key: 'valor_total',                  label: 'Valor Total',  numeric: true, fmt },
-      { key: 'fornecedores_distintos',        label: 'Fornecedores', numeric: true, fmt: fmtN },
-      { key: 'quantidade_total',             label: 'Quantidade',   numeric: true, fmt: fmtN },
+    buildTable(document.getElementById('tblA'), rows, [
+      { key: 'tipo',                   label: 'Tipo' },
+      { key: 'ano',                    label: 'Ano' },
+      { key: 'Valor Total',            label: 'Valor Total',  numeric: true, fmt },
+      { key: 'Fornecedores Distintos', label: 'Fornecedores', numeric: true, fmt: fmtN },
     ]);
   }
 
-  sel.addEventListener('change', refresh);
+  document.getElementById('selTipo').addEventListener('change', refreshA);
+  document.getElementById('selAnoA').addEventListener('change', refreshA);
 
-  // Tabs
-  const tabIds = { cnae: 'tab-cnae', resumo: 'tab-resumo', detalhado: 'tab-detalhado' };
-  document.querySelectorAll('.tab').forEach(tab => {
+  // ── GRUPO B ──
+  async function refreshB() {
+    const ano = document.getElementById('selAnoB').value;
+    const where = ano ? `WHERE ano = '${ano}'` : '';
+
+    const agg = (await conn.query(`
+      SELECT
+        COALESCE(SUM(valor_total_adquirido), 0)::DOUBLE  AS total,
+        COALESCE(SUM(fornecedores_distintos), 0)::DOUBLE AS forn,
+        COUNT(DISTINCT grupo_b)::DOUBLE                  AS grupos
+      FROM 'resumo_grupo_b.parquet' ${where}
+    `)).toArray()[0];
+
+    document.getElementById('cardsB').innerHTML = `
+      <div class="card"><div class="card-label">Valor Total</div>
+        <div class="card-value accent">${fmt(agg.total)}</div></div>
+      <div class="card"><div class="card-label">Fornecedores Distintos</div>
+        <div class="card-value green">${fmtN(agg.forn)}</div></div>
+      <div class="card"><div class="card-label">Palavras-chave</div>
+        <div class="card-value purple">${fmtN(agg.grupos)}</div></div>
+    `;
+
+    const rows = (await conn.query(`
+      SELECT ano, abreviacao, grupo_b, valor_total_adquirido, fornecedores_distintos
+      FROM 'resumo_grupo_b.parquet' ${where}
+      ORDER BY ano DESC, valor_total_adquirido DESC
+    `)).toArray();
+
+    buildTable(document.getElementById('tblB'), rows, [
+      { key: 'ano',                    label: 'Ano' },
+      { key: 'abreviacao',             label: 'Abreviação' },
+      { key: 'grupo_b',                label: 'Palavra-chave' },
+      { key: 'valor_total_adquirido',  label: 'Valor Total',  numeric: true, fmt },
+      { key: 'fornecedores_distintos', label: 'Fornecedores', numeric: true, fmt: fmtN },
+    ]);
+  }
+
+  document.getElementById('selAnoB').addEventListener('change', refreshB);
+
+  // ── Group tab switching ──
+  document.querySelectorAll('.group-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.group-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.group-panel').forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
-      Object.entries(tabIds).forEach(([key, id]) => {
-        document.getElementById(id).classList.toggle('hidden', tab.dataset.tab !== key);
-      });
+      document.getElementById('panel-' + tab.dataset.group).classList.add('active');
     });
   });
 
   document.getElementById('loading').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
-  await refresh();
+  await refreshA();
+  await refreshB();
 })();
 </script>
 </body>

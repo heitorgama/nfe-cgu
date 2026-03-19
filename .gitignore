@@ -1,6 +1,8 @@
-/dados/*
+/dados/nfe/*
 /env
 /extracoes/*
 /modelos/*
+/pipeline/__pycache__
+/tests/__pycache__
 *.pickle
 .DS_Store

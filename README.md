@@ -1,23 +1,5 @@
 # Concatenação dos arquivos de Notas Fiscais do [Portal da Transparência](https://portaldatransparencia.gov.br/) para consultas rápidas em SQL, usando DuckDB
 
-## Painel interativo (exemplo com Cadeias NIB)
-
-O script final pipeline/gold.py gera um painel HTML interativo (extracoes/gold/cruzamento_ncm/preview.html) com os dados de compras públicas, cruzando as Notas Fiscais Eletrônicas do Executivo Federal com o mapeamento NCM definido pelo MGI.
-O painel roda inteiramente no navegador via DuckDB-WASM sem servidor, sem dependências externas além do arquivo .html.
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="dados/screenshot_cadeia.png" alt="Aba Por Cadeia e CNAE" width="100%">
-      <sub>Aba <strong>Por Cadeia e CNAE</strong> — valores agregados por cadeia produtiva e classificação CNAE</sub>
-    </td>
-    <td align="center">
-      <img src="dados/screenshot_grafico.png" alt="Aba Evolução Anual" width="100%">
-      <sub>Aba <strong>Evolução Anual</strong> — série histórica 2022–2025 por cadeia</sub>
-    </td>
-  </tr>
-</table>
-
 ## Preparação do ambiente de desenvolvimento
 
 Clonar este repositório na sua máquina, executando:
@@ -75,3 +57,14 @@ A base de **itens** deduplicada será salva como `itens_limpos.parquet`.
 # Exemplo de consulta ao arquivo final
 
 O arquivo `consultar_aco.py` contém consultas SQL para analisar os dados extraídos, a fim de obter o volume total comprado pelo Executivo Federal. Você pode executar essas consultas usando o DuckDB, que é uma biblioteca de banco de dados SQL leve e rápida.
+
+# Painel interativo (exemplo com Cadeias NIB)
+
+O script final pipeline/gold.py gera um painel HTML interativo (extracoes/gold/cruzamento_ncm/preview.html) com os dados de compras públicas, cruzando as Notas Fiscais Eletrônicas do Executivo Federal com o mapeamento NCM definido pelo MGI.
+O painel roda inteiramente no navegador via DuckDB-WASM sem servidor, sem dependências externas além do arquivo .html.
+
+<img src="dados/screenshot_cadeia.png" alt="Aba Por Cadeia e CNAE" width="100%">
+<sub>Aba <strong>Por Cadeia e CNAE</strong> - valores agregados por cadeia produtiva e classificação CNAE</sub>
+<br><br>
+<img src="dados/screenshot_grafico.png" alt="Aba Evolução Anual" width="100%">
+<sub>Aba <strong>Evolução Anual</strong> - série histórica 2022-2025 por cadeia</sub>

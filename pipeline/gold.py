@@ -78,9 +78,13 @@ def criar_resumo_por_cadeia(con: duckdb.DuckDBPyConnection) -> None:
             cadeia,
             missao,
             nome_missao,
-            SUM(valor_total)           AS valor_total_adquirido,
-            COUNT(DISTINCT {EMITENTE}) AS fornecedores_distintos,
-            COUNT(*)                   AS quantidade_itens
+            SUM(valor_total)                                                      AS valor_total_adquirido,
+            COUNT(DISTINCT {EMITENTE})                                            AS fornecedores_distintos,
+            COUNT(*)                                                              AS quantidade_itens,
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END) AS valor_2022,
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END) AS valor_2023,
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END) AS valor_2024,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END) AS valor_2025
         FROM itens_nib
         GROUP BY codigo_cadeia, cadeia, missao, nome_missao
         ORDER BY valor_total_adquirido DESC
@@ -118,16 +122,21 @@ def criar_detalhado_por_cadeia(con: duckdb.DuckDBPyConnection) -> None:
             codigo_cadeia, cadeia, missao, nome_missao,
             cnae, desc_cnae, criterio, icp,
             codigo_ncm_sh, ncm_sh_tipo_de_produto, descricao_do_produto_servico,
-            SUM(valor_total)                AS valor_total,
-            COUNT(DISTINCT {EMITENTE})      AS fornecedores_distintos,
-            SUM(quantidade)                 AS quantidade_total,
-            COUNT(*)                        AS registros
+            SUM(valor_total)                                                      AS valor_total,
+            COUNT(DISTINCT {EMITENTE})                                            AS fornecedores_distintos,
+            SUM(quantidade)                                                       AS quantidade_total,
+            COUNT(*)                                                              AS registros,
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END) AS valor_2022,
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END) AS valor_2023,
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END) AS valor_2024,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END) AS valor_2025
         FROM itens_nib
         GROUP BY ALL
-        ORDER BY codigo_cadeia, valor_total DESC
+        ORDER BY valor_total DESC
+        LIMIT 2000
     """)
     count = con.execute("SELECT COUNT(*) FROM detalhado_cadeia").fetchone()[0]
-    imprimir_mensagem(f"detalhado_cadeia: {count} linhas.")
+    imprimir_mensagem(f"detalhado_cadeia: {count} linhas (top 2000 por valor).")
 
 
 def criar_cnae_cadeia(con: duckdb.DuckDBPyConnection) -> None:
@@ -153,7 +162,11 @@ def criar_cnae_cadeia(con: duckdb.DuckDBPyConnection) -> None:
             COUNT(DISTINCT chave_de_acesso)
                               AS "Número de Notas Fiscais",
             COUNT(DISTINCT chave_de_acesso || '-' || CAST(numero AS VARCHAR) || '-' || CAST(numero_produto AS VARCHAR))
-                              AS "Número de Itens"
+                              AS "Número de Itens",
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END) AS valor_2022,
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END) AS valor_2023,
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END) AS valor_2024,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END) AS valor_2025
         FROM '{parquet_itens}'
         GROUP BY
             missao, nome_missao, codigo_cadeia, cadeia,
@@ -230,7 +243,7 @@ async function registerParquet(file) {{
     html = html.replace(old_register, inline_register)
 
     os.makedirs(DIRETORIO_ENTREGA, exist_ok=True)
-    destino = os.path.join(DIRETORIO_ENTREGA, 'index.html')
+    destino = os.path.join(DIRETORIO_ENTREGA, 'preview.html')
     with open(destino, 'w', encoding='utf-8') as f:
         f.write(html)
 

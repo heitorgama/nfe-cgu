@@ -305,7 +305,7 @@
 
   /* ── Gráfico ─────────────────────────────────────────────────── */
   .chart-wrap {
-    height: 460px;
+    height: 680px;
     position: relative;
     padding: 1.5rem;
   }
@@ -361,12 +361,7 @@
 
 <div class="layout">
 
-  <div id="loading">
-    <div class="spinner"></div>
-    Carregando DuckDB-WASM e dados…
-  </div>
-
-  <div id="app" class="hidden">
+  <div id="app">
 
     <div class="toolbar">
       <label for="selCadeia">Cadeia:</label>
@@ -643,7 +638,7 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
 
     const datasets = top.map((r, i) => ({
       label: r.cadeia,
-      data: ANOS.map(a => (Number(r[`valor_${a}`]) || 0) / 1e6),
+      data: ANOS.map(a => (Number(r[`valor_${a}`]) || 0) / 1e9),
       borderColor: PALETTE[i % PALETTE.length],
       backgroundColor: PALETTE[i % PALETTE.length] + '18',
       tension: 0.3,
@@ -660,11 +655,12 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'right',
+            position: 'bottom',
             labels: {
               color: '#4A5057',
               font: { size: 11, family: "'Raleway',sans-serif", weight: '600' },
               boxWidth: 12,
+              padding: 16,
             },
           },
           tooltip: {
@@ -673,7 +669,7 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
             bodyColor: '#FFFFFF',
             padding: 10,
             callbacks: {
-              label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toFixed(1)} M`,
+              label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toFixed(2)} B`,
             },
           },
         },
@@ -686,12 +682,12 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
             ticks: {
               color: '#8A9099',
               font: { family: "'Raleway',sans-serif" },
-              callback: v => `R$ ${v.toFixed(0)} M`,
+              callback: v => `R$ ${v.toFixed(1)} B`,
             },
             grid: { color: '#E6E8EC' },
             title: {
               display: true,
-              text: 'Valor (R$ milhões)',
+              text: 'Valor (R$ bilhões)',
               color: '#8A9099',
               font: { family: "'Raleway',sans-serif", size: 11 },
             },
@@ -712,10 +708,10 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
     });
   });
 
-  document.getElementById('loading').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
   await refresh();
-})();
+})().catch(err => {
+  document.getElementById('loading').innerHTML = `<span style="color:#C53030">Erro ao carregar: ${err.message}</span>`;
+});
 </script>
 </body>
 </html>

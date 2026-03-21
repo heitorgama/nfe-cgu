@@ -231,14 +231,24 @@ function base64ToUint8Array(b64) {{
 async function registerParquet(file) {{
   const buf = base64ToUint8Array(_PARQUET_DATA[file]);
   await db.registerFileBuffer(file, buf);
-}}"""
+}}
+
+  await registerParquet('resumo_cadeia.parquet');
+  await registerParquet('detalhado_cadeia.parquet');
+  await registerParquet('totais_globais.parquet');
+  await registerParquet(TABELA_NIB);"""
 
     old_register = (
         "  async function registerParquet(file) {\n"
         "    const resp = await fetch(file);\n"
         "    const buf = new Uint8Array(await resp.arrayBuffer());\n"
         "    await db.registerFileBuffer(file, buf);\n"
-        "  }"
+        "  }\n"
+        "\n"
+        "  await registerParquet('resumo_cadeia.parquet');\n"
+        "  await registerParquet('detalhado_cadeia.parquet');\n"
+        "  await registerParquet('totais_globais.parquet');\n"
+        "  await registerParquet(TABELA_NIB);"
     )
     html = html.replace(old_register, inline_register)
 

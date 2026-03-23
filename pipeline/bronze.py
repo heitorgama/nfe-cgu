@@ -5,7 +5,6 @@ import tempfile
 import zipfile
 from datetime import datetime
 import duckdb
-import pandas as pd
 from tqdm import tqdm
 
 DIRETORIO_DADOS = 'dados/nfe'
@@ -124,39 +123,30 @@ def identificar_arquivos_zip(arquivos: list[str]) -> tuple[str, str, str]:
     return itens, eventos, nf
 
 
-def ler_csvs(diretorio: str, arq_itens: str, arq_eventos: str, arq_nf: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Lê os 3 CSVs de um período extraído e retorna os DataFrames (itens, eventos, nf) com todas as colunas como string"""
-    kwargs = dict(sep=';', encoding='latin-1', dtype=str)
-    return (
-        pd.read_csv(os.path.join(diretorio, arq_itens), **kwargs),
-        pd.read_csv(os.path.join(diretorio, arq_eventos), **kwargs),
-        pd.read_csv(os.path.join(diretorio, arq_nf), **kwargs),
-    )
-
-
 def periodos_no_bronze(con: duckdb.DuckDBPyConnection) -> set[str]:
     """Retorna o conjunto de períodos 'YYYY-MM' já presentes no bronze via DuckDB"""
     try:
-        return set(con.execute("SELECT DISTINCT periodo FROM itens").fetchdf()['periodo'])
+        return {r[0] for r in con.execute("SELECT DISTINCT periodo FROM itens").fetchall()}
     except duckdb.CatalogException:
         return set()
 
 
-def inserir_no_duckdb(con: duckdb.DuckDBPyConnection, nome: str, df: pd.DataFrame) -> None:
-    """Insere df na tabela do DuckDB, criando se não existir. Todas as colunas como VARCHAR."""
+def inserir_csv(con: duckdb.DuckDBPyConnection, nome: str, caminho: str, periodo: str) -> None:
+    """Insere CSV diretamente no DuckDB sem passar por pandas. Todas as colunas como VARCHAR."""
+    read = f"SELECT *, '{periodo}' AS periodo FROM read_csv('{caminho}', sep=';', encoding='latin-1', all_varchar=true)"
     try:
-        con.execute(f"INSERT INTO {nome} SELECT * FROM df")
+        con.execute(f"INSERT INTO {nome} {read}")
     except duckdb.CatalogException:
-        colunas = ", ".join(f'"{c}" VARCHAR' for c in df.columns)
-        con.execute(f"CREATE TABLE {nome} ({colunas})")
-        con.execute(f"INSERT INTO {nome} SELECT * FROM df")
+        con.execute(f"CREATE TABLE {nome} AS {read}")
 
 
-def exportar_parquets(con: duckdb.DuckDBPyConnection) -> None:
+def exportar_parquets(con: duckdb.DuckDBPyConnection, memoria: str = '6GB') -> None:
     """Exporta todas as tabelas do DuckDB para parquets individuais"""
+    con.execute(f"SET memory_limit='{memoria}'")
     for nome in TABELAS:
         caminho = os.path.join(DIRETORIO_EXTRACAO, f'{nome}.parquet')
         con.execute(f"COPY {nome} TO '{caminho}' (FORMAT PARQUET, COMPRESSION SNAPPY)")
+    con.execute("RESET memory_limit")
 
 
 def main():
@@ -191,14 +181,9 @@ def main():
                 continue
 
             arq_itens, arq_eventos, arq_nf = identificar_arquivos_zip(arquivos)
-            df_itens, df_eventos, df_nf = ler_csvs(tmp, arq_itens, arq_eventos, arq_nf)
-
-        periodo = formatar_periodo(periodo_raw)
-        for df in (df_itens, df_eventos, df_nf):
-            df['periodo'] = periodo
-
-        for nome, df in zip(TABELAS, [df_itens, df_eventos, df_nf]):
-            inserir_no_duckdb(con, nome, df)
+            periodo = formatar_periodo(periodo_raw)
+            for nome, arq in zip(TABELAS, [arq_itens, arq_eventos, arq_nf]):
+                inserir_csv(con, nome, os.path.join(tmp, arq), periodo)
 
     imprimir_mensagem("Exportando parquets...")
     exportar_parquets(con)

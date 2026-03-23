@@ -3,120 +3,270 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compras Públicas — Cadeias NIB</title>
+<title>Compras Públicas — Cadeias NIB · MGI</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Source+Sans+3:wght@300;400;600;700&display=swap');
-
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface-hover: #22263a;
-    --border: #2a2e3f;
-    --text: #e2e4ea;
-    --text-muted: #8b8fa3;
-    --accent: #4f8ff7;
-    --accent-dim: #2a4a8a;
-    --green: #34d399;
-    --yellow: #fbbf24;
-    --font-body: 'Source Sans 3', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --blue:      #1351B4;
+    --blue-dark: #071D41;
+    --blue-mid:  #0C326F;
+    --green:     #168821;
+    --yellow:    #FFCD07;
+    --yellow-dk: #A07800;
+    --gray-bg:   #F0F2F5;
+    --gray-10:   #E6E8EC;
+    --gray-20:   #C8CDD6;
+    --gray-50:   #8A9099;
+    --gray-70:   #4A5057;
+    --gray-90:   #1A1D21;
+    --white:     #FFFFFF;
+    --font: 'Raleway', sans-serif;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    line-height: 1.6;
-    padding: 2rem;
+    font-family: var(--font);
+    background: var(--gray-bg);
+    color: var(--gray-90);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
   }
 
-  h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .panel-header {
+    background: var(--blue-dark);
+    padding: 0 2.5rem;
+    display: flex;
+    align-items: stretch;
+    min-height: 72px;
+  }
 
-  .subtitle {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    margin-bottom: 2rem;
+  .tricolor {
+    width: 8px;
+    flex-shrink: 0;
+    background: linear-gradient(to bottom,
+      var(--yellow) 0%, var(--yellow) 33.3%,
+      var(--green)  33.3%, var(--green)  66.6%,
+      var(--blue)   66.6%, var(--blue)   100%
+    );
+    margin: 14px 20px 14px 0;
+    border-radius: 2px;
+  }
+
+  .panel-header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 14px 0;
+  }
+
+  .panel-orgao {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .panel-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  .panel-subtitle {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: rgba(255,255,255,0.45);
+    margin-top: 3px;
+  }
+
+  .panel-header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .accent-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--yellow) 0%, var(--green) 40%, var(--blue) 100%);
+  }
+
+  .layout {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 1.8rem 2rem 3rem;
   }
 
   #loading {
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    padding: 2rem 0;
-  }
-
-  .controls {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
     align-items: center;
+    gap: 10px;
+    color: var(--blue);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 3rem 0;
   }
 
-  select, input[type="text"] {
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border);
-    padding: 0.5rem 0.8rem;
-    border-radius: 6px;
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    min-width: 220px;
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--gray-10);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.4rem;
+    flex-wrap: wrap;
   }
 
-  select:focus, input:focus { outline: none; border-color: var(--accent); }
+  .toolbar label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--gray-50);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+  }
+
+  select {
+    background: var(--white);
+    color: var(--gray-90);
+    border: 1px solid var(--gray-20);
+    padding: 0.45rem 0.9rem;
+    border-radius: 4px;
+    font-family: var(--font);
+    font-size: 0.85rem;
+    font-weight: 500;
+    min-width: 300px;
+    cursor: pointer;
+  }
+
+  select:focus {
+    outline: 2px solid var(--blue);
+    outline-offset: 1px;
+    border-color: var(--blue);
+  }
 
   .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.4rem;
   }
 
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.2rem;
+    background: var(--white);
+    border-radius: 6px;
+    padding: 1.1rem 1.3rem 1.2rem;
+    border-left: 4px solid var(--blue);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   }
 
+  .card.green  { border-left-color: var(--green); }
+  .card.yellow { border-left-color: var(--yellow); }
+  .card.slate  { border-left-color: var(--blue-mid); }
+
   .card-label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
+    font-size: 0.67rem;
+    font-weight: 700;
+    color: var(--gray-50);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.3rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
   }
 
   .card-value {
     font-size: 1.5rem;
-    font-weight: 700;
-    font-family: var(--font-mono);
+    font-weight: 800;
+    color: var(--blue-dark);
+    line-height: 1;
+    letter-spacing: -0.02em;
   }
 
-  .card-value.accent { color: var(--accent); }
-  .card-value.green  { color: var(--green); }
-  .card-value.yellow { color: var(--yellow); }
+  .card.green  .card-value { color: var(--green); }
+  .card.yellow .card-value { color: var(--yellow-dk); }
+  .card.slate  .card-value { color: var(--blue-mid); }
+
+  .panel {
+    background: var(--white);
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid var(--gray-10);
+  }
+
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--gray-10);
+    background: var(--white);
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 0.7rem 1.3rem;
+    cursor: pointer;
+    color: var(--gray-50);
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.12s;
+    white-space: nowrap;
+  }
+
+  .tab:hover { color: var(--blue); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  .hidden { display: none; }
+
+  .table-wrap {
+    max-height: 60vh;
+    overflow: auto;
+  }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     table-layout: auto;
   }
 
   thead th {
-    background: var(--surface);
-    color: var(--text-muted);
-    font-weight: 600;
+    background: #EEF2FA;
+    color: var(--blue-mid);
+    font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 0.05em;
-    padding: 0.7rem 0.8rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.07em;
+    padding: 0.65rem 0.9rem;
     text-align: left;
-    border-bottom: 2px solid var(--border);
+    border-bottom: 2px solid #C5D4F0;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
@@ -125,127 +275,155 @@
     z-index: 1;
   }
 
-  thead th:hover { color: var(--accent); }
+  thead th:hover { background: #DDE6F7; color: var(--blue); }
+  thead th.sorted { color: var(--blue); background: #DDE6F7; }
 
   tbody td {
-    padding: 0.55rem 0.8rem;
-    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0.9rem;
+    border-bottom: 1px solid var(--gray-10);
     vertical-align: top;
+    color: var(--gray-90);
   }
 
-  tbody tr:hover { background: var(--surface-hover); }
+  tbody tr:hover { background: #F5F8FF; }
+  tbody tr:last-child td { border-bottom: none; }
   tbody tr.clickable { cursor: pointer; }
 
-  .num { text-align: right; font-family: var(--font-mono); font-size: 0.8rem; }
-
-  .table-wrap {
-    max-height: 65vh;
-    overflow: auto;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-  }
-
-  .tabs {
-    display: flex;
-    gap: 0;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--border);
-  }
-
-  .tab {
-    padding: 0.6rem 1.4rem;
-    cursor: pointer;
-    color: var(--text-muted);
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
     font-weight: 600;
-    font-size: 0.85rem;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
-    transition: all 0.15s;
   }
 
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .chart-wrap {
+    height: 680px;
+    position: relative;
+    padding: 1.5rem;
+  }
 
-  .hidden { display: none; }
+  .chart-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.8rem 1.5rem 0;
+  }
+
+  .btn-toggle-all {
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: none;
+    border: 1px solid var(--blue);
+    border-radius: 4px;
+    padding: 0.35rem 0.9rem;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+  }
+
+  .btn-toggle-all:hover {
+    background: var(--blue);
+    color: var(--white);
+  }
 
   .overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 100;
+    background: rgba(7,29,65,0.5);
+    z-index: 200;
     align-items: center;
     justify-content: center;
   }
-
   .overlay.visible { display: flex; }
 
   .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    background: var(--white);
+    border-radius: 6px;
     padding: 1.8rem;
-    max-width: 640px;
+    max-width: 560px;
     width: 90%;
     position: relative;
+    border-top: 5px solid var(--blue);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
   }
-
-  .modal-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; }
-  .modal-sub   { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.2rem; }
 
   .modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1.2rem;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-size: 1.2rem;
+    position: absolute; top: 1rem; right: 1.2rem;
+    cursor: pointer; color: var(--gray-50); font-size: 1rem;
+    background: none; border: none; font-family: var(--font);
   }
-
-  .modal-close:hover { color: var(--text); }
+  .modal-close:hover { color: var(--blue-dark); }
+  .modal-title { font-size: 0.95rem; font-weight: 700; color: var(--blue-dark); margin-bottom: 4px; }
+  .modal-sub   { font-size: 0.78rem; color: var(--gray-50); }
 </style>
 </head>
 <body>
 
-<h1>Compras Públicas — Cadeias NIB</h1>
-<p class="subtitle">Histórico 2024–2025 · Notas Fiscais Eletrônicas do Executivo Federal · Fonte: Portal da Transparência (CGU)</p>
-
-<div id="loading">Carregando DuckDB-WASM e dados…</div>
-
-<div id="app" class="hidden">
-  <div class="controls">
-    <select id="selCadeia"><option value="">Todas as cadeias</option></select>
+<div class="panel-header">
+  <div class="tricolor"></div>
+  <div class="panel-header-text">
+    <div class="panel-orgao">MGI · Ministério da Gestão e da Inovação em Serviços Públicos</div>
+    <div class="panel-title">Compras Públicas — Cadeias NIB</div>
+    <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2022–2025</div>
   </div>
-
-  <div class="cards" id="cards"></div>
-
-  <div class="tabs">
-    <div class="tab active" data-tab="cnae">Por CNAE</div>
-    <div class="tab" data-tab="resumo">Resumo por Cadeia</div>
-    <div class="tab" data-tab="detalhado">Detalhado</div>
+  <div class="panel-header-right">
+    <span class="badge">Portal da Transparência · CGU</span>
+    <span class="badge">Nova Indústria Brasil</span>
   </div>
+</div>
+<div class="accent-bar"></div>
 
-  <div id="tab-cnae">
-    <div class="table-wrap"><table id="tblCnae"><thead></thead><tbody></tbody></table></div>
-  </div>
+<div class="layout">
 
-  <div id="tab-resumo" class="hidden">
-    <div class="table-wrap"><table id="tblResumo"><thead></thead><tbody></tbody></table></div>
-  </div>
+  <div id="app">
 
-  <div id="tab-detalhado" class="hidden">
-    <div class="table-wrap"><table id="tblDetalhe"><thead></thead><tbody></tbody></table></div>
+    <div class="toolbar">
+      <label for="selCadeia">Cadeia:</label>
+      <select id="selCadeia"><option value="">Todas as cadeias</option></select>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="panel">
+      <div class="tabs">
+        <div class="tab" data-tab="resumo">Por Cadeia</div>
+        <div class="tab active" data-tab="cnae">Por Cadeia e CNAE</div>
+        <div class="tab" data-tab="detalhado">Por Cadeia e Item</div>
+        <div class="tab" data-tab="evolucao">Evolução Anual</div>
+      </div>
+
+      <div id="tab-cnae">
+        <div class="table-wrap"><table id="tblCnae"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div id="tab-resumo" class="hidden">
+        <div class="table-wrap"><table id="tblResumo"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div id="tab-detalhado" class="hidden">
+        <div class="table-wrap"><table id="tblDetalhe"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div id="tab-evolucao" class="hidden">
+        <div class="chart-toolbar">
+          <button class="btn-toggle-all" id="btnToggleAll">Desmarcar tudo</button>
+        </div>
+        <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <div class="overlay" id="overlay">
   <div class="modal">
-    <div class="modal-close" id="modalClose">✕</div>
+    <button class="modal-close" id="modalClose">✕</button>
     <div class="modal-title" id="modalTitle"></div>
     <div class="modal-sub"   id="modalSub"></div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
 
@@ -280,31 +458,62 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
   function buildTable(tableEl, rows, cols, onRowClick) {
     const thead = tableEl.querySelector('thead');
     const tbody = tableEl.querySelector('tbody');
-    thead.innerHTML = '<tr>' + cols.map(c => `<th>${c.label}</th>`).join('') + '</tr>';
-    tbody.innerHTML = rows.map((r, i) =>
-      `<tr${onRowClick ? ' class="clickable"' : ''} data-idx="${i}">` +
-      cols.map(c => {
-        const v = r[c.key];
-        const cls = c.numeric ? ' class="num"' : '';
-        const display = c.fmt ? c.fmt(v) : (v ?? '—');
-        return `<td${cls}>${display}</td>`;
-      }).join('') + '</tr>'
-    ).join('');
-    if (onRowClick) {
-      tbody.querySelectorAll('tr').forEach(tr => {
-        tr.addEventListener('click', () => onRowClick(rows[+tr.dataset.idx]));
+    let sortIdx = null, sortAsc = true;
+
+    function renderBody(data) {
+      tbody.innerHTML = data.map((r, i) =>
+        `<tr${onRowClick ? ' class="clickable"' : ''} data-idx="${i}">` +
+        cols.map(c => {
+          const v = r[c.key];
+          const cls = c.numeric ? ' class="num"' : '';
+          const display = c.fmt ? c.fmt(v) : (v ?? '—');
+          return `<td${cls}>${display}</td>`;
+        }).join('') + '</tr>'
+      ).join('');
+      if (onRowClick) {
+        tbody.querySelectorAll('tr').forEach(tr =>
+          tr.addEventListener('click', () => onRowClick(data[+tr.dataset.idx]))
+        );
+      }
+    }
+
+    function renderHead() {
+      thead.innerHTML = '<tr>' + cols.map((c, i) => {
+        const active = i === sortIdx;
+        const arrow  = active ? (sortAsc ? ' ▲' : ' ▼') : '';
+        return `<th data-colidx="${i}"${active ? ' class="sorted"' : ''}>${c.label}${arrow}</th>`;
+      }).join('') + '</tr>';
+      thead.querySelectorAll('th').forEach(th => {
+        th.addEventListener('click', () => {
+          const i = +th.dataset.colidx;
+          sortAsc = sortIdx === i ? !sortAsc : true;
+          sortIdx = i;
+          const key = cols[sortIdx].key;
+          const sorted = [...rows].sort((a, b) => {
+            const va = a[key], vb = b[key];
+            if (va == null && vb == null) return 0;
+            if (va == null) return sortAsc ? 1 : -1;
+            if (vb == null) return sortAsc ? -1 : 1;
+            if (typeof va === 'number' && typeof vb === 'number')
+              return sortAsc ? va - vb : vb - va;
+            return sortAsc
+              ? String(va).localeCompare(String(vb), 'pt-BR')
+              : String(vb).localeCompare(String(va), 'pt-BR');
+          });
+          renderHead();
+          renderBody(sorted);
+        });
       });
     }
+
+    renderHead();
+    renderBody(rows);
   }
 
-  const overlay    = document.getElementById('overlay');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalSub   = document.getElementById('modalSub');
-
+  const overlay = document.getElementById('overlay');
   document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('visible'));
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('visible'); });
 
-  // Select cadeias
   const cadeias = (await conn.query(
     "SELECT DISTINCT codigo_cadeia || ' — ' || cadeia AS label, codigo_cadeia AS value FROM 'resumo_cadeia.parquet' ORDER BY codigo_cadeia"
   )).toArray();
@@ -321,15 +530,12 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
     const wBase  = cadeia ? `WHERE codigo_cadeia = '${cadeia}'` : '';
     const wNib   = cadeia ? `WHERE "Código da Cadeia" = '${cadeia}'` : '';
 
-    // Cards — sem filtro usa totais_globais (sem dupla contagem entre cadeias)
-    //         com filtro usa resumo_cadeia (correto pois SELECT DISTINCT deduplica dentro da cadeia)
     let total, fornecedores, itens, ncadeias;
     if (!cadeia) {
       const g = (await conn.query(`
-        SELECT
-          valor_total_global::DOUBLE  AS total,
-          fornecedores_global::DOUBLE AS fornecedores,
-          itens_global::DOUBLE        AS itens
+        SELECT valor_total_global::DOUBLE AS total,
+               fornecedores_global::DOUBLE AS fornecedores,
+               itens_global::DOUBLE AS itens
         FROM 'totais_globais.parquet'
       `)).toArray()[0];
       const nc = (await conn.query(
@@ -338,79 +544,194 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
       total = g.total; fornecedores = g.fornecedores; itens = g.itens; ncadeias = nc.n;
     } else {
       const s = (await conn.query(`
-        SELECT
-          COALESCE(SUM(valor_total_adquirido), 0)::DOUBLE  AS total,
-          COALESCE(SUM(fornecedores_distintos), 0)::DOUBLE AS fornecedores,
-          COALESCE(SUM(quantidade_itens), 0)::DOUBLE       AS itens,
-          COUNT(*)::DOUBLE                                 AS ncadeias
+        SELECT COALESCE(SUM(valor_total_adquirido),0)::DOUBLE AS total,
+               COALESCE(SUM(fornecedores_distintos),0)::DOUBLE AS fornecedores,
+               COALESCE(SUM(quantidade_itens),0)::DOUBLE AS itens,
+               COUNT(*)::DOUBLE AS ncadeias
         FROM 'resumo_cadeia.parquet' ${wBase}
       `)).toArray()[0];
       total = s.total; fornecedores = s.fornecedores; itens = s.itens; ncadeias = s.ncadeias;
     }
 
     document.getElementById('cards').innerHTML = `
-      <div class="card"><div class="card-label">Valor Total (2024–2025)</div><div class="card-value accent">${fmt(total)}</div></div>
-      <div class="card"><div class="card-label">Fornecedores</div><div class="card-value green">${fmtN(fornecedores)}</div></div>
-      <div class="card"><div class="card-label">Itens de NF-e</div><div class="card-value yellow">${fmtN(itens)}</div></div>
-      <div class="card"><div class="card-label">Cadeias NIB</div><div class="card-value">${fmtN(ncadeias)}</div></div>
+      <div class="card">
+        <div class="card-label">Valor Total (2022–2025)</div>
+        <div class="card-value">${fmt(total)}</div>
+      </div>
+      <div class="card green">
+        <div class="card-label">Fornecedores Distintos</div>
+        <div class="card-value">${fmtN(fornecedores)}</div>
+      </div>
+      <div class="card yellow">
+        <div class="card-label">Itens de NF-e</div>
+        <div class="card-value">${fmtN(itens)}</div>
+      </div>
+      <div class="card slate">
+        <div class="card-label">Cadeias NIB</div>
+        <div class="card-value">${fmtN(ncadeias)}</div>
+      </div>
     `;
 
-    // Por CNAE — aba principal
     const cnaeRows = (await conn.query(
       `SELECT * FROM '${TABELA_NIB}' ${wNib} ORDER BY "Código da Cadeia", "Valor Total" DESC`
     )).toArray();
     buildTable(document.getElementById('tblCnae'), cnaeRows, [
-      { key: 'Número da Missão',       label: 'Missão' },
-      { key: 'Código da Cadeia',       label: 'Código' },
-      { key: 'Cadeia Prioritária',     label: 'Cadeia' },
-      { key: 'CNAE',                   label: 'CNAE' },
-      { key: 'Descrição da CNAE',      label: 'Descrição CNAE' },
-      { key: 'Critério',               label: 'Critério' },
-      { key: 'Missões',                label: 'Missões' },
-      { key: 'ICP',                    label: 'ICP', numeric: true },
-      { key: 'Seção CNAE',             label: 'Seção CNAE' },
-      { key: 'SH Correspondente',      label: 'SH Correspondente' },
-      { key: 'Valor Total',            label: 'Valor Total',   numeric: true, fmt },
-      { key: 'Número de Fornecedores', label: 'Fornecedores',  numeric: true, fmt: fmtN },
-      { key: 'Número de Notas Fiscais',label: 'NFs',           numeric: true, fmt: fmtN },
-      { key: 'Número de Itens',        label: 'Itens',         numeric: true, fmt: fmtN },
+      { key: 'Número da Missão',        label: 'Missão' },
+      { key: 'Código da Cadeia',        label: 'Código' },
+      { key: 'Cadeia Prioritária',      label: 'Cadeia' },
+      { key: 'CNAE',                    label: 'CNAE' },
+      { key: 'Descrição da CNAE',       label: 'Descrição CNAE' },
+      { key: 'Critério',                label: 'Critério' },
+      { key: 'Missões',                 label: 'Missões' },
+      { key: 'Seção CNAE',              label: 'Seção CNAE' },
+      { key: 'SH Correspondente',       label: 'SH Correspondente' },
+      { key: 'Nome da Missão',          label: 'Nome da Missão' },
+      { key: 'ICP',                     label: 'ICP',          numeric: true },
+      { key: 'Valor Total',             label: 'Total',        numeric: true, fmt },
+      { key: 'Número de Fornecedores',  label: 'Fornecedores', numeric: true, fmt: fmtN },
+      { key: 'Número de Notas Fiscais', label: 'NFs',          numeric: true, fmt: fmtN },
+      { key: 'Número de Itens',         label: 'Itens',        numeric: true, fmt: fmtN },
+      { key: 'valor_2022',              label: '2022',         numeric: true, fmt },
+      { key: 'valor_2023',              label: '2023',         numeric: true, fmt },
+      { key: 'valor_2024',              label: '2024',         numeric: true, fmt },
+      { key: 'valor_2025',              label: '2025',         numeric: true, fmt },
     ]);
 
-    // Resumo por cadeia
     const resumoRows = (await conn.query(
       `SELECT * FROM 'resumo_cadeia.parquet' ${wBase} ORDER BY valor_total_adquirido DESC`
     )).toArray();
+    buildChart(resumoRows);
     buildTable(document.getElementById('tblResumo'), resumoRows, [
-      { key: 'missao',                 label: 'Missão' },
-      { key: 'codigo_cadeia',          label: 'Código' },
-      { key: 'cadeia',                 label: 'Cadeia' },
-      { key: 'valor_total_adquirido',  label: 'Valor Total',  numeric: true, fmt },
-      { key: 'fornecedores_distintos', label: 'Fornecedores', numeric: true, fmt: fmtN },
-      { key: 'quantidade_itens',       label: 'Itens',        numeric: true, fmt: fmtN },
+      { key: 'missao',                  label: 'Missão' },
+      { key: 'codigo_cadeia',           label: 'Código' },
+      { key: 'cadeia',                  label: 'Cadeia' },
+      { key: 'valor_total_adquirido',   label: 'Total',        numeric: true, fmt },
+      { key: 'fornecedores_distintos',  label: 'Fornecedores', numeric: true, fmt: fmtN },
+      { key: 'quantidade_itens',        label: 'Itens',        numeric: true, fmt: fmtN },
+      { key: 'valor_2022',              label: '2022',         numeric: true, fmt },
+      { key: 'valor_2023',              label: '2023',         numeric: true, fmt },
+      { key: 'valor_2024',              label: '2024',         numeric: true, fmt },
+      { key: 'valor_2025',              label: '2025',         numeric: true, fmt },
     ]);
 
-    // Detalhado
     const detalheRows = (await conn.query(
       `SELECT * FROM 'detalhado_cadeia.parquet' ${wBase} ORDER BY valor_total DESC LIMIT 500`
     )).toArray();
     buildTable(document.getElementById('tblDetalhe'), detalheRows, [
-      { key: 'codigo_cadeia',                label: 'Código' },
-      { key: 'cadeia',                       label: 'Cadeia' },
-      { key: 'cnae',                         label: 'CNAE' },
-      { key: 'criterio',                     label: 'Critério' },
-      { key: 'icp',                          label: 'ICP',        numeric: true },
-      { key: 'codigo_ncm_sh',                label: 'NCM/SH',     numeric: true },
-      { key: 'descricao_do_produto_servico',  label: 'Descrição' },
-      { key: 'valor_total',                  label: 'Valor Total',  numeric: true, fmt },
-      { key: 'fornecedores_distintos',        label: 'Fornecedores', numeric: true, fmt: fmtN },
-      { key: 'quantidade_total',             label: 'Quantidade',   numeric: true, fmt: fmtN },
+      { key: 'codigo_cadeia',               label: 'Código' },
+      { key: 'cadeia',                      label: 'Cadeia' },
+      { key: 'cnae',                        label: 'CNAE' },
+      { key: 'criterio',                    label: 'Critério' },
+      { key: 'descricao_do_produto_servico', label: 'Descrição' },
+      { key: 'codigo_ncm_sh',               label: 'NCM/SH',       numeric: true },
+      { key: 'ncm_sh_tipo_de_produto',      label: 'Tipo NCM/SH' },
+      { key: 'icp',                         label: 'ICP',          numeric: true },
+      { key: 'valor_total',                 label: 'Total',        numeric: true, fmt },
+      { key: 'quantidade_total',            label: 'Quantidade',   numeric: true, fmt: fmtN },
+      { key: 'fornecedores_distintos',      label: 'Fornecedores', numeric: true, fmt: fmtN },
+      { key: 'registros',                   label: 'Registros',    numeric: true, fmt: fmtN },
+      { key: 'valor_2022',                  label: '2022',         numeric: true, fmt },
+      { key: 'valor_2023',                  label: '2023',         numeric: true, fmt },
+      { key: 'valor_2024',                  label: '2024',         numeric: true, fmt },
+      { key: 'valor_2025',                  label: '2025',         numeric: true, fmt },
     ]);
   }
 
   sel.addEventListener('change', refresh);
 
-  // Tabs
-  const tabIds = { cnae: 'tab-cnae', resumo: 'tab-resumo', detalhado: 'tab-detalhado' };
+  let chartInstance = null;
+  const ANOS = ['2022', '2023', '2024', '2025'];
+  const PALETTE = [
+    '#1351B4','#168821','#A07800','#0C326F','#2E7D32','#8B6914',
+    '#2670E8','#388E3C','#C8961A','#1565C0','#43A047','#9E7B1E',
+    '#0D47A1','#2E7D32','#6D4C00','#1A237E','#1B5E20','#4E342E',
+    '#283593','#33691E'
+  ];
+
+  function buildChart(rows) {
+    const ctx = document.getElementById('chartEvolucao').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+    allVisible = true;
+    btnToggleAll.textContent = 'Desmarcar tudo';
+
+    const top = [...rows]
+      .sort((a, b) => (Number(b.valor_total_adquirido) || 0) - (Number(a.valor_total_adquirido) || 0))
+      .slice(0, 20);
+
+    const datasets = top.map((r, i) => ({
+      label: r.cadeia,
+      data: ANOS.map(a => (Number(r[`valor_${a}`]) || 0) / 1e9),
+      borderColor: PALETTE[i % PALETTE.length],
+      backgroundColor: PALETTE[i % PALETTE.length] + '18',
+      tension: 0.3,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      borderWidth: 2,
+    }));
+
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: { labels: ANOS, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#4A5057',
+              font: { size: 11, family: "'Raleway',sans-serif", weight: '600' },
+              boxWidth: 12,
+              padding: 16,
+            },
+          },
+          tooltip: {
+            backgroundColor: '#071D41',
+            titleColor: '#FFCD07',
+            bodyColor: '#FFFFFF',
+            padding: 10,
+            callbacks: {
+              label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toFixed(2)} B`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: '#8A9099', font: { family: "'Raleway',sans-serif", weight: '600' } },
+            grid: { color: '#E6E8EC' },
+          },
+          y: {
+            ticks: {
+              color: '#8A9099',
+              font: { family: "'Raleway',sans-serif" },
+              callback: v => `R$ ${v.toFixed(1)} B`,
+            },
+            grid: { color: '#E6E8EC' },
+            title: {
+              display: true,
+              text: 'Valor (R$ bilhões)',
+              color: '#8A9099',
+              font: { family: "'Raleway',sans-serif", size: 11 },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  const btnToggleAll = document.getElementById('btnToggleAll');
+  let allVisible = true;
+  btnToggleAll.addEventListener('click', () => {
+    if (!chartInstance) return;
+    allVisible = !allVisible;
+    chartInstance.data.datasets.forEach((_, i) => {
+      chartInstance.setDatasetVisibility(i, allVisible);
+    });
+    chartInstance.update();
+    btnToggleAll.textContent = allVisible ? 'Desmarcar tudo' : 'Marcar tudo';
+  });
+
+  const tabIds = { cnae: 'tab-cnae', resumo: 'tab-resumo', detalhado: 'tab-detalhado', evolucao: 'tab-evolucao' };
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -421,10 +742,10 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
     });
   });
 
-  document.getElementById('loading').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
   await refresh();
-})();
+})().catch(err => {
+  document.getElementById('loading').innerHTML = `<span style="color:#C53030">Erro ao carregar: ${err.message}</span>`;
+});
 </script>
 </body>
 </html>

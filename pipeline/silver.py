@@ -148,14 +148,16 @@ def inserir_no_silver(con: duckdb.DuckDBPyConnection, nome: str, rel: duckdb.Duc
         con.execute(f"CREATE TABLE {nome} AS SELECT * FROM rel")
 
 
-def exportar_parquets(con: duckdb.DuckDBPyConnection, tabelas: list) -> None:
+def exportar_parquets(con: duckdb.DuckDBPyConnection, tabelas: list, memoria: str = '6GB') -> None:
     """Exporta todas as tabelas silver para parquets individuais"""
+    con.execute(f"SET memory_limit='{memoria}'")
     for nome, _ in tabelas:
         caminho = Path(DIRETORIO_SILVER, f'{nome}.parquet').as_posix()
         try:
             con.execute(f"COPY {nome} TO '{caminho}' (FORMAT PARQUET, COMPRESSION SNAPPY)")
         except duckdb.CatalogException:
             pass
+    con.execute("RESET memory_limit")
 
 
 def main():

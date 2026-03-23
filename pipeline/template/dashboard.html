@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compras Públicas — Cadeias NIB · MGI</title>
+<title>Compras Públicas — Produtos da Química Renovável · MGI</title>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -317,12 +317,11 @@
   <div class="tricolor"></div>
   <div class="panel-header-text">
     <div class="panel-orgao">MGI · Ministério da Gestão e da Inovação em Serviços Públicos</div>
-    <div class="panel-title">Compras Públicas — Cadeias NIB</div>
+    <div class="panel-title">Compras Públicas — Produtos da Química Renovável</div>
     <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2022–2025</div>
   </div>
   <div class="panel-header-right">
     <span class="badge">Portal da Transparência · CGU</span>
-    <span class="badge">Nova Indústria Brasil</span>
   </div>
 </div>
 <div class="accent-bar"></div>
@@ -643,7 +642,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
             bodyColor: '#FFFFFF',
             padding: 10,
             callbacks: {
-              label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toFixed(2)} B`,
+              label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toFixed(1)} M`,
             },
           },
         },
@@ -656,12 +655,12 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
             ticks: {
               color: '#8A9099',
               font: { family: "'Raleway',sans-serif" },
-              callback: v => `R$ ${v.toFixed(1)} B`,
+              callback: v => `R$ ${v.toFixed(1)} M`,
             },
             grid: { color: '#E6E8EC' },
             title: {
               display: true,
-              text: 'Valor (R$ bilhões)',
+              text: 'Valor (R$ milhões)',
               color: '#8A9099',
               font: { family: "'Raleway',sans-serif", size: 11 },
             },
@@ -687,7 +686,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
     const datasets = pivotRows.map((r, i) => ({
       label: r.tipo,
-      data: [r.v2022, r.v2023, r.v2024, r.v2025].map(v => (v || 0) / 1e9),
+      data: [r.v2022, r.v2023, r.v2024, r.v2025].map(v => (v || 0) / 1e6),
       borderColor: PALETTE[i % PALETTE.length],
       backgroundColor: PALETTE[i % PALETTE.length] + '18',
       tension: 0.3,
@@ -715,7 +714,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
     const datasets = pivotRows.map((r, i) => ({
       label: r.label,
-      data: [r.v2022, r.v2023, r.v2024, r.v2025].map(v => (v || 0) / 1e9),
+      data: [r.v2022, r.v2023, r.v2024, r.v2025].map(v => (v || 0) / 1e6),
       borderColor: PALETTE[i % PALETTE.length],
       backgroundColor: PALETTE[i % PALETTE.length] + '18',
       tension: 0.3,

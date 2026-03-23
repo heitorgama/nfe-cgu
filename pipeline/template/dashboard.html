@@ -34,7 +34,6 @@
     min-height: 100vh;
   }
 
-  /* ── Topo do painel ─────────────────────────────────────────── */
   .panel-header {
     background: var(--blue-dark);
     padding: 0 2.5rem;
@@ -110,14 +109,12 @@
     background: linear-gradient(90deg, var(--yellow) 0%, var(--green) 40%, var(--blue) 100%);
   }
 
-  /* ── Layout ──────────────────────────────────────────────────── */
   .layout {
     max-width: 1440px;
     margin: 0 auto;
     padding: 1.8rem 2rem 3rem;
   }
 
-  /* ── Loading ─────────────────────────────────────────────────── */
   #loading {
     display: flex;
     align-items: center;
@@ -138,7 +135,6 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Filtro ──────────────────────────────────────────────────── */
   .toolbar {
     display: flex;
     align-items: center;
@@ -175,7 +171,6 @@
     border-color: var(--blue);
   }
 
-  /* ── Cards ───────────────────────────────────────────────────── */
   .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -216,7 +211,6 @@
   .card.yellow .card-value { color: var(--yellow-dk); }
   .card.slate  .card-value { color: var(--blue-mid); }
 
-  /* ── Painel com abas ─────────────────────────────────────────── */
   .panel {
     background: var(--white);
     border-radius: 6px;
@@ -251,7 +245,6 @@
 
   .hidden { display: none; }
 
-  /* ── Tabelas ─────────────────────────────────────────────────── */
   .table-wrap {
     max-height: 60vh;
     overflow: auto;
@@ -303,14 +296,38 @@
     font-weight: 600;
   }
 
-  /* ── Gráfico ─────────────────────────────────────────────────── */
   .chart-wrap {
     height: 680px;
     position: relative;
     padding: 1.5rem;
   }
 
-  /* ── Modal ───────────────────────────────────────────────────── */
+  .chart-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.8rem 1.5rem 0;
+  }
+
+  .btn-toggle-all {
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: none;
+    border: 1px solid var(--blue);
+    border-radius: 4px;
+    padding: 0.35rem 0.9rem;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+  }
+
+  .btn-toggle-all:hover {
+    background: var(--blue);
+    color: var(--white);
+  }
+
   .overlay {
     display: none;
     position: fixed;
@@ -388,6 +405,9 @@
         <div class="table-wrap"><table id="tblDetalhe"><thead></thead><tbody></tbody></table></div>
       </div>
       <div id="tab-evolucao" class="hidden">
+        <div class="chart-toolbar">
+          <button class="btn-toggle-all" id="btnToggleAll">Desmarcar tudo</button>
+        </div>
         <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
       </div>
     </div>
@@ -524,7 +544,7 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
       total = g.total; fornecedores = g.fornecedores; itens = g.itens; ncadeias = nc.n;
     } else {
       const s = (await conn.query(`
-        SELECT COALESCE(SUM(valor_total),0)::DOUBLE AS total,
+        SELECT COALESCE(SUM(valor_total_adquirido),0)::DOUBLE AS total,
                COALESCE(SUM(fornecedores_distintos),0)::DOUBLE AS fornecedores,
                COALESCE(SUM(quantidade_itens),0)::DOUBLE AS itens,
                COUNT(*)::DOUBLE AS ncadeias
@@ -631,6 +651,8 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
   function buildChart(rows) {
     const ctx = document.getElementById('chartEvolucao').getContext('2d');
     if (chartInstance) chartInstance.destroy();
+    allVisible = true;
+    btnToggleAll.textContent = 'Desmarcar tudo';
 
     const top = [...rows]
       .sort((a, b) => (Number(b.valor_total_adquirido) || 0) - (Number(a.valor_total_adquirido) || 0))
@@ -696,6 +718,18 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
       },
     });
   }
+
+  const btnToggleAll = document.getElementById('btnToggleAll');
+  let allVisible = true;
+  btnToggleAll.addEventListener('click', () => {
+    if (!chartInstance) return;
+    allVisible = !allVisible;
+    chartInstance.data.datasets.forEach((_, i) => {
+      chartInstance.setDatasetVisibility(i, allVisible);
+    });
+    chartInstance.update();
+    btnToggleAll.textContent = allVisible ? 'Desmarcar tudo' : 'Marcar tudo';
+  });
 
   const tabIds = { cnae: 'tab-cnae', resumo: 'tab-resumo', detalhado: 'tab-detalhado', evolucao: 'tab-evolucao' };
   document.querySelectorAll('.tab').forEach(tab => {

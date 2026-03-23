@@ -3,122 +3,250 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compras Públicas — Grupo A &amp; B</title>
+<title>Compras Públicas — Cadeias NIB · MGI</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Source+Sans+3:wght@300;400;600;700&display=swap');
-
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface-hover: #22263a;
-    --border: #2a2e3f;
-    --text: #e2e4ea;
-    --text-muted: #8b8fa3;
-    --accent: #4f8ff7;
-    --accent-dim: #2a4a8a;
-    --green: #34d399;
-    --yellow: #fbbf24;
-    --purple: #a78bfa;
-    --font-body: 'Source Sans 3', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --blue:      #1351B4;
+    --blue-dark: #071D41;
+    --blue-mid:  #0C326F;
+    --green:     #168821;
+    --yellow:    #FFCD07;
+    --yellow-dk: #A07800;
+    --gray-bg:   #F0F2F5;
+    --gray-10:   #E6E8EC;
+    --gray-20:   #C8CDD6;
+    --gray-50:   #8A9099;
+    --gray-70:   #4A5057;
+    --gray-90:   #1A1D21;
+    --white:     #FFFFFF;
+    --font: 'Raleway', sans-serif;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    line-height: 1.6;
-    padding: 2rem;
+    font-family: var(--font);
+    background: var(--gray-bg);
+    color: var(--gray-90);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
   }
 
-  h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
-
-  .subtitle {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    margin-bottom: 2rem;
-  }
-
-  #loading {
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    padding: 2rem 0;
-  }
-
-  .controls {
+  .panel-header {
+    background: var(--blue-dark);
+    padding: 0 2.5rem;
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
+    align-items: stretch;
+    min-height: 72px;
+  }
+
+  .tricolor {
+    width: 8px;
+    flex-shrink: 0;
+    background: linear-gradient(to bottom,
+      var(--yellow) 0%, var(--yellow) 33.3%,
+      var(--green)  33.3%, var(--green)  66.6%,
+      var(--blue)   66.6%, var(--blue)   100%
+    );
+    margin: 14px 20px 14px 0;
+    border-radius: 2px;
+  }
+
+  .panel-header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 14px 0;
+  }
+
+  .panel-orgao {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .panel-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  .panel-subtitle {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: rgba(255,255,255,0.45);
+    margin-top: 3px;
+  }
+
+  .panel-header-right {
+    margin-left: auto;
+    display: flex;
     align-items: center;
+    gap: 0.5rem;
   }
 
-  select, input[type="text"] {
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border);
-    padding: 0.5rem 0.8rem;
-    border-radius: 6px;
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    min-width: 220px;
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.1);
   }
 
-  select:focus, input:focus { outline: none; border-color: var(--accent); }
+  .accent-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--yellow) 0%, var(--green) 40%, var(--blue) 100%);
+  }
+
+  .layout {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 1.8rem 2rem 3rem;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.4rem;
+    flex-wrap: wrap;
+  }
+
+  .toolbar label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--gray-50);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+  }
+
+  select {
+    background: var(--white);
+    color: var(--gray-90);
+    border: 1px solid var(--gray-20);
+    padding: 0.45rem 0.9rem;
+    border-radius: 4px;
+    font-family: var(--font);
+    font-size: 0.85rem;
+    font-weight: 500;
+    min-width: 260px;
+    cursor: pointer;
+  }
+
+  select:focus {
+    outline: 2px solid var(--blue);
+    outline-offset: 1px;
+    border-color: var(--blue);
+  }
 
   .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.4rem;
   }
 
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.2rem;
+    background: var(--white);
+    border-radius: 6px;
+    padding: 1.1rem 1.3rem 1.2rem;
+    border-left: 4px solid var(--blue);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   }
 
+  .card.green  { border-left-color: var(--green); }
+  .card.yellow { border-left-color: var(--yellow); }
+  .card.slate  { border-left-color: var(--blue-mid); }
+
   .card-label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
+    font-size: 0.67rem;
+    font-weight: 700;
+    color: var(--gray-50);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.3rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
   }
 
   .card-value {
     font-size: 1.5rem;
-    font-weight: 700;
-    font-family: var(--font-mono);
+    font-weight: 800;
+    color: var(--blue-dark);
+    line-height: 1;
+    letter-spacing: -0.02em;
   }
 
-  .card-value.accent { color: var(--accent); }
-  .card-value.green  { color: var(--green); }
-  .card-value.yellow { color: var(--yellow); }
-  .card-value.purple { color: var(--purple); }
+  .card.green  .card-value { color: var(--green); }
+  .card.yellow .card-value { color: var(--yellow-dk); }
+  .card.slate  .card-value { color: var(--blue-mid); }
+
+  .panel {
+    background: var(--white);
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid var(--gray-10);
+  }
+
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--gray-10);
+    background: var(--white);
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 0.7rem 1.3rem;
+    cursor: pointer;
+    color: var(--gray-50);
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.12s;
+    white-space: nowrap;
+  }
+
+  .tab:hover { color: var(--blue); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  .hidden { display: none; }
+
+  .table-wrap {
+    max-height: 60vh;
+    overflow: auto;
+  }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     table-layout: auto;
   }
 
   thead th {
-    background: var(--surface);
-    color: var(--text-muted);
-    font-weight: 600;
+    background: #EEF2FA;
+    color: var(--blue-mid);
+    font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 0.05em;
-    padding: 0.7rem 0.8rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.07em;
+    padding: 0.65rem 0.9rem;
     text-align: left;
-    border-bottom: 2px solid var(--border);
+    border-bottom: 2px solid #C5D4F0;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
@@ -127,92 +255,131 @@
     z-index: 1;
   }
 
-  thead th:hover { color: var(--accent); }
+  thead th:hover { background: #DDE6F7; color: var(--blue); }
+  thead th.sorted { color: var(--blue); background: #DDE6F7; }
 
   tbody td {
-    padding: 0.55rem 0.8rem;
-    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0.9rem;
+    border-bottom: 1px solid var(--gray-10);
     vertical-align: top;
+    color: var(--gray-90);
   }
 
-  tbody tr:hover { background: var(--surface-hover); }
+  tbody tr:hover { background: #F5F8FF; }
+  tbody tr:last-child td { border-bottom: none; }
 
-  .num { text-align: right; font-family: var(--font-mono); font-size: 0.8rem; }
-
-  .table-wrap {
-    max-height: 65vh;
-    overflow: auto;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-weight: 600;
   }
 
-  .group-tabs {
+  .chart-wrap {
+    height: 680px;
+    position: relative;
+    padding: 1.5rem;
+  }
+
+  .chart-toolbar {
     display: flex;
-    gap: 0;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--border);
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1.5rem 0;
+    flex-wrap: wrap;
   }
 
-  .group-tab {
-    padding: 0.6rem 1.8rem;
-    cursor: pointer;
-    color: var(--text-muted);
+  .btn-toggle-all {
+    font-family: var(--font);
+    font-size: 0.72rem;
     font-weight: 700;
-    font-size: 0.9rem;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
-    transition: all 0.15s;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: none;
+    border: 1px solid var(--blue);
+    border-radius: 4px;
+    padding: 0.35rem 0.9rem;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+    margin-left: auto;
   }
 
-  .group-tab:hover { color: var(--text); }
-  .group-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  .group-panel { display: none; }
-  .group-panel.active { display: block; }
-
-  .hidden { display: none; }
+  .btn-toggle-all:hover {
+    background: var(--blue);
+    color: var(--white);
+  }
 </style>
 </head>
 <body>
 
-<h1>Compras Públicas — Grupo A &amp; B</h1>
-<p class="subtitle">Histórico 2022–2025 · Notas Fiscais Eletrônicas do Executivo Federal · Fonte: Portal da Transparência (CGU)</p>
-
-<div id="loading">Carregando DuckDB-WASM e dados…</div>
-
-<div id="app" class="hidden">
-
-  <div class="group-tabs">
-    <div class="group-tab active" data-group="a">Grupo A — Por Tipo</div>
-    <div class="group-tab"        data-group="b">Grupo B — Por Palavras-chave</div>
+<div class="panel-header">
+  <div class="tricolor"></div>
+  <div class="panel-header-text">
+    <div class="panel-orgao">MGI · Ministério da Gestão e da Inovação em Serviços Públicos</div>
+    <div class="panel-title">Compras Públicas — Cadeias NIB</div>
+    <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2022–2025</div>
   </div>
+  <div class="panel-header-right">
+    <span class="badge">Portal da Transparência · CGU</span>
+    <span class="badge">Nova Indústria Brasil</span>
+  </div>
+</div>
+<div class="accent-bar"></div>
 
-  <!-- GRUPO A -->
-  <div class="group-panel active" id="panel-a">
-    <div class="controls">
+<div class="layout">
+  <div id="app">
+
+    <div class="toolbar" id="toolbar-a">
+      <label for="selTipo">Tipo (Grupo A):</label>
       <select id="selTipo"><option value="">Todos os tipos</option></select>
-      <select id="selAnoA"><option value="">Todos os anos</option></select>
     </div>
-    <div class="cards" id="cardsA"></div>
-    <div class="table-wrap">
-      <table id="tblA"><thead></thead><tbody></tbody></table>
-    </div>
-  </div>
 
-  <!-- GRUPO B -->
-  <div class="group-panel" id="panel-b">
-    <div class="controls">
-      <select id="selAnoB"><option value="">Todos os anos</option></select>
+    <div class="toolbar hidden" id="toolbar-b">
+      <label for="selGrupoB">Grupo B:</label>
+      <select id="selGrupoB"><option value="">Todos os grupos</option></select>
     </div>
-    <div class="cards" id="cardsB"></div>
-    <div class="table-wrap">
-      <table id="tblB"><thead></thead><tbody></tbody></table>
-    </div>
-  </div>
 
+    <div class="toolbar hidden" id="toolbar-evo">
+      <label for="selGrupo">Grupo:</label>
+      <select id="selGrupo">
+        <option value="a">Grupo A — Por Tipo (NCM)</option>
+        <option value="b">Grupo B — Por Palavras-Chave</option>
+      </select>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="panel">
+      <div class="tabs">
+        <div class="tab active" data-tab="grupoA">Grupo A — Por Tipo</div>
+        <div class="tab" data-tab="grupoB">Grupo B — Por Palavras-Chave</div>
+        <div class="tab" data-tab="evolucao">Evolução Anual</div>
+      </div>
+
+      <div id="tab-grupoA">
+        <div class="table-wrap"><table id="tblGrupoA"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div id="tab-grupoB" class="hidden">
+        <div class="table-wrap"><table id="tblGrupoB"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div id="tab-evolucao" class="hidden">
+        <div class="chart-toolbar">
+          <label for="selGrupo" style="font-size:0.72rem;font-weight:700;color:var(--gray-50);text-transform:uppercase;letter-spacing:0.07em;">Grupo:</label>
+          <select id="selGrupoEvo" style="min-width:200px">
+            <option value="a">Grupo A — Por Tipo (NCM)</option>
+            <option value="b">Grupo B — Por Palavras-Chave</option>
+          </select>
+          <button class="btn-toggle-all" id="btnToggleAll">Desmarcar tudo</button>
+        </div>
+        <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
 
@@ -237,145 +404,351 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   await registerParquet('resumo_grupo_a.parquet');
   await registerParquet('resumo_grupo_b.parquet');
 
-  // ── Formatters ──
-  const fmt  = v => (v == null || v === '') ? '' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
-  const fmtN = v => (v == null || v === '') ? '' : Number(v).toLocaleString('pt-BR');
-  const fmtS = v => v ?? '';
+  const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+  const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
 
-  // ── Generic table builder ──
   function buildTable(tableEl, rows, cols) {
     const thead = tableEl.querySelector('thead');
     const tbody = tableEl.querySelector('tbody');
-    thead.innerHTML = '<tr>' + cols.map(c => `<th>${c.label}</th>`).join('') + '</tr>';
-    tbody.innerHTML = rows.map(r =>
-      '<tr>' + cols.map(c => {
-        const v = r[c.key];
-        const cls = c.numeric ? ' class="num"' : '';
-        const display = c.fmt ? c.fmt(v) : fmtS(v);
-        return `<td${cls}>${display}</td>`;
-      }).join('') + '</tr>'
-    ).join('');
+    let sortIdx = null, sortAsc = true;
+    let currentRows = rows;
+
+    function renderBody(data) {
+      tbody.innerHTML = data.map(r =>
+        '<tr>' + cols.map(c => {
+          const v = r[c.key];
+          const cls = c.numeric ? ' class="num"' : '';
+          const display = c.fmt ? c.fmt(v) : (v ?? '—');
+          return `<td${cls}>${display}</td>`;
+        }).join('') + '</tr>'
+      ).join('');
+    }
+
+    function renderHead() {
+      thead.innerHTML = '<tr>' + cols.map((c, i) => {
+        const active = i === sortIdx;
+        const arrow  = active ? (sortAsc ? ' ▲' : ' ▼') : '';
+        return `<th data-colidx="${i}"${active ? ' class="sorted"' : ''}>${c.label}${arrow}</th>`;
+      }).join('') + '</tr>';
+      thead.querySelectorAll('th').forEach(th => {
+        th.addEventListener('click', () => {
+          const i = +th.dataset.colidx;
+          sortAsc = sortIdx === i ? !sortAsc : true;
+          sortIdx = i;
+          const key = cols[sortIdx].key;
+          const sorted = [...currentRows].sort((a, b) => {
+            const va = a[key], vb = b[key];
+            if (va == null && vb == null) return 0;
+            if (va == null) return sortAsc ? 1 : -1;
+            if (vb == null) return sortAsc ? -1 : 1;
+            if (typeof va === 'number' && typeof vb === 'number')
+              return sortAsc ? va - vb : vb - va;
+            return sortAsc
+              ? String(va).localeCompare(String(vb), 'pt-BR')
+              : String(vb).localeCompare(String(va), 'pt-BR');
+          });
+          renderHead();
+          renderBody(sorted);
+        });
+      });
+    }
+
+    renderHead();
+    renderBody(rows);
   }
 
-  // ── Populate selects ──
-  async function populateSelect(selectId, query, valKey) {
-    const sel  = document.getElementById(selectId);
-    const rows = (await conn.query(query)).toArray();
-    rows.forEach(r => {
-      const opt = document.createElement('option');
-      opt.value = r[valKey] ?? '';
-      opt.textContent = r[valKey] ?? '';
-      sel.appendChild(opt);
-    });
-  }
+  // Populate Grupo A filter
+  const tiposRows = (await conn.query(
+    "SELECT DISTINCT tipo FROM 'resumo_grupo_a.parquet' ORDER BY tipo"
+  )).toArray();
+  const selTipo = document.getElementById('selTipo');
+  tiposRows.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.tipo;
+    opt.textContent = r.tipo;
+    selTipo.appendChild(opt);
+  });
 
-  await populateSelect('selTipo',
-    `SELECT DISTINCT tipo FROM 'resumo_grupo_a.parquet' WHERE tipo IS NOT NULL ORDER BY tipo`,
-    'tipo');
-  await populateSelect('selAnoA',
-    `SELECT DISTINCT ano FROM 'resumo_grupo_a.parquet' ORDER BY ano`,
-    'ano');
-  await populateSelect('selAnoB',
-    `SELECT DISTINCT ano FROM 'resumo_grupo_b.parquet' ORDER BY ano`,
-    'ano');
+  // Populate Grupo B filter
+  const gruposBRows = (await conn.query(
+    "SELECT DISTINCT abreviacao, grupo_b FROM 'resumo_grupo_b.parquet' ORDER BY abreviacao"
+  )).toArray();
+  const selGrupoB = document.getElementById('selGrupoB');
+  gruposBRows.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.grupo_b;
+    opt.textContent = r.abreviacao ? `${r.abreviacao} — ${r.grupo_b}` : r.grupo_b;
+    selGrupoB.appendChild(opt);
+  });
 
-  // ── GRUPO A ──
-  async function refreshA() {
-    const tipo = document.getElementById('selTipo').value;
-    const ano  = document.getElementById('selAnoA').value;
-    const conds = [];
-    if (tipo) conds.push(`tipo = '${tipo.replace(/'/g, "''")}'`);
-    if (ano)  conds.push(`ano = '${ano}'`);
-    const where = conds.length ? 'WHERE ' + conds.join(' AND ') : '';
+  // Tab state
+  let activeTab = 'grupoA';
+  const tabIds = { grupoA: 'tab-grupoA', grupoB: 'tab-grupoB', evolucao: 'tab-evolucao' };
+  const toolbarIds = { grupoA: 'toolbar-a', grupoB: 'toolbar-b', evolucao: 'toolbar-evo' };
 
-    const agg = (await conn.query(`
-      SELECT
-        COALESCE(SUM("Valor Total"), 0)::DOUBLE            AS total,
-        COALESCE(SUM("Fornecedores Distintos"), 0)::DOUBLE AS forn,
-        COUNT(DISTINCT tipo)::DOUBLE                       AS tipos
-      FROM 'resumo_grupo_a.parquet' ${where}
-    `)).toArray()[0];
-
-    document.getElementById('cardsA').innerHTML = `
-      <div class="card"><div class="card-label">Valor Total</div>
-        <div class="card-value accent">${fmt(agg.total)}</div></div>
-      <div class="card"><div class="card-label">Fornecedores Distintos</div>
-        <div class="card-value green">${fmtN(agg.forn)}</div></div>
-      <div class="card"><div class="card-label">Tipos</div>
-        <div class="card-value purple">${fmtN(agg.tipos)}</div></div>
-    `;
-
-    const rows = (await conn.query(`
-      SELECT tipo, ano, "Valor Total", "Fornecedores Distintos"
-      FROM 'resumo_grupo_a.parquet' ${where}
-      ORDER BY ano DESC, "Valor Total" DESC
-    `)).toArray();
-
-    buildTable(document.getElementById('tblA'), rows, [
-      { key: 'tipo',                   label: 'Tipo' },
-      { key: 'ano',                    label: 'Ano' },
-      { key: 'Valor Total',            label: 'Valor Total',  numeric: true, fmt },
-      { key: 'Fornecedores Distintos', label: 'Fornecedores', numeric: true, fmt: fmtN },
-    ]);
-  }
-
-  document.getElementById('selTipo').addEventListener('change', refreshA);
-  document.getElementById('selAnoA').addEventListener('change', refreshA);
-
-  // ── GRUPO B ──
-  async function refreshB() {
-    const ano = document.getElementById('selAnoB').value;
-    const where = ano ? `WHERE ano = '${ano}'` : '';
-
-    const agg = (await conn.query(`
-      SELECT
-        COALESCE(SUM(valor_total_adquirido), 0)::DOUBLE  AS total,
-        COALESCE(SUM(fornecedores_distintos), 0)::DOUBLE AS forn,
-        COUNT(DISTINCT grupo_b)::DOUBLE                  AS grupos
-      FROM 'resumo_grupo_b.parquet' ${where}
-    `)).toArray()[0];
-
-    document.getElementById('cardsB').innerHTML = `
-      <div class="card"><div class="card-label">Valor Total</div>
-        <div class="card-value accent">${fmt(agg.total)}</div></div>
-      <div class="card"><div class="card-label">Fornecedores Distintos</div>
-        <div class="card-value green">${fmtN(agg.forn)}</div></div>
-      <div class="card"><div class="card-label">Palavras-chave</div>
-        <div class="card-value purple">${fmtN(agg.grupos)}</div></div>
-    `;
-
-    const rows = (await conn.query(`
-      SELECT ano, abreviacao, grupo_b, valor_total_adquirido, fornecedores_distintos
-      FROM 'resumo_grupo_b.parquet' ${where}
-      ORDER BY ano DESC, valor_total_adquirido DESC
-    `)).toArray();
-
-    buildTable(document.getElementById('tblB'), rows, [
-      { key: 'ano',                    label: 'Ano' },
-      { key: 'abreviacao',             label: 'Abreviação' },
-      { key: 'grupo_b',                label: 'Palavra-chave' },
-      { key: 'valor_total_adquirido',  label: 'Valor Total',  numeric: true, fmt },
-      { key: 'fornecedores_distintos', label: 'Fornecedores', numeric: true, fmt: fmtN },
-    ]);
-  }
-
-  document.getElementById('selAnoB').addEventListener('change', refreshB);
-
-  // ── Group tab switching ──
-  document.querySelectorAll('.group-tab').forEach(tab => {
+  document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.group-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.group-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-      document.getElementById('panel-' + tab.dataset.group).classList.add('active');
+      activeTab = tab.dataset.tab;
+      Object.entries(tabIds).forEach(([key, id]) => {
+        document.getElementById(id).classList.toggle('hidden', key !== activeTab);
+      });
+      Object.entries(toolbarIds).forEach(([key, id]) => {
+        document.getElementById(id).classList.toggle('hidden', key !== activeTab);
+      });
+      refresh();
     });
   });
 
-  document.getElementById('loading').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  await refreshA();
-  await refreshB();
-})();
+  async function refresh() {
+    if (activeTab === 'grupoA') {
+      await refreshGrupoA();
+    } else if (activeTab === 'grupoB') {
+      await refreshGrupoB();
+    } else {
+      await refreshEvolucao();
+    }
+  }
+
+  async function refreshGrupoA() {
+    const tipo = selTipo.value;
+    const w = tipo ? `WHERE tipo = '${tipo.replace(/'/g, "''")}'` : '';
+
+    const stats = (await conn.query(`
+      SELECT
+        SUM("Valor Total")::DOUBLE AS total,
+        COUNT(DISTINCT tipo)::DOUBLE AS ntipos,
+        COUNT(DISTINCT ano)::DOUBLE AS nanos
+      FROM 'resumo_grupo_a.parquet' ${w}
+    `)).toArray()[0];
+
+    document.getElementById('cards').innerHTML = `
+      <div class="card">
+        <div class="card-label">Valor Total Acumulado</div>
+        <div class="card-value">${fmt(stats.total)}</div>
+      </div>
+      <div class="card green">
+        <div class="card-label">Tipos de Item</div>
+        <div class="card-value">${fmtN(stats.ntipos)}</div>
+      </div>
+      <div class="card slate">
+        <div class="card-label">Anos com Dados</div>
+        <div class="card-value">${fmtN(stats.nanos)}</div>
+      </div>
+    `;
+
+    const rows = (await conn.query(`
+      SELECT tipo, ano, "Valor Total"::DOUBLE AS "Valor Total", "Fornecedores Distintos"::DOUBLE AS "Fornecedores Distintos"
+      FROM 'resumo_grupo_a.parquet' ${w}
+      ORDER BY "Valor Total" DESC
+    `)).toArray();
+
+    buildTable(document.getElementById('tblGrupoA'), rows, [
+      { key: 'tipo',                   label: 'Tipo' },
+      { key: 'ano',                    label: 'Ano' },
+      { key: 'Valor Total',            label: 'Valor Total',           numeric: true, fmt },
+      { key: 'Fornecedores Distintos', label: 'Fornecedores Distintos', numeric: true, fmt: fmtN },
+    ]);
+  }
+
+  async function refreshGrupoB() {
+    const grupo = selGrupoB.value;
+    const w = grupo ? `WHERE grupo_b = '${grupo.replace(/'/g, "''")}'` : '';
+
+    const stats = (await conn.query(`
+      SELECT
+        SUM(valor_total_adquirido)::DOUBLE AS total,
+        COUNT(DISTINCT grupo_b)::DOUBLE AS ngrupos,
+        COUNT(DISTINCT ano)::DOUBLE AS nanos
+      FROM 'resumo_grupo_b.parquet' ${w}
+    `)).toArray()[0];
+
+    document.getElementById('cards').innerHTML = `
+      <div class="card">
+        <div class="card-label">Valor Total Acumulado</div>
+        <div class="card-value">${fmt(stats.total)}</div>
+      </div>
+      <div class="card green">
+        <div class="card-label">Grupos de Palavras-Chave</div>
+        <div class="card-value">${fmtN(stats.ngrupos)}</div>
+      </div>
+      <div class="card slate">
+        <div class="card-label">Anos com Dados</div>
+        <div class="card-value">${fmtN(stats.nanos)}</div>
+      </div>
+    `;
+
+    const rows = (await conn.query(`
+      SELECT grupo_b, abreviacao, ano,
+             valor_total_adquirido::DOUBLE AS valor_total_adquirido,
+             fornecedores_distintos::DOUBLE AS fornecedores_distintos
+      FROM 'resumo_grupo_b.parquet' ${w}
+      ORDER BY valor_total_adquirido DESC
+    `)).toArray();
+
+    buildTable(document.getElementById('tblGrupoB'), rows, [
+      { key: 'abreviacao',            label: 'Abrev.' },
+      { key: 'grupo_b',               label: 'Grupo / Palavras-Chave' },
+      { key: 'ano',                   label: 'Ano' },
+      { key: 'valor_total_adquirido', label: 'Valor Total',           numeric: true, fmt },
+      { key: 'fornecedores_distintos', label: 'Fornecedores Distintos', numeric: true, fmt: fmtN },
+    ]);
+  }
+
+  async function refreshEvolucao() {
+    document.getElementById('cards').innerHTML = '';
+    const grupoEvo = document.getElementById('selGrupoEvo').value;
+    if (grupoEvo === 'a') {
+      await buildChartGrupoA();
+    } else {
+      await buildChartGrupoB();
+    }
+  }
+
+  const ANOS = ['2022', '2023', '2024', '2025'];
+  const PALETTE = [
+    '#1351B4','#168821','#A07800','#0C326F','#2E7D32','#8B6914',
+    '#2670E8','#388E3C','#C8961A','#1565C0','#43A047','#9E7B1E',
+    '#0D47A1','#2E7D32','#6D4C00','#1A237E','#1B5E20','#4E342E',
+    '#283593','#33691E'
+  ];
+  let chartInstance = null;
+
+  function renderChart(labels, datasets) {
+    const ctx = document.getElementById('chartEvolucao').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+    allVisible = true;
+    document.getElementById('btnToggleAll').textContent = 'Desmarcar tudo';
+
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: { labels: ANOS, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#4A5057',
+              font: { size: 11, family: "'Raleway',sans-serif", weight: '600' },
+              boxWidth: 12,
+              padding: 16,
+            },
+          },
+          tooltip: {
+            backgroundColor: '#071D41',
+            titleColor: '#FFCD07',
+            bodyColor: '#FFFFFF',
+            padding: 10,
+            callbacks: {
+              label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toFixed(2)} B`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: '#8A9099', font: { family: "'Raleway',sans-serif", weight: '600' } },
+            grid: { color: '#E6E8EC' },
+          },
+          y: {
+            ticks: {
+              color: '#8A9099',
+              font: { family: "'Raleway',sans-serif" },
+              callback: v => `R$ ${v.toFixed(1)} B`,
+            },
+            grid: { color: '#E6E8EC' },
+            title: {
+              display: true,
+              text: 'Valor (R$ bilhões)',
+              color: '#8A9099',
+              font: { family: "'Raleway',sans-serif", size: 11 },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async function buildChartGrupoA() {
+    const pivotRows = (await conn.query(`
+      SELECT tipo,
+        SUM(CASE WHEN ano = '2022' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2022,
+        SUM(CASE WHEN ano = '2023' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2023,
+        SUM(CASE WHEN ano = '2024' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2024,
+        SUM(CASE WHEN ano = '2025' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2025,
+        SUM("Valor Total")::DOUBLE AS total
+      FROM 'resumo_grupo_a.parquet'
+      GROUP BY tipo
+      ORDER BY total DESC
+      LIMIT 20
+    `)).toArray();
+
+    const datasets = pivotRows.map((r, i) => ({
+      label: r.tipo,
+      data: [r.v2022, r.v2023, r.v2024, r.v2025].map(v => (v || 0) / 1e9),
+      borderColor: PALETTE[i % PALETTE.length],
+      backgroundColor: PALETTE[i % PALETTE.length] + '18',
+      tension: 0.3,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      borderWidth: 2,
+    }));
+
+    renderChart(ANOS, datasets);
+  }
+
+  async function buildChartGrupoB() {
+    const pivotRows = (await conn.query(`
+      SELECT COALESCE(abreviacao, grupo_b) AS label,
+        SUM(CASE WHEN ano = '2022' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2022,
+        SUM(CASE WHEN ano = '2023' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2023,
+        SUM(CASE WHEN ano = '2024' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2024,
+        SUM(CASE WHEN ano = '2025' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2025,
+        SUM(valor_total_adquirido)::DOUBLE AS total
+      FROM 'resumo_grupo_b.parquet'
+      GROUP BY COALESCE(abreviacao, grupo_b)
+      ORDER BY total DESC
+      LIMIT 20
+    `)).toArray();
+
+    const datasets = pivotRows.map((r, i) => ({
+      label: r.label,
+      data: [r.v2022, r.v2023, r.v2024, r.v2025].map(v => (v || 0) / 1e9),
+      borderColor: PALETTE[i % PALETTE.length],
+      backgroundColor: PALETTE[i % PALETTE.length] + '18',
+      tension: 0.3,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      borderWidth: 2,
+    }));
+
+    renderChart(ANOS, datasets);
+  }
+
+  const btnToggleAll = document.getElementById('btnToggleAll');
+  let allVisible = true;
+  btnToggleAll.addEventListener('click', () => {
+    if (!chartInstance) return;
+    allVisible = !allVisible;
+    chartInstance.data.datasets.forEach((_, i) => {
+      chartInstance.setDatasetVisibility(i, allVisible);
+    });
+    chartInstance.update();
+    btnToggleAll.textContent = allVisible ? 'Desmarcar tudo' : 'Marcar tudo';
+  });
+
+  document.getElementById('selGrupoEvo').addEventListener('change', refreshEvolucao);
+  selTipo.addEventListener('change', refresh);
+  selGrupoB.addEventListener('change', refresh);
+
+  await refresh();
+})().catch(err => {
+  document.body.insertAdjacentHTML('afterbegin',
+    `<div style="color:#C53030;padding:2rem;font-family:sans-serif">Erro ao carregar: ${err.message}</div>`
+  );
+});
 </script>
 </body>
 </html>

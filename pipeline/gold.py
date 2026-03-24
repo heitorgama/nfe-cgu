@@ -43,19 +43,36 @@ def criar_resumo_grupo_a(con: duckdb.DuckDBPyConnection) -> None:
 
 
 def criar_resumo_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
-    """Valor total e fornecedores distintos por palavra-chave e ano — Grupo B (mapeamento por descrição)."""
+    """Valor total e fornecedores distintos por palavra-chave e ano — Grupo B (mapeamento por descrição)"""
     con.execute(f"""
         CREATE OR REPLACE TABLE resumo_grupo_b AS
+        WITH itens_normalizado AS (
+            SELECT *,
+                -- Normaliza descrição: minúsculo, hífen→espaço, espaços duplos→simples
+                REGEXP_REPLACE(
+                    REPLACE(LOWER(descricao_do_produto_servico), '-', ' '),
+                    '\\s+', ' '
+                ) AS descricao_normalizada
+            FROM 'extracoes/silver/itens.parquet'
+        ),
+        chaves_normalizado AS (
+            SELECT *,
+                -- Mesma normalização nas palavras-chave
+                REGEXP_REPLACE(
+                    REPLACE(LOWER(TRIM("Palavras Chaves")), '-', ' '),
+                    '\\s+', ' '
+                ) AS chave_normalizada
+            FROM '{MAPEAMENTO_GRUPO_B}'
+        )
         SELECT
             LEFT(s.periodo, 4)               AS ano,
             TRIM(b."Palavras Chaves")         AS grupo_b,
             b."Abreviação"                    AS abreviacao,
             SUM(s.valor_total)               AS valor_total_adquirido,
             COUNT(DISTINCT {EMITENTE})        AS fornecedores_distintos
-        FROM '{MAPEAMENTO_GRUPO_B}' AS b
-        JOIN 'extracoes/silver/itens.parquet' AS s
-            ON LOWER(s.descricao_do_produto_servico)
-               LIKE '%' || LOWER(TRIM(b."Palavras Chaves")) || '%'
+        FROM chaves_normalizado AS b
+        JOIN itens_normalizado AS s
+            ON s.descricao_normalizada LIKE '%' || b.chave_normalizada || '%'
         GROUP BY ano, TRIM(b."Palavras Chaves"), b."Abreviação"
         ORDER BY ano, valor_total_adquirido DESC
     """)

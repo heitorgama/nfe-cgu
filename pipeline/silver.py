@@ -132,6 +132,21 @@ def converter_colunas_para_snake_case(rel: duckdb.DuckDBPyRelation, con: duckdb.
     return con.sql(f'SELECT {", ".join(select_parts)} FROM rel')
 
 
+def aplicar_ncm_pad(rel: duckdb.DuckDBPyRelation, con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
+    """Substitui codigo_ncm_sh pela versão preenchida com zeros à esquerda até 8 dígitos"""
+    ncm_pad = """
+        CASE
+            WHEN codigo_ncm_sh = '-1' THEN codigo_ncm_sh
+            ELSE LPAD(codigo_ncm_sh, 8, '0')
+        END
+    """
+    select_parts = [
+        f'{ncm_pad} AS codigo_ncm_sh' if c == 'codigo_ncm_sh' else f'"{c}"'
+        for c in rel.columns
+    ]
+    return con.sql(f'SELECT {", ".join(select_parts)} FROM rel')
+
+
 def periodos_no_silver(con: duckdb.DuckDBPyConnection, nome: str) -> set[str]:
     """Retorna o conjunto de períodos já presentes na tabela silver"""
     try:
@@ -148,14 +163,16 @@ def inserir_no_silver(con: duckdb.DuckDBPyConnection, nome: str, rel: duckdb.Duc
         con.execute(f"CREATE TABLE {nome} AS SELECT * FROM rel")
 
 
-def exportar_parquets(con: duckdb.DuckDBPyConnection, tabelas: list) -> None:
+def exportar_parquets(con: duckdb.DuckDBPyConnection, tabelas: list, memoria: str = '6GB') -> None:
     """Exporta todas as tabelas silver para parquets individuais"""
+    con.execute(f"SET memory_limit='{memoria}'")
     for nome, _ in tabelas:
         caminho = Path(DIRETORIO_SILVER, f'{nome}.parquet').as_posix()
         try:
             con.execute(f"COPY {nome} TO '{caminho}' (FORMAT PARQUET, COMPRESSION SNAPPY)")
         except duckdb.CatalogException:
             pass
+    con.execute("RESET memory_limit")
 
 
 def main():
@@ -190,6 +207,8 @@ def main():
             if nome in ('itens', 'nf'):
                 rel = rel.distinct()
             rel = converter_colunas_para_snake_case(rel, con)
+            if nome == 'itens':
+                rel = aplicar_ncm_pad(rel, con)
             # Remove item inválido, após consulta manual no portal eletrônico da CGU
             rel = con.sql("SELECT * FROM rel WHERE chave_de_acesso != '12250804034484000140558910000282551122697618'")
             inserir_no_silver(con, nome, rel)

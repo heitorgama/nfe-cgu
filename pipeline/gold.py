@@ -25,7 +25,7 @@ def criar_resumo_ecoadvance(con: duckdb.DuckDBPyConnection) -> None:
             SELECT *
             FROM 'extracoes/silver/itens.parquet' AS i
             JOIN '{MAPEAMENTO_ECOADVANCE}' AS m
-                ON LEFT(m.CODIGO, 4) = LEFT(i.codigo_ncm_sh, 4)
+                ON LEFT(CAST(m.CODIGO AS VARCHAR), 4) = LEFT(i.codigo_ncm_sh, 4)
         )
         SELECT
             "PRODUTO PESPP", PE,
@@ -52,7 +52,7 @@ def criar_resumo_por_pespp(con: duckdb.DuckDBPyConnection) -> None:
             SELECT *
             FROM 'extracoes/silver/itens.parquet' AS i
             JOIN '{MAPEAMENTO_ECOADVANCE}' AS m
-                ON LEFT(m.CODIGO, 4) = LEFT(i.codigo_ncm_sh, 4)
+                ON LEFT(CAST(m.CODIGO AS VARCHAR), 4) = LEFT(i.codigo_ncm_sh, 4)
         )
         SELECT
             "PRODUTO PESPP",
@@ -87,7 +87,7 @@ def criar_totais_globais_ecoadvance(con: duckdb.DuckDBPyConnection) -> None:
                 SELECT *
                 FROM 'extracoes/silver/itens.parquet' AS i
                 JOIN '{MAPEAMENTO_ECOADVANCE}' AS m
-                    ON m.CODIGO = LEFT(i.codigo_ncm_sh, 4)
+                    ON LEFT(CAST(m.CODIGO AS VARCHAR), 4) = LEFT(i.codigo_ncm_sh, 4)
             )
             GROUP BY chave_de_acesso, numero, numero_produto
         )

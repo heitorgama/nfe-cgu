@@ -1,14 +1,12 @@
 import os
-import shutil
 import tempfile
 from datetime import datetime
 
 import duckdb
 
-DIRETORIO_SILVER = 'extracoes/silver'
 DIRETORIO_GOLD = 'extracoes/gold'
 GOLD_DB = os.path.join(DIRETORIO_GOLD, 'gold.duckdb')
-MAPEAMENTO_NCM = 'dados/mapeamento_ncm.csv'
+MAPEAMENTO_ECOADVANCE = 'dados/mapeamento_EcoAdvance.csv'
 DIRETORIO_ENTREGA = os.path.join(DIRETORIO_GOLD, 'cruzamento_ncm')
 
 EMITENTE = "COALESCE(CAST(cnpj_emitente AS VARCHAR), cpf_emitente)"
@@ -19,187 +17,97 @@ def imprimir_mensagem(mensagem: str) -> None:
     print(f"[{ts}] {mensagem}")
 
 
-def carregar_mapeamento(con: duckdb.DuckDBPyConnection) -> None:
-    """Carrega o CSV de mapeamento NCM->Cadeia NIB no DuckDB"""
+def criar_resumo_ecoadvance(con: duckdb.DuckDBPyConnection) -> None:
+    """Cruzamento dos itens silver com o mapeamento EcoAdvance (join por prefixo NCM 4 dígitos)."""
     con.execute(f"""
-        CREATE OR REPLACE TABLE mapeamento_ncm AS
-        SELECT
-            codigo_cadeia, cadeia, missao, nome_missao,
-            prefixo_sh, tipo_match, cnae, desc_cnae, criterio, icp,
-            missoes, secao_cnae, sh_correspondente,
-            CASE tipo_match
-                WHEN 'ncm8'     THEN 8
-                WHEN 'prefixo6' THEN 6
-                WHEN 'prefixo5' THEN 5
-                WHEN 'prefixo4' THEN 4
-            END AS tamanho_prefixo
-        FROM read_csv_auto('{MAPEAMENTO_NCM}', header=true, all_varchar=true)
-    """)
-
-
-def criar_itens_nib(con: duckdb.DuckDBPyConnection) -> None:
-    """Faz o join dos itens do silver com o mapeamento NCM por prefixo fixo, deduplicado"""
-    con.execute("""
-        CREATE OR REPLACE TABLE itens_nib AS
-        WITH silver AS (
-            SELECT *, CAST(codigo_ncm_sh AS VARCHAR) AS ncm_str
-            FROM read_parquet('extracoes/silver/itens.parquet')
-            WHERE YEAR(data_emissao) BETWEEN 2022 AND 2025
+        CREATE OR REPLACE TABLE resumo_ecoadvance AS
+        WITH cruzamento AS (
+            SELECT *
+            FROM 'extracoes/silver/itens.parquet' AS i
+            JOIN '{MAPEAMENTO_ECOADVANCE}' AS m
+                ON LEFT(m.CODIGO, 4) = LEFT(i.codigo_ncm_sh, 4)
         )
-        SELECT DISTINCT *
-        FROM (
-            SELECT s.*, m.codigo_cadeia, m.cadeia, m.missao, m.nome_missao,
-                         m.cnae, m.desc_cnae, m.criterio, m.icp, m.missoes, m.secao_cnae, m.sh_correspondente
-            FROM silver s JOIN mapeamento_ncm m ON s.ncm_str = m.prefixo_sh AND m.tipo_match = 'ncm8'
-            UNION ALL
-            SELECT s.*, m.codigo_cadeia, m.cadeia, m.missao, m.nome_missao,
-                         m.cnae, m.desc_cnae, m.criterio, m.icp, m.missoes, m.secao_cnae, m.sh_correspondente
-            FROM silver s JOIN mapeamento_ncm m ON LEFT(s.ncm_str, 6) = m.prefixo_sh AND m.tipo_match = 'prefixo6'
-            UNION ALL
-            SELECT s.*, m.codigo_cadeia, m.cadeia, m.missao, m.nome_missao,
-                         m.cnae, m.desc_cnae, m.criterio, m.icp, m.missoes, m.secao_cnae, m.sh_correspondente
-            FROM silver s JOIN mapeamento_ncm m ON LEFT(s.ncm_str, 5) = m.prefixo_sh AND m.tipo_match = 'prefixo5'
-            UNION ALL
-            SELECT s.*, m.codigo_cadeia, m.cadeia, m.missao, m.nome_missao,
-                         m.cnae, m.desc_cnae, m.criterio, m.icp, m.missoes, m.secao_cnae, m.sh_correspondente
-            FROM silver s JOIN mapeamento_ncm m ON LEFT(s.ncm_str, 4) = m.prefixo_sh AND m.tipo_match = 'prefixo4'
-        ) sub
-    """)
-    count = con.execute("SELECT COUNT(*) FROM itens_nib").fetchone()[0]
-    imprimir_mensagem(f"itens_nib: {count} linhas (2022-2025).")
-
-
-def criar_resumo_por_cadeia(con: duckdb.DuckDBPyConnection) -> None:
-    """Valor total e fornecedores distintos por cadeia NIB."""
-    con.execute(f"""
-        CREATE OR REPLACE TABLE resumo_cadeia AS
         SELECT
-            codigo_cadeia,
-            cadeia,
-            missao,
-            nome_missao,
-            SUM(valor_total)                                                      AS valor_total_adquirido,
-            COUNT(DISTINCT {EMITENTE})                                            AS fornecedores_distintos,
-            COUNT(*)                                                              AS quantidade_itens,
-            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END) AS valor_2022,
-            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END) AS valor_2023,
-            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END) AS valor_2024,
-            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END) AS valor_2025
-        FROM itens_nib
-        GROUP BY codigo_cadeia, cadeia, missao, nome_missao
-        ORDER BY valor_total_adquirido DESC
+            "PRODUTO PESPP", PE,
+            CODIGO, "DESCRIÇÃO",
+            SUM(valor_total)                                                        AS "VALOR TOTAL",
+            COUNT(DISTINCT {EMITENTE})                                              AS "FORNECEDORES DISTINTOS",
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END)   AS valor_2022,
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END)   AS valor_2023,
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END)   AS valor_2024,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)   AS valor_2025
+        FROM cruzamento
+        GROUP BY ALL
+        ORDER BY "VALOR TOTAL" DESC
     """)
-    count = con.execute("SELECT COUNT(*) FROM resumo_cadeia").fetchone()[0]
-    imprimir_mensagem(f"resumo_cadeia: {count} cadeias.")
+    count = con.execute("SELECT COUNT(*) FROM resumo_ecoadvance").fetchone()[0]
+    imprimir_mensagem(f"resumo_ecoadvance: {count} linhas.")
 
 
-def criar_totais_globais(con: duckdb.DuckDBPyConnection) -> None:
-    """Total global deduplicado por item físico — sem dupla contagem entre cadeias.
-    Um item que pertence a N cadeias conta apenas uma vez."""
+def criar_resumo_por_pespp(con: duckdb.DuckDBPyConnection) -> None:
+    """Agrega o cruzamento EcoAdvance por Produto PESPP."""
     con.execute(f"""
-        CREATE OR REPLACE TABLE totais_globais AS
+        CREATE OR REPLACE TABLE resumo_por_pespp AS
+        WITH cruzamento AS (
+            SELECT *
+            FROM 'extracoes/silver/itens.parquet' AS i
+            JOIN '{MAPEAMENTO_ECOADVANCE}' AS m
+                ON LEFT(m.CODIGO, 4) = LEFT(i.codigo_ncm_sh, 4)
+        )
         SELECT
-            SUM(valor_total)         AS valor_total_global,
-            COUNT(DISTINCT emitente) AS fornecedores_global,
-            COUNT(*)                 AS itens_global
+            "PRODUTO PESPP",
+            SUM(valor_total)                                                        AS "VALOR TOTAL",
+            COUNT(DISTINCT {EMITENTE})                                              AS "FORNECEDORES DISTINTOS",
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END)   AS valor_2022,
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END)   AS valor_2023,
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END)   AS valor_2024,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)   AS valor_2025
+        FROM cruzamento
+        GROUP BY ALL
+        ORDER BY "VALOR TOTAL" DESC
+    """)
+    count = con.execute("SELECT COUNT(*) FROM resumo_por_pespp").fetchone()[0]
+    imprimir_mensagem(f"resumo_por_pespp: {count} linhas.")
+
+
+def criar_totais_globais_ecoadvance(con: duckdb.DuckDBPyConnection) -> None:
+    """Totais globais do cruzamento EcoAdvance, deduplicados por item físico."""
+    con.execute(f"""
+        CREATE OR REPLACE TABLE totais_globais_ecoadvance AS
+        SELECT
+            SUM(valor_total)            AS "VALOR TOTAL",
+            COUNT(DISTINCT emitente)    AS "FORNECEDORES DISTINTOS",
+            COUNT(*)                    AS "ITENS"
         FROM (
             SELECT
                 chave_de_acesso, numero, numero_produto,
-                ANY_VALUE(valor_total) AS valor_total,
-                ANY_VALUE({EMITENTE})  AS emitente
-            FROM itens_nib
+                ANY_VALUE(valor_total)      AS valor_total,
+                ANY_VALUE({EMITENTE})       AS emitente
+            FROM (
+                SELECT *
+                FROM 'extracoes/silver/itens.parquet' AS i
+                JOIN '{MAPEAMENTO_ECOADVANCE}' AS m
+                    ON m.CODIGO = LEFT(i.codigo_ncm_sh, 4)
+            )
             GROUP BY chave_de_acesso, numero, numero_produto
         )
     """)
-    imprimir_mensagem("totais_globais: calculado.")
-
-
-def criar_detalhado_por_cadeia(con: duckdb.DuckDBPyConnection) -> None:
-    """Tabela detalhada com descrição dos produtos agrupadas por cadeia e NCM"""
-    con.execute(f"""
-        CREATE OR REPLACE TABLE detalhado_cadeia AS
-        SELECT
-            codigo_cadeia, cadeia, missao, nome_missao,
-            cnae, desc_cnae, criterio, icp,
-            codigo_ncm_sh, ncm_sh_tipo_de_produto, descricao_do_produto_servico,
-            SUM(valor_total)                                                      AS valor_total,
-            COUNT(DISTINCT {EMITENTE})                                            AS fornecedores_distintos,
-            SUM(quantidade)                                                       AS quantidade_total,
-            COUNT(*)                                                              AS registros,
-            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END) AS valor_2022,
-            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END) AS valor_2023,
-            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END) AS valor_2024,
-            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END) AS valor_2025
-        FROM itens_nib
-        GROUP BY ALL
-        ORDER BY valor_total DESC
-        LIMIT 2000
-    """)
-    count = con.execute("SELECT COUNT(*) FROM detalhado_cadeia").fetchone()[0]
-    imprimir_mensagem(f"detalhado_cadeia: {count} linhas (top 2000 por valor).")
-
-
-def criar_cnae_cadeia(con: duckdb.DuckDBPyConnection) -> None:
-    """Agrega no nível cadeia x CNAE, lendo do parquet para eficiência de memória."""
-    parquet_itens = os.path.join(DIRETORIO_GOLD, 'itens_nib.parquet')
-    con.execute(f"""
-        CREATE OR REPLACE TABLE cnae_cadeia AS
-        SELECT
-            missao            AS "Número da Missão",
-            nome_missao       AS "Nome da Missão",
-            codigo_cadeia     AS "Código da Cadeia",
-            cadeia            AS "Cadeia Prioritária",
-            cnae              AS "CNAE",
-            desc_cnae         AS "Descrição da CNAE",
-            criterio          AS "Critério",
-            missoes           AS "Missões",
-            icp               AS "ICP",
-            secao_cnae        AS "Seção CNAE",
-            sh_correspondente AS "SH Correspondente",
-            SUM(valor_total)  AS "Valor Total",
-            COUNT(DISTINCT {EMITENTE})
-                              AS "Número de Fornecedores",
-            COUNT(DISTINCT chave_de_acesso)
-                              AS "Número de Notas Fiscais",
-            COUNT(DISTINCT chave_de_acesso || '-' || CAST(numero AS VARCHAR) || '-' || CAST(numero_produto AS VARCHAR))
-                              AS "Número de Itens",
-            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END) AS valor_2022,
-            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END) AS valor_2023,
-            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END) AS valor_2024,
-            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END) AS valor_2025
-        FROM '{parquet_itens}'
-        GROUP BY
-            missao, nome_missao, codigo_cadeia, cadeia,
-            cnae, desc_cnae, criterio, missoes,
-            icp, secao_cnae, sh_correspondente
-        ORDER BY "Código da Cadeia" ASC
-    """)
-    count = con.execute("SELECT COUNT(*) FROM cnae_cadeia").fetchone()[0]
-    imprimir_mensagem(f"cnae_cadeia: {count} linhas.")
+    imprimir_mensagem("totais_globais_ecoadvance: calculado.")
 
 
 def exportar_parquets(con: duckdb.DuckDBPyConnection) -> None:
     """Exporta tabelas gold como parquet."""
-    for tabela in ('itens_nib', 'resumo_cadeia', 'detalhado_cadeia', 'cnae_cadeia', 'totais_globais'):
+    for tabela in ('resumo_ecoadvance', 'resumo_por_pespp', 'totais_globais_ecoadvance'):
         caminho = os.path.join(DIRETORIO_GOLD, f'{tabela}.parquet')
         con.execute(f"COPY {tabela} TO '{caminho}' (FORMAT PARQUET, COMPRESSION SNAPPY)")
     imprimir_mensagem("Parquets gold exportados.")
-
-
-def exportar_csvs_entrega(con: duckdb.DuckDBPyConnection) -> None:
-    """Exporta CSVs prontos pra entrega ao MDIC."""
-    os.makedirs(DIRETORIO_ENTREGA, exist_ok=True)
-    for tabela in ('resumo_cadeia', 'detalhado_cadeia', 'cnae_cadeia'):
-        caminho = os.path.join(DIRETORIO_ENTREGA, f'{tabela}.csv')
-        con.execute(f"COPY {tabela} TO '{caminho}' (HEADER, DELIMITER ',')")
-    imprimir_mensagem("CSVs de entrega exportados.")
 
 
 def exportar_html_interativo() -> None:
     """Gera HTML standalone com os parquets embutidos em base64."""
     import base64
 
-    TABELAS = ('resumo_cadeia', 'detalhado_cadeia', 'cnae_cadeia', 'totais_globais')
+    TABELAS = ('resumo_ecoadvance', 'resumo_por_pespp', 'totais_globais_ecoadvance')
 
     def parquet_base64(tabela):
         with open(os.path.join(DIRETORIO_GOLD, f'{tabela}.parquet'), 'rb') as f:
@@ -233,10 +141,9 @@ async function registerParquet(file) {{
   await db.registerFileBuffer(file, buf);
 }}
 
-  await registerParquet('resumo_cadeia.parquet');
-  await registerParquet('detalhado_cadeia.parquet');
-  await registerParquet('totais_globais.parquet');
-  await registerParquet(TABELA_NIB);"""
+  await registerParquet('resumo_ecoadvance.parquet');
+  await registerParquet('resumo_por_pespp.parquet');
+  await registerParquet('totais_globais_ecoadvance.parquet');"""
 
     old_register = (
         "  async function registerParquet(file) {\n"
@@ -245,10 +152,9 @@ async function registerParquet(file) {{
         "    await db.registerFileBuffer(file, buf);\n"
         "  }\n"
         "\n"
-        "  await registerParquet('resumo_cadeia.parquet');\n"
-        "  await registerParquet('detalhado_cadeia.parquet');\n"
-        "  await registerParquet('totais_globais.parquet');\n"
-        "  await registerParquet(TABELA_NIB);"
+        "  await registerParquet('resumo_ecoadvance.parquet');\n"
+        "  await registerParquet('resumo_por_pespp.parquet');\n"
+        "  await registerParquet('totais_globais_ecoadvance.parquet');"
     )
     html = html.replace(old_register, inline_register)
 
@@ -261,31 +167,31 @@ async function registerParquet(file) {{
     imprimir_mensagem(f"HTML standalone gerado: {destino} ({tamanho_mb:.1f} MB)")
 
 
+def exportar_csvs_entrega(con: duckdb.DuckDBPyConnection) -> None:
+    """Exporta CSVs prontos pra entrega"""
+    os.makedirs(DIRETORIO_ENTREGA, exist_ok=True)
+    for tabela in ('resumo_ecoadvance', 'resumo_por_pespp', 'totais_globais_ecoadvance'):
+        caminho = os.path.join(DIRETORIO_ENTREGA, f'{tabela}.csv')
+        con.execute(f"COPY {tabela} TO '{caminho}' (HEADER, DELIMITER ',')")
+    imprimir_mensagem("CSVs de entrega exportados.")
+
+
 def main():
-    """Gera as tabelas gold com cruzamento NCM→Cadeias NIB e exporta entregáveis"""
     os.makedirs(DIRETORIO_GOLD, exist_ok=True)
     con = duckdb.connect(GOLD_DB, config={'temp_directory': tempfile.gettempdir()})
     con.execute("SET preserve_insertion_order=false")
 
-    imprimir_mensagem("Carregando mapeamento NCM...")
-    carregar_mapeamento(con)
-    imprimir_mensagem("Cruzando itens com cadeias NIB (JOIN por prefixo NCM)...")
-    criar_itens_nib(con)
-    imprimir_mensagem("Calculando resumo por cadeia...")
-    criar_resumo_por_cadeia(con)
-    imprimir_mensagem("Calculando totais globais deduplicados...")
-    criar_totais_globais(con)
-    imprimir_mensagem("Gerando tabela detalhada por cadeia...")
-    criar_detalhado_por_cadeia(con)
-    imprimir_mensagem("Exportando itens_nib.parquet para leitura colunar...")
-    parquet_itens = os.path.join(DIRETORIO_GOLD, 'itens_nib.parquet')
-    con.execute(f"COPY itens_nib TO '{parquet_itens}' (FORMAT PARQUET, COMPRESSION SNAPPY)")
-    imprimir_mensagem("Gerando agregação por CNAE e cadeia...")
-    criar_cnae_cadeia(con)
+    imprimir_mensagem("Gerando cruzamento EcoAdvance...")
+    criar_resumo_ecoadvance(con)
+    imprimir_mensagem("Agregando por Produto PESPP...")
+    criar_resumo_por_pespp(con)
+    imprimir_mensagem("Calculando totais globais EcoAdvance...")
+    criar_totais_globais_ecoadvance(con)
     imprimir_mensagem("Exportando parquets gold...")
     exportar_parquets(con)
     imprimir_mensagem("Exportando CSVs de entrega...")
     exportar_csvs_entrega(con)
+
     template = os.path.join(os.path.dirname(__file__), 'template', 'dashboard.html')
     if os.path.exists(template):
         imprimir_mensagem("Exportando HTML interativo...")

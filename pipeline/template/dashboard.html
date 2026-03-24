@@ -391,7 +391,7 @@
       <div class="tabs">
         <div class="tab" data-tab="resumo">Por Cadeia</div>
         <div class="tab active" data-tab="cnae">Por Cadeia e CNAE</div>
-        <div class="tab" data-tab="detalhado">Por Cadeia e Item</div>
+        <div class="tab" data-tab="detalhado">Por Cadeia e Item (Primeiras 2.000 linhas)</div>
         <div class="tab" data-tab="evolucao">Evolução Anual</div>
       </div>
 
@@ -488,14 +488,15 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
           const i = +th.dataset.colidx;
           sortAsc = sortIdx === i ? !sortAsc : true;
           sortIdx = i;
-          const key = cols[sortIdx].key;
+          const col = cols[sortIdx];
+          const key = col.key;
           const sorted = [...rows].sort((a, b) => {
             const va = a[key], vb = b[key];
             if (va == null && vb == null) return 0;
             if (va == null) return sortAsc ? 1 : -1;
             if (vb == null) return sortAsc ? -1 : 1;
-            if (typeof va === 'number' && typeof vb === 'number')
-              return sortAsc ? va - vb : vb - va;
+            if (col.numeric)
+              return sortAsc ? Number(va) - Number(vb) : Number(vb) - Number(va);
             return sortAsc
               ? String(va).localeCompare(String(vb), 'pt-BR')
               : String(vb).localeCompare(String(va), 'pt-BR');
@@ -555,7 +556,7 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
 
     document.getElementById('cards').innerHTML = `
       <div class="card">
-        <div class="card-label">Valor Total (2022–2025)</div>
+        <div class="card-label">Valor Total de Itens Distintos (2022–2025)</div>
         <div class="card-value">${fmt(total)}</div>
       </div>
       <div class="card green">
@@ -563,7 +564,7 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
         <div class="card-value">${fmtN(fornecedores)}</div>
       </div>
       <div class="card yellow">
-        <div class="card-label">Itens de NF-e</div>
+        <div class="card-label">Itens Distintos de NF-e</div>
         <div class="card-value">${fmtN(itens)}</div>
       </div>
       <div class="card slate">
@@ -587,7 +588,6 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
       { key: 'SH Correspondente',       label: 'SH Correspondente' },
       { key: 'Nome da Missão',          label: 'Nome da Missão' },
       { key: 'ICP',                     label: 'ICP',          numeric: true },
-      { key: 'Valor Total',             label: 'Total',        numeric: true, fmt },
       { key: 'Número de Fornecedores',  label: 'Fornecedores', numeric: true, fmt: fmtN },
       { key: 'Número de Notas Fiscais', label: 'NFs',          numeric: true, fmt: fmtN },
       { key: 'Número de Itens',         label: 'Itens',        numeric: true, fmt: fmtN },
@@ -595,6 +595,7 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
       { key: 'valor_2023',              label: '2023',         numeric: true, fmt },
       { key: 'valor_2024',              label: '2024',         numeric: true, fmt },
       { key: 'valor_2025',              label: '2025',         numeric: true, fmt },
+      { key: 'Valor Total',             label: 'Total',        numeric: true, fmt },
     ]);
 
     const resumoRows = (await conn.query(
@@ -605,13 +606,13 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
       { key: 'missao',                  label: 'Missão' },
       { key: 'codigo_cadeia',           label: 'Código' },
       { key: 'cadeia',                  label: 'Cadeia' },
-      { key: 'valor_total_adquirido',   label: 'Total',        numeric: true, fmt },
       { key: 'fornecedores_distintos',  label: 'Fornecedores', numeric: true, fmt: fmtN },
       { key: 'quantidade_itens',        label: 'Itens',        numeric: true, fmt: fmtN },
       { key: 'valor_2022',              label: '2022',         numeric: true, fmt },
       { key: 'valor_2023',              label: '2023',         numeric: true, fmt },
       { key: 'valor_2024',              label: '2024',         numeric: true, fmt },
       { key: 'valor_2025',              label: '2025',         numeric: true, fmt },
+      { key: 'valor_total_adquirido',   label: 'Total',        numeric: true, fmt },
     ]);
 
     const detalheRows = (await conn.query(
@@ -626,7 +627,6 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
       { key: 'codigo_ncm_sh',               label: 'NCM/SH',       numeric: true },
       { key: 'ncm_sh_tipo_de_produto',      label: 'Tipo NCM/SH' },
       { key: 'icp',                         label: 'ICP',          numeric: true },
-      { key: 'valor_total',                 label: 'Total',        numeric: true, fmt },
       { key: 'quantidade_total',            label: 'Quantidade',   numeric: true, fmt: fmtN },
       { key: 'fornecedores_distintos',      label: 'Fornecedores', numeric: true, fmt: fmtN },
       { key: 'registros',                   label: 'Registros',    numeric: true, fmt: fmtN },
@@ -634,6 +634,7 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
       { key: 'valor_2023',                  label: '2023',         numeric: true, fmt },
       { key: 'valor_2024',                  label: '2024',         numeric: true, fmt },
       { key: 'valor_2025',                  label: '2025',         numeric: true, fmt },
+      { key: 'valor_total',                 label: 'Total',        numeric: true, fmt },
     ]);
   }
 

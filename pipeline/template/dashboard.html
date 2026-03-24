@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compras Públicas — Cadeias NIB · MGI</title>
+<title>Compras Públicas — EcoAdvance · MGI</title>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -115,26 +115,6 @@
     padding: 1.8rem 2rem 3rem;
   }
 
-  #loading {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--blue);
-    font-size: 0.85rem;
-    font-weight: 600;
-    padding: 3rem 0;
-  }
-
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid var(--gray-10);
-    border-top-color: var(--blue);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
   .toolbar {
     display: flex;
     align-items: center;
@@ -188,7 +168,6 @@
 
   .card.green  { border-left-color: var(--green); }
   .card.yellow { border-left-color: var(--yellow); }
-  .card.slate  { border-left-color: var(--blue-mid); }
 
   .card-label {
     font-size: 0.67rem;
@@ -209,7 +188,6 @@
 
   .card.green  .card-value { color: var(--green); }
   .card.yellow .card-value { color: var(--yellow-dk); }
-  .card.slate  .card-value { color: var(--blue-mid); }
 
   .panel {
     background: var(--white);
@@ -287,19 +265,12 @@
 
   tbody tr:hover { background: #F5F8FF; }
   tbody tr:last-child td { border-bottom: none; }
-  tbody tr.clickable { cursor: pointer; }
 
   .num {
     text-align: right;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
     font-weight: 600;
-  }
-
-  .chart-wrap {
-    height: 680px;
-    position: relative;
-    padding: 1.5rem;
   }
 
   .chart-toolbar {
@@ -328,36 +299,11 @@
     color: var(--white);
   }
 
-  .overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(7,29,65,0.5);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-  }
-  .overlay.visible { display: flex; }
-
-  .modal {
-    background: var(--white);
-    border-radius: 6px;
-    padding: 1.8rem;
-    max-width: 560px;
-    width: 90%;
+  .chart-wrap {
+    height: 620px;
     position: relative;
-    border-top: 5px solid var(--blue);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    padding: 1.5rem;
   }
-
-  .modal-close {
-    position: absolute; top: 1rem; right: 1.2rem;
-    cursor: pointer; color: var(--gray-50); font-size: 1rem;
-    background: none; border: none; font-family: var(--font);
-  }
-  .modal-close:hover { color: var(--blue-dark); }
-  .modal-title { font-size: 0.95rem; font-weight: 700; color: var(--blue-dark); margin-bottom: 4px; }
-  .modal-sub   { font-size: 0.78rem; color: var(--gray-50); }
 </style>
 </head>
 <body>
@@ -366,43 +312,38 @@
   <div class="tricolor"></div>
   <div class="panel-header-text">
     <div class="panel-orgao">MGI · Ministério da Gestão e da Inovação em Serviços Públicos</div>
-    <div class="panel-title">Compras Públicas — Cadeias NIB</div>
+    <div class="panel-title">Compras Públicas — EcoAdvance</div>
     <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2022–2025</div>
   </div>
   <div class="panel-header-right">
     <span class="badge">Portal da Transparência · CGU</span>
-    <span class="badge">Nova Indústria Brasil</span>
+    <span class="badge">EcoAdvance</span>
   </div>
 </div>
 <div class="accent-bar"></div>
 
 <div class="layout">
-
   <div id="app">
 
     <div class="toolbar">
-      <label for="selCadeia">Cadeia:</label>
-      <select id="selCadeia"><option value="">Todas as cadeias</option></select>
+      <label for="selPespp">Produto PESPP:</label>
+      <select id="selPespp"><option value="">Todos os produtos</option></select>
     </div>
 
     <div class="cards" id="cards"></div>
 
     <div class="panel">
       <div class="tabs">
-        <div class="tab" data-tab="resumo">Por Cadeia</div>
-        <div class="tab active" data-tab="cnae">Por Cadeia e CNAE</div>
-        <div class="tab" data-tab="detalhado">Por Cadeia e Item (Primeiras 2.000 linhas)</div>
+        <div class="tab active" data-tab="pespp">Por Produto PESPP</div>
+        <div class="tab" data-tab="tabela">Por NCM e Produto PESPP</div>
         <div class="tab" data-tab="evolucao">Evolução Anual</div>
       </div>
 
-      <div id="tab-cnae">
-        <div class="table-wrap"><table id="tblCnae"><thead></thead><tbody></tbody></table></div>
+      <div id="tab-pespp">
+        <div class="table-wrap"><table id="tblPespp"><thead></thead><tbody></tbody></table></div>
       </div>
-      <div id="tab-resumo" class="hidden">
-        <div class="table-wrap"><table id="tblResumo"><thead></thead><tbody></tbody></table></div>
-      </div>
-      <div id="tab-detalhado" class="hidden">
-        <div class="table-wrap"><table id="tblDetalhe"><thead></thead><tbody></tbody></table></div>
+      <div id="tab-tabela" class="hidden">
+        <div class="table-wrap"><table id="tblEcoAdvance"><thead></thead><tbody></tbody></table></div>
       </div>
       <div id="tab-evolucao" class="hidden">
         <div class="chart-toolbar">
@@ -415,28 +356,17 @@
   </div>
 </div>
 
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <button class="modal-close" id="modalClose">✕</button>
-    <div class="modal-title" id="modalTitle"></div>
-    <div class="modal-sub"   id="modalSub"></div>
-  </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
-
-const TABELA_NIB = 'cnae_cadeia.parquet';
 
 (async () => {
   const bundle = await duckdb.selectBundle(duckdb.getJsDelivrBundles());
   const workerUrl = URL.createObjectURL(
     new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
   );
-  const logger = new duckdb.ConsoleLogger();
   const worker = new Worker(workerUrl);
-  const db = new duckdb.AsyncDuckDB(logger, worker);
+  const db = new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(), worker);
   await db.instantiate(bundle.mainModule);
   URL.revokeObjectURL(workerUrl);
   const conn = await db.connect();
@@ -447,22 +377,33 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
     await db.registerFileBuffer(file, buf);
   }
 
-  await registerParquet('resumo_cadeia.parquet');
-  await registerParquet('detalhado_cadeia.parquet');
-  await registerParquet('totais_globais.parquet');
-  await registerParquet(TABELA_NIB);
+  await registerParquet('resumo_ecoadvance.parquet');
+  await registerParquet('resumo_por_pespp.parquet');
+  await registerParquet('totais_globais_ecoadvance.parquet');
 
   const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
   const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
 
-  function buildTable(tableEl, rows, cols, onRowClick) {
+  // Popula filtro PRODUTO PESPP
+  const produtos = (await conn.query(
+    `SELECT DISTINCT "PRODUTO PESPP" AS p FROM 'resumo_ecoadvance.parquet' ORDER BY 1`
+  )).toArray();
+  const sel = document.getElementById('selPespp');
+  produtos.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.p;
+    opt.textContent = r.p;
+    sel.appendChild(opt);
+  });
+
+  function buildTable(tableEl, rows, cols) {
     const thead = tableEl.querySelector('thead');
     const tbody = tableEl.querySelector('tbody');
     let sortIdx = null, sortAsc = true;
 
     function renderBody(data) {
       tbody.innerHTML = data.map((r, i) =>
-        `<tr${onRowClick ? ' class="clickable"' : ''} data-idx="${i}">` +
+        `<tr data-idx="${i}">` +
         cols.map(c => {
           const v = r[c.key];
           const cls = c.numeric ? ' class="num"' : '';
@@ -470,11 +411,6 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
           return `<td${cls}>${display}</td>`;
         }).join('') + '</tr>'
       ).join('');
-      if (onRowClick) {
-        tbody.querySelectorAll('tr').forEach(tr =>
-          tr.addEventListener('click', () => onRowClick(data[+tr.dataset.idx]))
-        );
-      }
     }
 
     function renderHead() {
@@ -511,136 +447,6 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
     renderBody(rows);
   }
 
-  const overlay = document.getElementById('overlay');
-  document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('visible'));
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('visible'); });
-
-  const cadeias = (await conn.query(
-    "SELECT DISTINCT codigo_cadeia || ' — ' || cadeia AS label, codigo_cadeia AS value FROM 'resumo_cadeia.parquet' ORDER BY codigo_cadeia"
-  )).toArray();
-  const sel = document.getElementById('selCadeia');
-  cadeias.forEach(r => {
-    const opt = document.createElement('option');
-    opt.value = r.value;
-    opt.textContent = r.label;
-    sel.appendChild(opt);
-  });
-
-  async function refresh() {
-    const cadeia = sel.value;
-    const wBase  = cadeia ? `WHERE codigo_cadeia = '${cadeia}'` : '';
-    const wNib   = cadeia ? `WHERE "Código da Cadeia" = '${cadeia}'` : '';
-
-    let total, fornecedores, itens, ncadeias;
-    if (!cadeia) {
-      const g = (await conn.query(`
-        SELECT valor_total_global::DOUBLE AS total,
-               fornecedores_global::DOUBLE AS fornecedores,
-               itens_global::DOUBLE AS itens
-        FROM 'totais_globais.parquet'
-      `)).toArray()[0];
-      const nc = (await conn.query(
-        "SELECT COUNT(*)::DOUBLE AS n FROM 'resumo_cadeia.parquet'"
-      )).toArray()[0];
-      total = g.total; fornecedores = g.fornecedores; itens = g.itens; ncadeias = nc.n;
-    } else {
-      const s = (await conn.query(`
-        SELECT COALESCE(SUM(valor_total_adquirido),0)::DOUBLE AS total,
-               COALESCE(SUM(fornecedores_distintos),0)::DOUBLE AS fornecedores,
-               COALESCE(SUM(quantidade_itens),0)::DOUBLE AS itens,
-               COUNT(*)::DOUBLE AS ncadeias
-        FROM 'resumo_cadeia.parquet' ${wBase}
-      `)).toArray()[0];
-      total = s.total; fornecedores = s.fornecedores; itens = s.itens; ncadeias = s.ncadeias;
-    }
-
-    document.getElementById('cards').innerHTML = `
-      <div class="card">
-        <div class="card-label">Valor Total de Itens Distintos (2022–2025)</div>
-        <div class="card-value">${fmt(total)}</div>
-      </div>
-      <div class="card green">
-        <div class="card-label">Fornecedores Distintos</div>
-        <div class="card-value">${fmtN(fornecedores)}</div>
-      </div>
-      <div class="card yellow">
-        <div class="card-label">Itens Distintos de NF-e</div>
-        <div class="card-value">${fmtN(itens)}</div>
-      </div>
-      <div class="card slate">
-        <div class="card-label">Cadeias NIB</div>
-        <div class="card-value">${fmtN(ncadeias)}</div>
-      </div>
-    `;
-
-    const cnaeRows = (await conn.query(
-      `SELECT * FROM '${TABELA_NIB}' ${wNib} ORDER BY "Código da Cadeia", "Valor Total" DESC`
-    )).toArray();
-    buildTable(document.getElementById('tblCnae'), cnaeRows, [
-      { key: 'Número da Missão',        label: 'Missão' },
-      { key: 'Código da Cadeia',        label: 'Código' },
-      { key: 'Cadeia Prioritária',      label: 'Cadeia' },
-      { key: 'CNAE',                    label: 'CNAE' },
-      { key: 'Descrição da CNAE',       label: 'Descrição CNAE' },
-      { key: 'Critério',                label: 'Critério' },
-      { key: 'Missões',                 label: 'Missões' },
-      { key: 'Seção CNAE',              label: 'Seção CNAE' },
-      { key: 'SH Correspondente',       label: 'SH Correspondente' },
-      { key: 'Nome da Missão',          label: 'Nome da Missão' },
-      { key: 'ICP',                     label: 'ICP',          numeric: true },
-      { key: 'Número de Fornecedores',  label: 'Fornecedores', numeric: true, fmt: fmtN },
-      { key: 'Número de Notas Fiscais', label: 'NFs',          numeric: true, fmt: fmtN },
-      { key: 'Número de Itens',         label: 'Itens',        numeric: true, fmt: fmtN },
-      { key: 'valor_2022',              label: '2022',         numeric: true, fmt },
-      { key: 'valor_2023',              label: '2023',         numeric: true, fmt },
-      { key: 'valor_2024',              label: '2024',         numeric: true, fmt },
-      { key: 'valor_2025',              label: '2025',         numeric: true, fmt },
-      { key: 'Valor Total',             label: 'Total',        numeric: true, fmt },
-    ]);
-
-    const resumoRows = (await conn.query(
-      `SELECT * FROM 'resumo_cadeia.parquet' ${wBase} ORDER BY valor_total_adquirido DESC`
-    )).toArray();
-    buildChart(resumoRows);
-    buildTable(document.getElementById('tblResumo'), resumoRows, [
-      { key: 'missao',                  label: 'Missão' },
-      { key: 'codigo_cadeia',           label: 'Código' },
-      { key: 'cadeia',                  label: 'Cadeia' },
-      { key: 'fornecedores_distintos',  label: 'Fornecedores', numeric: true, fmt: fmtN },
-      { key: 'quantidade_itens',        label: 'Itens',        numeric: true, fmt: fmtN },
-      { key: 'valor_2022',              label: '2022',         numeric: true, fmt },
-      { key: 'valor_2023',              label: '2023',         numeric: true, fmt },
-      { key: 'valor_2024',              label: '2024',         numeric: true, fmt },
-      { key: 'valor_2025',              label: '2025',         numeric: true, fmt },
-      { key: 'valor_total_adquirido',   label: 'Total',        numeric: true, fmt },
-    ]);
-
-    const detalheRows = (await conn.query(
-      `SELECT * FROM 'detalhado_cadeia.parquet' ${wBase} ORDER BY valor_total DESC LIMIT 500`
-    )).toArray();
-    buildTable(document.getElementById('tblDetalhe'), detalheRows, [
-      { key: 'codigo_cadeia',               label: 'Código' },
-      { key: 'cadeia',                      label: 'Cadeia' },
-      { key: 'cnae',                        label: 'CNAE' },
-      { key: 'criterio',                    label: 'Critério' },
-      { key: 'descricao_do_produto_servico', label: 'Descrição' },
-      { key: 'codigo_ncm_sh',               label: 'NCM/SH',       numeric: true },
-      { key: 'ncm_sh_tipo_de_produto',      label: 'Tipo NCM/SH' },
-      { key: 'icp',                         label: 'ICP',          numeric: true },
-      { key: 'quantidade_total',            label: 'Quantidade',   numeric: true, fmt: fmtN },
-      { key: 'fornecedores_distintos',      label: 'Fornecedores', numeric: true, fmt: fmtN },
-      { key: 'registros',                   label: 'Registros',    numeric: true, fmt: fmtN },
-      { key: 'valor_2022',                  label: '2022',         numeric: true, fmt },
-      { key: 'valor_2023',                  label: '2023',         numeric: true, fmt },
-      { key: 'valor_2024',                  label: '2024',         numeric: true, fmt },
-      { key: 'valor_2025',                  label: '2025',         numeric: true, fmt },
-      { key: 'valor_total',                 label: 'Total',        numeric: true, fmt },
-    ]);
-  }
-
-  sel.addEventListener('change', refresh);
-
-  let chartInstance = null;
   const ANOS = ['2022', '2023', '2024', '2025'];
   const PALETTE = [
     '#1351B4','#168821','#A07800','#0C326F','#2E7D32','#8B6914',
@@ -649,19 +455,32 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
     '#283593','#33691E'
   ];
 
-  function buildChart(rows) {
+  let chartInstance = null;
+  let allVisible = true;
+  const btnToggleAll = document.getElementById('btnToggleAll');
+
+  function buildChart(rows, groupKey) {
     const ctx = document.getElementById('chartEvolucao').getContext('2d');
     if (chartInstance) chartInstance.destroy();
     allVisible = true;
     btnToggleAll.textContent = 'Desmarcar tudo';
 
-    const top = [...rows]
-      .sort((a, b) => (Number(b.valor_total_adquirido) || 0) - (Number(a.valor_total_adquirido) || 0))
+    // Agrega por groupKey, top 20
+    const agg = {};
+    rows.forEach(r => {
+      const k = r[groupKey] ?? '—';
+      if (!agg[k]) agg[k] = { label: k, vals: [0, 0, 0, 0], total: 0 };
+      ANOS.forEach((a, i) => { agg[k].vals[i] += Number(r[`valor_${a}`]) || 0; });
+      agg[k].total += Number(r['VALOR TOTAL']) || 0;
+    });
+
+    const top = Object.values(agg)
+      .sort((a, b) => b.total - a.total)
       .slice(0, 20);
 
-    const datasets = top.map((r, i) => ({
-      label: r.cadeia,
-      data: ANOS.map(a => (Number(r[`valor_${a}`]) || 0) / 1e9),
+    const datasets = top.map((g, i) => ({
+      label: g.label,
+      data: g.vals.map(v => v / 1e6),
       borderColor: PALETTE[i % PALETTE.length],
       backgroundColor: PALETTE[i % PALETTE.length] + '18',
       tension: 0.3,
@@ -692,7 +511,7 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
             bodyColor: '#FFFFFF',
             padding: 10,
             callbacks: {
-              label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toFixed(2)} B`,
+              label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toFixed(1)} M`,
             },
           },
         },
@@ -705,12 +524,12 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
             ticks: {
               color: '#8A9099',
               font: { family: "'Raleway',sans-serif" },
-              callback: v => `R$ ${v.toFixed(1)} B`,
+              callback: v => `R$ ${v.toFixed(0)} M`,
             },
             grid: { color: '#E6E8EC' },
             title: {
               display: true,
-              text: 'Valor (R$ bilhões)',
+              text: 'Valor (R$ milhões)',
               color: '#8A9099',
               font: { family: "'Raleway',sans-serif", size: 11 },
             },
@@ -720,8 +539,6 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
     });
   }
 
-  const btnToggleAll = document.getElementById('btnToggleAll');
-  let allVisible = true;
   btnToggleAll.addEventListener('click', () => {
     if (!chartInstance) return;
     allVisible = !allVisible;
@@ -732,7 +549,86 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
     btnToggleAll.textContent = allVisible ? 'Desmarcar tudo' : 'Marcar tudo';
   });
 
-  const tabIds = { cnae: 'tab-cnae', resumo: 'tab-resumo', detalhado: 'tab-detalhado', evolucao: 'tab-evolucao' };
+  async function refresh() {
+    const pespp = sel.value;
+    const where = pespp ? `WHERE "PRODUTO PESPP" = '${pespp.replace(/'/g, "''")}'` : '';
+
+    // Cards
+    let total, fornecedores, itens;
+    if (!pespp) {
+      const g = (await conn.query(`
+        SELECT "VALOR TOTAL"::DOUBLE AS total,
+               "FORNECEDORES DISTINTOS"::DOUBLE AS fornecedores,
+               "ITENS"::DOUBLE AS itens
+        FROM 'totais_globais_ecoadvance.parquet'
+      `)).toArray()[0];
+      total = g.total; fornecedores = g.fornecedores; itens = g.itens;
+    } else {
+      const s = (await conn.query(`
+        SELECT COALESCE(SUM("VALOR TOTAL"),0)::DOUBLE AS total,
+               COALESCE(SUM("FORNECEDORES DISTINTOS"),0)::DOUBLE AS fornecedores
+        FROM 'resumo_ecoadvance.parquet' ${where}
+      `)).toArray()[0];
+      total = s.total; fornecedores = s.fornecedores; itens = null;
+    }
+
+    document.getElementById('cards').innerHTML = `
+      <div class="card">
+        <div class="card-label">Valor Total (2022–2025)</div>
+        <div class="card-value">${fmt(total)}</div>
+      </div>
+      <div class="card green">
+        <div class="card-label">Fornecedores Distintos</div>
+        <div class="card-value">${fmtN(fornecedores)}</div>
+      </div>
+      ${itens != null ? `
+      <div class="card yellow">
+        <div class="card-label">Itens de NF-e</div>
+        <div class="card-value">${fmtN(itens)}</div>
+      </div>` : ''}
+    `;
+
+    // Tabela Por NCM e Produto PESPP
+    const rows = (await conn.query(
+      `SELECT * FROM 'resumo_ecoadvance.parquet' ${where} ORDER BY "VALOR TOTAL" DESC`
+    )).toArray();
+
+    buildTable(document.getElementById('tblEcoAdvance'), rows, [
+      { key: 'PRODUTO PESPP',          label: 'Produto PESPP' },
+      { key: 'PE',                     label: 'PE' },
+      { key: 'CODIGO',                 label: 'Código NCM' },
+      { key: 'DESCRIÇÃO',              label: 'Descrição' },
+      { key: 'FORNECEDORES DISTINTOS', label: 'Fornecedores',  numeric: true, fmt: fmtN },
+      { key: 'valor_2022',             label: '2022',          numeric: true, fmt },
+      { key: 'valor_2023',             label: '2023',          numeric: true, fmt },
+      { key: 'valor_2024',             label: '2024',          numeric: true, fmt },
+      { key: 'valor_2025',             label: '2025',          numeric: true, fmt },
+      { key: 'VALOR TOTAL',            label: 'Total',         numeric: true, fmt },
+    ]);
+
+    // Tabela Por Produto PESPP
+    const pesppRows = (await conn.query(
+      `SELECT * FROM 'resumo_por_pespp.parquet' ${where} ORDER BY "VALOR TOTAL" DESC`
+    )).toArray();
+
+    buildTable(document.getElementById('tblPespp'), pesppRows, [
+      { key: 'PRODUTO PESPP',          label: 'Produto PESPP' },
+      { key: 'FORNECEDORES DISTINTOS', label: 'Fornecedores',  numeric: true, fmt: fmtN },
+      { key: 'valor_2022',             label: '2022',          numeric: true, fmt },
+      { key: 'valor_2023',             label: '2023',          numeric: true, fmt },
+      { key: 'valor_2024',             label: '2024',          numeric: true, fmt },
+      { key: 'valor_2025',             label: '2025',          numeric: true, fmt },
+      { key: 'VALOR TOTAL',            label: 'Total',         numeric: true, fmt },
+    ]);
+
+    // Gráfico sempre por PRODUTO PESPP
+    buildChart(pesppRows, 'PRODUTO PESPP');
+  }
+
+  sel.addEventListener('change', refresh);
+
+  // Tabs
+  const tabIds = { pespp: 'tab-pespp', tabela: 'tab-tabela', evolucao: 'tab-evolucao' };
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -745,7 +641,7 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
 
   await refresh();
 })().catch(err => {
-  document.getElementById('loading').innerHTML = `<span style="color:#C53030">Erro ao carregar: ${err.message}</span>`;
+  document.body.innerHTML += `<p style="color:#C53030;padding:2rem">Erro ao carregar: ${err.message}</p>`;
 });
 </script>
 </body>

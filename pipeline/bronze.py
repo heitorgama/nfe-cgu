@@ -10,7 +10,7 @@ from tqdm import tqdm
 DIRETORIO_DADOS = 'dados/nfe'
 DIRETORIO_EXTRACAO = 'extracoes/bronze'
 URL_BASE = 'https://dadosabertos-download.cgu.gov.br/PortalDaTransparencia/saida/nfe'
-PERIODO_INICIO = '202401'
+PERIODO_INICIO = '202201'
 PERIODO_FIM = '202512'
 CAMINHO_DUCKDB = os.path.join(DIRETORIO_EXTRACAO, 'bronze.duckdb')
 
@@ -155,7 +155,7 @@ def main():
     baixar_zips_faltantes()
     mapa = mapear_arquivos_e_periodos(DIRETORIO_DADOS)
     imprimir_mensagem(f"Arquivos encontrados: {len(mapa)}")
-
+    
     os.makedirs(DIRETORIO_EXTRACAO, exist_ok=True)
     con = duckdb.connect(CAMINHO_DUCKDB)
 

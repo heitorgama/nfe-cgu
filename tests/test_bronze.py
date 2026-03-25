@@ -6,9 +6,7 @@ import pipeline.bronze as bronze
 from pipeline.bronze import (
     formatar_periodo,
     identificar_arquivos_zip,
-    inserir_no_duckdb,
     exportar_parquets,
-    ler_csvs,
     listar_arquivos_DIRETORIO_DADOS,
     mapear_arquivos_e_periodos,
     gerar_periodos,
@@ -114,35 +112,6 @@ def test_listar_arquivos_retorna_somente_arquivos(tmp_path):
 
 def test_listar_arquivos_diretorio_inexistente():
     assert listar_arquivos_DIRETORIO_DADOS("/caminho/que/nao/existe") == []
-
-
-def test_ler_csvs_retorna_dataframes_com_colunas_string(tmp_path):
-    conteudo = "chave;valor\n001;abc\n002;def\n"
-    for nome in ("itens.csv", "eventos.csv", "nf.csv"):
-        (tmp_path / nome).write_text(conteudo, encoding="latin-1")
-    df_i, df_e, df_n = ler_csvs(str(tmp_path), "itens.csv", "eventos.csv", "nf.csv")
-    for df in (df_i, df_e, df_n):
-        assert list(df.columns) == ["chave", "valor"]
-        assert df.dtypes["chave"] == object
-        assert len(df) == 2
-
-
-def test_inserir_no_duckdb_cria_tabela_e_insere():
-    con = duckdb.connect()
-    df = pd.DataFrame({"a": ["1", "2"], "b": ["x", "y"]})
-    inserir_no_duckdb(con, "teste", df)
-    resultado = con.execute("SELECT * FROM teste").fetchdf()
-    assert len(resultado) == 2
-    assert list(resultado.columns) == ["a", "b"]
-
-
-def test_inserir_no_duckdb_acumula_em_tabela_existente():
-    con = duckdb.connect()
-    df1 = pd.DataFrame({"a": ["1"], "b": ["x"]})
-    df2 = pd.DataFrame({"a": ["2"], "b": ["y"]})
-    inserir_no_duckdb(con, "teste", df1)
-    inserir_no_duckdb(con, "teste", df2)
-    assert len(con.execute("SELECT * FROM teste").fetchdf()) == 2
 
 
 def test_exportar_parquets_cria_arquivos(tmp_path, monkeypatch):

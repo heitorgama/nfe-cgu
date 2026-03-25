@@ -471,7 +471,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       const k = r[groupKey] ?? '—';
       if (!agg[k]) agg[k] = { label: k, vals: [0, 0, 0, 0], total: 0 };
       ANOS.forEach((a, i) => { agg[k].vals[i] += Number(r[`valor_${a}`]) || 0; });
-      agg[k].total += Number(r['VALOR TOTAL']) || 0;
+      agg[k].total += ANOS.reduce((s, a) => s + (Number(r[`valor_${a}`]) || 0), 0);
     });
 
     const top = Object.values(agg)
@@ -565,11 +565,10 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       total = g.total; fornecedores = g.fornecedores; itens = g.itens;
     } else {
       const s = (await conn.query(`
-        SELECT COALESCE(SUM("VALOR TOTAL"),0)::DOUBLE AS total,
-               COALESCE(SUM("FORNECEDORES DISTINTOS"),0)::DOUBLE AS fornecedores
+        SELECT COALESCE(SUM(valor_2022)+SUM(valor_2023)+SUM(valor_2024)+SUM(valor_2025),0)::DOUBLE AS total
         FROM 'resumo_ecoadvance.parquet' ${where}
       `)).toArray()[0];
-      total = s.total; fornecedores = s.fornecedores; itens = null;
+      total = s.total; fornecedores = null; itens = null;
     }
 
     document.getElementById('cards').innerHTML = `
@@ -590,35 +589,39 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
     // Tabela Por NCM e Produto PESPP
     const rows = (await conn.query(
-      `SELECT * FROM 'resumo_ecoadvance.parquet' ${where} ORDER BY "VALOR TOTAL" DESC`
+      `SELECT * FROM 'resumo_ecoadvance.parquet' ${where} ORDER BY (valor_2022+valor_2023+valor_2024+valor_2025) DESC`
     )).toArray();
 
     buildTable(document.getElementById('tblEcoAdvance'), rows, [
-      { key: 'PRODUTO PESPP',          label: 'Produto PESPP' },
-      { key: 'PE',                     label: 'PE' },
-      { key: 'CODIGO',                 label: 'Código NCM' },
-      { key: 'DESCRIÇÃO',              label: 'Descrição' },
-      { key: 'FORNECEDORES DISTINTOS', label: 'Fornecedores',  numeric: true, fmt: fmtN },
-      { key: 'valor_2022',             label: '2022',          numeric: true, fmt },
-      { key: 'valor_2023',             label: '2023',          numeric: true, fmt },
-      { key: 'valor_2024',             label: '2024',          numeric: true, fmt },
-      { key: 'valor_2025',             label: '2025',          numeric: true, fmt },
-      { key: 'VALOR TOTAL',            label: 'Total',         numeric: true, fmt },
+      { key: 'PRODUTO PESPP',     label: 'Produto PESPP' },
+      { key: 'PE',                label: 'PE' },
+      { key: 'CODIGO',            label: 'Código NCM' },
+      { key: 'DESCRIÇÃO',         label: 'Descrição' },
+      { key: 'FORNECEDORES 2022', label: 'Fornec. 2022',    numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2023', label: 'Fornec. 2023',    numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2024', label: 'Fornec. 2024',    numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2025', label: 'Fornec. 2025',    numeric: true, fmt: fmtN },
+      { key: 'valor_2022',        label: 'Valor 2022',    numeric: true, fmt },
+      { key: 'valor_2023',        label: 'Valor 2023',    numeric: true, fmt },
+      { key: 'valor_2024',        label: 'Valor 2024',    numeric: true, fmt },
+      { key: 'valor_2025',        label: 'Valor 2025',    numeric: true, fmt },
     ]);
 
     // Tabela Por Produto PESPP
     const pesppRows = (await conn.query(
-      `SELECT * FROM 'resumo_por_pespp.parquet' ${where} ORDER BY "VALOR TOTAL" DESC`
+      `SELECT * FROM 'resumo_por_pespp.parquet' ${where} ORDER BY (valor_2022+valor_2023+valor_2024+valor_2025) DESC`
     )).toArray();
 
     buildTable(document.getElementById('tblPespp'), pesppRows, [
-      { key: 'PRODUTO PESPP',          label: 'Produto PESPP' },
-      { key: 'FORNECEDORES DISTINTOS', label: 'Fornecedores',  numeric: true, fmt: fmtN },
-      { key: 'valor_2022',             label: '2022',          numeric: true, fmt },
-      { key: 'valor_2023',             label: '2023',          numeric: true, fmt },
-      { key: 'valor_2024',             label: '2024',          numeric: true, fmt },
-      { key: 'valor_2025',             label: '2025',          numeric: true, fmt },
-      { key: 'VALOR TOTAL',            label: 'Total',         numeric: true, fmt },
+      { key: 'PRODUTO PESPP',     label: 'Produto PESPP' },
+      { key: 'FORNECEDORES 2022', label: 'Fornec. 2022',  numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2023', label: 'Fornec. 2023',  numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2024', label: 'Fornec. 2024',  numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2025', label: 'Fornec. 2025',  numeric: true, fmt: fmtN },
+      { key: 'valor_2022',        label: 'Valor 2022',    numeric: true, fmt },
+      { key: 'valor_2023',        label: 'Valor 2023',    numeric: true, fmt },
+      { key: 'valor_2024',        label: 'Valor 2024',    numeric: true, fmt },
+      { key: 'valor_2025',        label: 'Valor 2025',    numeric: true, fmt },
     ]);
 
     // Gráfico sempre por PRODUTO PESPP

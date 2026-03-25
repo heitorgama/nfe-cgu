@@ -406,6 +406,21 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
   const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
 
+  // Detecta anos disponíveis a partir dos nomes das colunas do parquet
+  function detectarAnos(fields) {
+    return fields
+      .map(f => f.name)
+      .filter(n => /^Valor Total \d{4}$/.test(n))
+      .map(n => n.slice(-4))
+      .sort();
+  }
+
+  const schemaA = await conn.query("SELECT * FROM 'resumo_grupo_a.parquet' LIMIT 0");
+  const anosA = detectarAnos(schemaA.schema.fields);
+
+  const schemaB = await conn.query("SELECT * FROM 'resumo_grupo_b.parquet' LIMIT 0");
+  const anosB = detectarAnos(schemaB.schema.fields);
+
   function buildTable(tableEl, rows, cols) {
     const thead = tableEl.querySelector('thead');
     const tbody = tableEl.querySelector('tbody');
@@ -513,12 +528,13 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   async function refreshGrupoA() {
     const tipo = selTipo.value;
     const w = tipo ? `WHERE tipo = '${tipo.replace(/'/g, "''")}'` : '';
+    const totalSumExpr = anosA.map(a => `SUM(COALESCE("Valor Total ${a}", 0))`).join(' + ');
+    const totalExpr    = anosA.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
 
     const stats = (await conn.query(`
       SELECT
-        SUM("Valor Total")::DOUBLE AS total,
-        COUNT(DISTINCT tipo)::DOUBLE AS ntipos,
-        COUNT(DISTINCT ano)::DOUBLE AS nanos
+        (${totalSumExpr})::DOUBLE AS total,
+        COUNT(*)::DOUBLE AS ntipos
       FROM 'resumo_grupo_a.parquet' ${w}
     `)).toArray()[0];
 
@@ -533,33 +549,34 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       </div>
       <div class="card slate">
         <div class="card-label">Anos com Dados</div>
-        <div class="card-value">${fmtN(stats.nanos)}</div>
+        <div class="card-value">${fmtN(anosA.length)}</div>
       </div>
     `;
 
     const rows = (await conn.query(`
-      SELECT tipo, ano, "Valor Total"::DOUBLE AS "Valor Total", "Fornecedores Distintos"::DOUBLE AS "Fornecedores Distintos"
-      FROM 'resumo_grupo_a.parquet' ${w}
-      ORDER BY "Valor Total" DESC
+      SELECT * FROM 'resumo_grupo_a.parquet' ${w}
+      ORDER BY (${totalExpr}) DESC
     `)).toArray();
 
-    buildTable(document.getElementById('tblGrupoA'), rows, [
-      { key: 'tipo',                   label: 'Tipo' },
-      { key: 'ano',                    label: 'Ano' },
-      { key: 'Valor Total',            label: 'Valor Total',           numeric: true, fmt },
-      { key: 'Fornecedores Distintos', label: 'Fornecedores Distintos', numeric: true, fmt: fmtN },
-    ]);
+    const cols = [
+      { key: 'tipo', label: 'Tipo' },
+      ...anosA.map(a => ({ key: `Fornecedores ${a}`, label: `Fornec. ${a}`, numeric: true, fmt: fmtN })),
+      ...anosA.map(a => ({ key: `Valor Total ${a}`,  label: a,              numeric: true, fmt })),
+    ];
+
+    buildTable(document.getElementById('tblGrupoA'), rows, cols);
   }
 
   async function refreshGrupoB() {
     const grupo = selGrupoB.value;
     const w = grupo ? `WHERE grupo_b = '${grupo.replace(/'/g, "''")}'` : '';
+    const totalSumExpr = anosB.map(a => `SUM(COALESCE("Valor Total ${a}", 0))`).join(' + ');
+    const totalExpr    = anosB.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
 
     const stats = (await conn.query(`
       SELECT
-        SUM(valor_total_adquirido)::DOUBLE AS total,
-        COUNT(DISTINCT grupo_b)::DOUBLE AS ngrupos,
-        COUNT(DISTINCT ano)::DOUBLE AS nanos
+        (${totalSumExpr})::DOUBLE AS total,
+        COUNT(*)::DOUBLE AS ngrupos
       FROM 'resumo_grupo_b.parquet' ${w}
     `)).toArray()[0];
 
@@ -574,25 +591,23 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       </div>
       <div class="card slate">
         <div class="card-label">Anos com Dados</div>
-        <div class="card-value">${fmtN(stats.nanos)}</div>
+        <div class="card-value">${fmtN(anosB.length)}</div>
       </div>
     `;
 
     const rows = (await conn.query(`
-      SELECT grupo_b, abreviacao, ano,
-             valor_total_adquirido::DOUBLE AS valor_total_adquirido,
-             fornecedores_distintos::DOUBLE AS fornecedores_distintos
-      FROM 'resumo_grupo_b.parquet' ${w}
-      ORDER BY valor_total_adquirido DESC
+      SELECT * FROM 'resumo_grupo_b.parquet' ${w}
+      ORDER BY (${totalExpr}) DESC
     `)).toArray();
 
-    buildTable(document.getElementById('tblGrupoB'), rows, [
-      { key: 'abreviacao',            label: 'Abrev.' },
-      { key: 'grupo_b',               label: 'Grupo / Palavras-Chave' },
-      { key: 'ano',                   label: 'Ano' },
-      { key: 'valor_total_adquirido', label: 'Valor Total',           numeric: true, fmt },
-      { key: 'fornecedores_distintos', label: 'Fornecedores Distintos', numeric: true, fmt: fmtN },
-    ]);
+    const cols = [
+      { key: 'abreviacao', label: 'Abrev.' },
+      { key: 'grupo_b',    label: 'Grupo / Palavras-Chave' },
+      ...anosB.map(a => ({ key: `Fornecedores ${a}`, label: `Fornec. ${a}`, numeric: true, fmt: fmtN })),
+      ...anosB.map(a => ({ key: `Valor Total ${a}`,  label: a,              numeric: true, fmt })),
+    ];
+
+    buildTable(document.getElementById('tblGrupoB'), rows, cols);
   }
 
   async function refreshEvolucao() {
@@ -605,7 +620,6 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     }
   }
 
-  const ANOS = ['2022', '2023', '2024', '2025'];
   const PALETTE = [
     '#1351B4','#168821','#A07800','#0C326F','#2E7D32','#8B6914',
     '#2670E8','#388E3C','#C8961A','#1565C0','#43A047','#9E7B1E',
@@ -614,7 +628,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   ];
   let chartInstance = null;
 
-  function renderChart(labels, datasets) {
+  function renderChart(anos, datasets) {
     const ctx = document.getElementById('chartEvolucao').getContext('2d');
     if (chartInstance) chartInstance.destroy();
     allVisible = true;
@@ -622,7 +636,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
     chartInstance = new Chart(ctx, {
       type: 'line',
-      data: { labels: ANOS, datasets },
+      data: { labels: anos, datasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -671,22 +685,19 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   }
 
   async function buildChartGrupoA() {
-    const pivotRows = (await conn.query(`
-      SELECT tipo,
-        SUM(CASE WHEN ano = '2022' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2022,
-        SUM(CASE WHEN ano = '2023' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2023,
-        SUM(CASE WHEN ano = '2024' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2024,
-        SUM(CASE WHEN ano = '2025' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2025,
-        SUM("Valor Total")::DOUBLE AS total
+    const totalExpr = anosA.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
+    const valorCols = anosA.map(a => `COALESCE("Valor Total ${a}", 0)::DOUBLE AS v${a}`).join(', ');
+
+    const rows = (await conn.query(`
+      SELECT tipo, ${valorCols}
       FROM 'resumo_grupo_a.parquet'
-      GROUP BY tipo
-      ORDER BY total DESC
+      ORDER BY (${totalExpr}) DESC
       LIMIT 20
     `)).toArray();
 
-    const datasets = pivotRows.map((r, i) => ({
+    const datasets = rows.map((r, i) => ({
       label: r.tipo,
-      data: [r.v2022, r.v2023, r.v2024, r.v2025].map(v => (v || 0) / 1e6),
+      data: anosA.map(a => (r[`v${a}`] || 0) / 1e6),
       borderColor: PALETTE[i % PALETTE.length],
       backgroundColor: PALETTE[i % PALETTE.length] + '18',
       tension: 0.3,
@@ -695,26 +706,23 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       borderWidth: 2,
     }));
 
-    renderChart(ANOS, datasets);
+    renderChart(anosA, datasets);
   }
 
   async function buildChartGrupoB() {
-    const pivotRows = (await conn.query(`
-      SELECT COALESCE(abreviacao, grupo_b) AS label,
-        SUM(CASE WHEN ano = '2022' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2022,
-        SUM(CASE WHEN ano = '2023' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2023,
-        SUM(CASE WHEN ano = '2024' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2024,
-        SUM(CASE WHEN ano = '2025' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2025,
-        SUM(valor_total_adquirido)::DOUBLE AS total
+    const totalExpr = anosB.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
+    const valorCols = anosB.map(a => `COALESCE("Valor Total ${a}", 0)::DOUBLE AS v${a}`).join(', ');
+
+    const rows = (await conn.query(`
+      SELECT COALESCE(abreviacao, grupo_b) AS label, ${valorCols}
       FROM 'resumo_grupo_b.parquet'
-      GROUP BY COALESCE(abreviacao, grupo_b)
-      ORDER BY total DESC
+      ORDER BY (${totalExpr}) DESC
       LIMIT 20
     `)).toArray();
 
-    const datasets = pivotRows.map((r, i) => ({
+    const datasets = rows.map((r, i) => ({
       label: r.label,
-      data: [r.v2022, r.v2023, r.v2024, r.v2025].map(v => (v || 0) / 1e6),
+      data: anosB.map(a => (r[`v${a}`] || 0) / 1e6),
       borderColor: PALETTE[i % PALETTE.length],
       backgroundColor: PALETTE[i % PALETTE.length] + '18',
       tension: 0.3,
@@ -723,7 +731,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       borderWidth: 2,
     }));
 
-    renderChart(ANOS, datasets);
+    renderChart(anosB, datasets);
   }
 
   const btnToggleAll = document.getElementById('btnToggleAll');

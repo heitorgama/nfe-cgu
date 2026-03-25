@@ -19,36 +19,58 @@ def imprimir_mensagem(mensagem: str) -> None:
     print(f"[{ts}] {mensagem}")
 
 
+def _anos_disponiveis(con: duckdb.DuckDBPyConnection, tabela: str) -> list:
+    return [r[0] for r in con.execute(f"SELECT DISTINCT ano FROM {tabela} ORDER BY ano").fetchall()]
+
+
+def _col_defs_pivot(anos: list, col_valor: str, col_forn: str) -> str:
+    partes = []
+    for a in anos:
+        partes.append(f"SUM(CASE WHEN ano = '{a}' THEN {col_valor} END)::DOUBLE AS \"Valor Total {a}\"")
+        partes.append(f"SUM(CASE WHEN ano = '{a}' THEN {col_forn} END)::BIGINT AS \"Fornecedores {a}\"")
+    return ', '.join(partes)
+
+
 def criar_resumo_grupo_a(con: duckdb.DuckDBPyConnection) -> None:
-    """Valor total e fornecedores distintos por tipo e ano — Grupo A (mapeamento por NCM exato)."""
+    """Valor total e fornecedores distintos por tipo — anos como colunas (Grupo A, NCM exato)."""
     con.execute(f"""
-        CREATE OR REPLACE TABLE resumo_grupo_a AS
-        WITH itens_cruzados_grupoA AS (
+        CREATE OR REPLACE TABLE _tmp_grupo_a AS
+        WITH itens_cruzados AS (
             SELECT s.*, m.tipo
             FROM 'extracoes/silver/itens.parquet' s
-            JOIN '{MAPEAMENTO_GRUPO_A}' m
-                ON m.ncm = s.codigo_ncm_sh
+            JOIN '{MAPEAMENTO_GRUPO_A}' m ON m.ncm = s.codigo_ncm_sh
         )
         SELECT
             tipo,
             LEFT(periodo, 4)           AS ano,
-            SUM(valor_total)           AS "Valor Total",
-            COUNT(DISTINCT {EMITENTE}) AS "Fornecedores Distintos"
-        FROM itens_cruzados_grupoA
+            SUM(valor_total)           AS valor_total,
+            COUNT(DISTINCT {EMITENTE}) AS fornecedores_distintos
+        FROM itens_cruzados
         GROUP BY ALL
-        ORDER BY ano, tipo
     """)
+
+    anos = _anos_disponiveis(con, '_tmp_grupo_a')
+    col_defs = _col_defs_pivot(anos, 'valor_total', 'fornecedores_distintos')
+
+    con.execute(f"""
+        CREATE OR REPLACE TABLE resumo_grupo_a AS
+        SELECT tipo, {col_defs}
+        FROM _tmp_grupo_a
+        GROUP BY tipo
+        ORDER BY SUM(valor_total) DESC
+    """)
+    con.execute("DROP TABLE _tmp_grupo_a")
+
     count = con.execute("SELECT COUNT(*) FROM resumo_grupo_a").fetchone()[0]
     imprimir_mensagem(f"resumo_grupo_a: {count} linhas.")
 
 
 def criar_resumo_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
-    """Valor total e fornecedores distintos por palavra-chave e ano — Grupo B (mapeamento por descrição)"""
+    """Valor total e fornecedores distintos por palavra-chave — anos como colunas (Grupo B)."""
     con.execute(f"""
-        CREATE OR REPLACE TABLE resumo_grupo_b AS
+        CREATE OR REPLACE TABLE _tmp_grupo_b AS
         WITH itens_normalizado AS (
             SELECT *,
-                -- Normaliza descrição: minúsculo, hífen→espaço, espaços duplos→simples
                 REGEXP_REPLACE(
                     REPLACE(LOWER(descricao_do_produto_servico), '-', ' '),
                     '\\s+', ' '
@@ -57,7 +79,6 @@ def criar_resumo_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
         ),
         chaves_normalizado AS (
             SELECT *,
-                -- Mesma normalização nas palavras-chave
                 REGEXP_REPLACE(
                     REPLACE(LOWER(TRIM("Palavras Chaves")), '-', ' '),
                     '\\s+', ' '
@@ -74,8 +95,20 @@ def criar_resumo_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
         JOIN itens_normalizado AS s
             ON s.descricao_normalizada LIKE '%' || b.chave_normalizada || '%'
         GROUP BY ano, TRIM(b."Palavras Chaves"), b."Abreviação"
-        ORDER BY ano, valor_total_adquirido DESC
     """)
+
+    anos = _anos_disponiveis(con, '_tmp_grupo_b')
+    col_defs = _col_defs_pivot(anos, 'valor_total_adquirido', 'fornecedores_distintos')
+
+    con.execute(f"""
+        CREATE OR REPLACE TABLE resumo_grupo_b AS
+        SELECT grupo_b, abreviacao, {col_defs}
+        FROM _tmp_grupo_b
+        GROUP BY grupo_b, abreviacao
+        ORDER BY SUM(valor_total_adquirido) DESC
+    """)
+    con.execute("DROP TABLE _tmp_grupo_b")
+
     count = con.execute("SELECT COUNT(*) FROM resumo_grupo_b").fetchone()[0]
     imprimir_mensagem(f"resumo_grupo_b: {count} linhas.")
 

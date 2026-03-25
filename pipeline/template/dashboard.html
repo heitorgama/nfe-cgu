@@ -555,31 +555,26 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     const where = pespp ? `WHERE "PRODUTO PESPP" = '${pespp.replace(/'/g, "''")}'` : '';
 
     // Cards
-    let total, fornecedores, itens;
+    let total, itens;
     if (!pespp) {
       const g = (await conn.query(`
         SELECT "VALOR TOTAL 2025"::DOUBLE AS total,
-               "FORNECEDORES 2025"::DOUBLE AS fornecedores,
                "ITENS 2025"::DOUBLE AS itens
         FROM 'totais_globais_ecoadvance.parquet'
       `)).toArray()[0];
-      total = g.total; fornecedores = g.fornecedores; itens = g.itens;
+      total = g.total; itens = g.itens;
     } else {
       const s = (await conn.query(`
-        SELECT COALESCE(SUM("VALOR 2022")+SUM("VALOR 2023")+SUM("VALOR 2024")+SUM("VALOR 2025"),0)::DOUBLE AS total
+        SELECT COALESCE(SUM("VALOR 2025"),0)::DOUBLE AS total
         FROM 'resumo_ecoadvance.parquet' ${where}
       `)).toArray()[0];
-      total = s.total; fornecedores = null; itens = null;
+      total = s.total; itens = null;
     }
 
     document.getElementById('cards').innerHTML = `
       <div class="card">
         <div class="card-label">Valor Total (2025)</div>
         <div class="card-value">${fmt(total)}</div>
-      </div>
-      <div class="card green">
-        <div class="card-label">Fornecedores Distintos (2025) </div>
-        <div class="card-value">${fmtN(fornecedores)}</div>
       </div>
       ${itens != null ? `
       <div class="card yellow">

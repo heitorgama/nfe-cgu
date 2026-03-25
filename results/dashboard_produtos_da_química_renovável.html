@@ -383,8 +383,8 @@
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
 
 (async () => {
-const _DATA_resumo_grupo_a = 'UEFSMRUEFZwBFaIBTBUMFQAAAE7wTQIAAABCUggAAABFc3RpcmVubwgAAABFdGlsZW5vIB4AAABPYnJhcyBkZSBQbMOhc3RpY28gb3UgQm9ycmFjaGEDAAAAUFZDAwAAAFNCUhUAFdABFTQsFTAVEBUGFQYAAGhEAgAAADABA0GIxiIai2gsorEA/gEAVgEAFQQVQBU0TBUIFQAAACAcBAAAADIwMjINCAAzDQggNAQAAAAyMDI1FQAVHhUiLBUwFRAVBhUGAAAPOAIAAAAwAQMMAAwBDAIMAxUEFYADFdACTBUwFQAAAMABAAABAQiAtUABBygUGStBAAAAgEENYQEIDGYMl6YBCAzAdahxAQgQACCl/kABKAjAF9IBCAyQD92ZBRgI0xpWAQgMhpOsrAEIDEDMUHABCAwAIBT9ASgMAGAa7QUICDiPNQEYDMAXk1UBCAzOax6oAQgMALkpdAUICL6HJwUICKBN+gUwCIN/PQEQLGBvJmNBAACAs4lI3QUQLIGhaUEAAAAASKsPQRUAFdACFUgsFTAVEBUGFQYAAKgBXAIAAAAwAQVBIIhBijkoqcWaezDKSau9AP4BAP4BAD4BABUEFeACFeABTBUsFQAAALABBAcACQEA4QkHCADwAgkJBC4jCQgEaQoJCABTCQcEAOINCADeDSgEdyIJEQQSCwkIAF4JBwQA9A0IAJ4NKAQ8IQkRBP0JCQgAYwkHAAANXwQA9w0QAL4NMAQyIwkRPPkKAAAAAAAAbQAAAAAAAAAVABXQAhVILBUwFRAVBhUGAACoAVwCAAAAMAEFQSCIQQowByUFFmvuwSgnrQD+AQD+AQA+AQAVQBwcAAAcHAAAHBwAAAAAQQDEQEoEAgAAyFAAiDBgAAAkwBADAQGAChBAAQ1ABBVAHBwAABwcAAAcHAAAAAAQICgAEEAKAIoAAYQGAAAIAQBISJAAAABUAAEAAQAjFUAcHAAAHBwAABwcAAAACw6Yd7DEk/Egzo7avgvh9PdqNSUXWWt9zS24UhaHZ8oVQBwcAAAcHAAAHBwAAADfz9BRuDGd12O3F4p7TpTSkpe+lFzY8iNMG+oxcDKZuxUCGVw1ABgNZHVja2RiX3NjaGVtYRUIABUMJQIYBHRpcG8lAAAVDCUCGANhbm8lAAAVCiUCGAtWYWxvciBUb3RhbAAVBCUCGBZGb3JuZWNlZG9yZXMgRGlzdGludG9zJSQAFjAZHBlMJgAcFQwZFRAZGAR0aXBvFQIWMBauAxaYAibIASYIHBgDU0JSGAJCUhYAFgwYA1NCUhgCQlIREQAm9gkVXgAAJgAcFQwZFRAZGANhbm8VAhYwFpoBFpIBJu4CJqACHBgEMjAyNRgEMjAyMhYAFggYBDIwMjUYBDIwMjIREQAm1AoVXgAAJgAcFQoZFRAZGAtWYWxvciBUb3RhbBUCFjAWkgYW2gMmoAYmsgMcNgAWMAAmsgsVXgAAJgAcFQQZFRAZGBZGb3JuZWNlZG9yZXMgRGlzdGludG9zFQIWMBbyBRbqAiaKCSaMBxwYCDIjAAAAAAAAGAgHAAAAAAAAABYAFiwYCDIjAAAAAAAAGAgHAAAAAAAAABERACaQDBVeAAAWzBAWMCYIACgoRHVja0RCIHZlcnNpb24gdjEuMy4yIChidWlsZCAwYjgzZTVkMmY2KQC6AQAAUEFSMQ==';
-const _DATA_resumo_grupo_b = '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';
+const _DATA_resumo_grupo_a = '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';
+const _DATA_resumo_grupo_b = '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';
 
 const _PARQUET_DATA = {
   'resumo_grupo_a.parquet': _DATA_resumo_grupo_a,
@@ -419,6 +419,21 @@ async function registerParquet(file) {
 
   const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
   const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
+
+  // Detecta anos disponíveis a partir dos nomes das colunas do parquet
+  function detectarAnos(fields) {
+    return fields
+      .map(f => f.name)
+      .filter(n => /^Valor Total \d{4}$/.test(n))
+      .map(n => n.slice(-4))
+      .sort();
+  }
+
+  const schemaA = await conn.query("SELECT * FROM 'resumo_grupo_a.parquet' LIMIT 0");
+  const anosA = detectarAnos(schemaA.schema.fields);
+
+  const schemaB = await conn.query("SELECT * FROM 'resumo_grupo_b.parquet' LIMIT 0");
+  const anosB = detectarAnos(schemaB.schema.fields);
 
   function buildTable(tableEl, rows, cols) {
     const thead = tableEl.querySelector('thead');
@@ -527,12 +542,13 @@ async function registerParquet(file) {
   async function refreshGrupoA() {
     const tipo = selTipo.value;
     const w = tipo ? `WHERE tipo = '${tipo.replace(/'/g, "''")}'` : '';
+    const totalSumExpr = anosA.map(a => `SUM(COALESCE("Valor Total ${a}", 0))`).join(' + ');
+    const totalExpr    = anosA.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
 
     const stats = (await conn.query(`
       SELECT
-        SUM("Valor Total")::DOUBLE AS total,
-        COUNT(DISTINCT tipo)::DOUBLE AS ntipos,
-        COUNT(DISTINCT ano)::DOUBLE AS nanos
+        (${totalSumExpr})::DOUBLE AS total,
+        COUNT(*)::DOUBLE AS ntipos
       FROM 'resumo_grupo_a.parquet' ${w}
     `)).toArray()[0];
 
@@ -547,33 +563,34 @@ async function registerParquet(file) {
       </div>
       <div class="card slate">
         <div class="card-label">Anos com Dados</div>
-        <div class="card-value">${fmtN(stats.nanos)}</div>
+        <div class="card-value">${fmtN(anosA.length)}</div>
       </div>
     `;
 
     const rows = (await conn.query(`
-      SELECT tipo, ano, "Valor Total"::DOUBLE AS "Valor Total", "Fornecedores Distintos"::DOUBLE AS "Fornecedores Distintos"
-      FROM 'resumo_grupo_a.parquet' ${w}
-      ORDER BY "Valor Total" DESC
+      SELECT * FROM 'resumo_grupo_a.parquet' ${w}
+      ORDER BY (${totalExpr}) DESC
     `)).toArray();
 
-    buildTable(document.getElementById('tblGrupoA'), rows, [
-      { key: 'tipo',                   label: 'Tipo' },
-      { key: 'ano',                    label: 'Ano' },
-      { key: 'Valor Total',            label: 'Valor Total',           numeric: true, fmt },
-      { key: 'Fornecedores Distintos', label: 'Fornecedores Distintos', numeric: true, fmt: fmtN },
-    ]);
+    const cols = [
+      { key: 'tipo', label: 'Tipo' },
+      ...anosA.map(a => ({ key: `Fornecedores ${a}`, label: `Fornec. ${a}`, numeric: true, fmt: fmtN })),
+      ...anosA.map(a => ({ key: `Valor Total ${a}`,  label: a,              numeric: true, fmt })),
+    ];
+
+    buildTable(document.getElementById('tblGrupoA'), rows, cols);
   }
 
   async function refreshGrupoB() {
     const grupo = selGrupoB.value;
     const w = grupo ? `WHERE grupo_b = '${grupo.replace(/'/g, "''")}'` : '';
+    const totalSumExpr = anosB.map(a => `SUM(COALESCE("Valor Total ${a}", 0))`).join(' + ');
+    const totalExpr    = anosB.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
 
     const stats = (await conn.query(`
       SELECT
-        SUM(valor_total_adquirido)::DOUBLE AS total,
-        COUNT(DISTINCT grupo_b)::DOUBLE AS ngrupos,
-        COUNT(DISTINCT ano)::DOUBLE AS nanos
+        (${totalSumExpr})::DOUBLE AS total,
+        COUNT(*)::DOUBLE AS ngrupos
       FROM 'resumo_grupo_b.parquet' ${w}
     `)).toArray()[0];
 
@@ -588,25 +605,23 @@ async function registerParquet(file) {
       </div>
       <div class="card slate">
         <div class="card-label">Anos com Dados</div>
-        <div class="card-value">${fmtN(stats.nanos)}</div>
+        <div class="card-value">${fmtN(anosB.length)}</div>
       </div>
     `;
 
     const rows = (await conn.query(`
-      SELECT grupo_b, abreviacao, ano,
-             valor_total_adquirido::DOUBLE AS valor_total_adquirido,
-             fornecedores_distintos::DOUBLE AS fornecedores_distintos
-      FROM 'resumo_grupo_b.parquet' ${w}
-      ORDER BY valor_total_adquirido DESC
+      SELECT * FROM 'resumo_grupo_b.parquet' ${w}
+      ORDER BY (${totalExpr}) DESC
     `)).toArray();
 
-    buildTable(document.getElementById('tblGrupoB'), rows, [
-      { key: 'abreviacao',            label: 'Abrev.' },
-      { key: 'grupo_b',               label: 'Grupo / Palavras-Chave' },
-      { key: 'ano',                   label: 'Ano' },
-      { key: 'valor_total_adquirido', label: 'Valor Total',           numeric: true, fmt },
-      { key: 'fornecedores_distintos', label: 'Fornecedores Distintos', numeric: true, fmt: fmtN },
-    ]);
+    const cols = [
+      { key: 'abreviacao', label: 'Abrev.' },
+      { key: 'grupo_b',    label: 'Grupo / Palavras-Chave' },
+      ...anosB.map(a => ({ key: `Fornecedores ${a}`, label: `Fornec. ${a}`, numeric: true, fmt: fmtN })),
+      ...anosB.map(a => ({ key: `Valor Total ${a}`,  label: a,              numeric: true, fmt })),
+    ];
+
+    buildTable(document.getElementById('tblGrupoB'), rows, cols);
   }
 
   async function refreshEvolucao() {
@@ -619,7 +634,6 @@ async function registerParquet(file) {
     }
   }
 
-  const ANOS = ['2022', '2023', '2024', '2025'];
   const PALETTE = [
     '#1351B4','#168821','#A07800','#0C326F','#2E7D32','#8B6914',
     '#2670E8','#388E3C','#C8961A','#1565C0','#43A047','#9E7B1E',
@@ -628,7 +642,7 @@ async function registerParquet(file) {
   ];
   let chartInstance = null;
 
-  function renderChart(labels, datasets) {
+  function renderChart(anos, datasets) {
     const ctx = document.getElementById('chartEvolucao').getContext('2d');
     if (chartInstance) chartInstance.destroy();
     allVisible = true;
@@ -636,7 +650,7 @@ async function registerParquet(file) {
 
     chartInstance = new Chart(ctx, {
       type: 'line',
-      data: { labels: ANOS, datasets },
+      data: { labels: anos, datasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -685,22 +699,19 @@ async function registerParquet(file) {
   }
 
   async function buildChartGrupoA() {
-    const pivotRows = (await conn.query(`
-      SELECT tipo,
-        SUM(CASE WHEN ano = '2022' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2022,
-        SUM(CASE WHEN ano = '2023' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2023,
-        SUM(CASE WHEN ano = '2024' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2024,
-        SUM(CASE WHEN ano = '2025' THEN "Valor Total" ELSE 0 END)::DOUBLE AS v2025,
-        SUM("Valor Total")::DOUBLE AS total
+    const totalExpr = anosA.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
+    const valorCols = anosA.map(a => `COALESCE("Valor Total ${a}", 0)::DOUBLE AS v${a}`).join(', ');
+
+    const rows = (await conn.query(`
+      SELECT tipo, ${valorCols}
       FROM 'resumo_grupo_a.parquet'
-      GROUP BY tipo
-      ORDER BY total DESC
+      ORDER BY (${totalExpr}) DESC
       LIMIT 20
     `)).toArray();
 
-    const datasets = pivotRows.map((r, i) => ({
+    const datasets = rows.map((r, i) => ({
       label: r.tipo,
-      data: [r.v2022, r.v2023, r.v2024, r.v2025].map(v => (v || 0) / 1e6),
+      data: anosA.map(a => (r[`v${a}`] || 0) / 1e6),
       borderColor: PALETTE[i % PALETTE.length],
       backgroundColor: PALETTE[i % PALETTE.length] + '18',
       tension: 0.3,
@@ -709,26 +720,23 @@ async function registerParquet(file) {
       borderWidth: 2,
     }));
 
-    renderChart(ANOS, datasets);
+    renderChart(anosA, datasets);
   }
 
   async function buildChartGrupoB() {
-    const pivotRows = (await conn.query(`
-      SELECT COALESCE(abreviacao, grupo_b) AS label,
-        SUM(CASE WHEN ano = '2022' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2022,
-        SUM(CASE WHEN ano = '2023' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2023,
-        SUM(CASE WHEN ano = '2024' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2024,
-        SUM(CASE WHEN ano = '2025' THEN valor_total_adquirido ELSE 0 END)::DOUBLE AS v2025,
-        SUM(valor_total_adquirido)::DOUBLE AS total
+    const totalExpr = anosB.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
+    const valorCols = anosB.map(a => `COALESCE("Valor Total ${a}", 0)::DOUBLE AS v${a}`).join(', ');
+
+    const rows = (await conn.query(`
+      SELECT COALESCE(abreviacao, grupo_b) AS label, ${valorCols}
       FROM 'resumo_grupo_b.parquet'
-      GROUP BY COALESCE(abreviacao, grupo_b)
-      ORDER BY total DESC
+      ORDER BY (${totalExpr}) DESC
       LIMIT 20
     `)).toArray();
 
-    const datasets = pivotRows.map((r, i) => ({
+    const datasets = rows.map((r, i) => ({
       label: r.label,
-      data: [r.v2022, r.v2023, r.v2024, r.v2025].map(v => (v || 0) / 1e6),
+      data: anosB.map(a => (r[`v${a}`] || 0) / 1e6),
       borderColor: PALETTE[i % PALETTE.length],
       backgroundColor: PALETTE[i % PALETTE.length] + '18',
       tension: 0.3,
@@ -737,7 +745,7 @@ async function registerParquet(file) {
       borderWidth: 2,
     }));
 
-    renderChart(ANOS, datasets);
+    renderChart(anosB, datasets);
   }
 
   const btnToggleAll = document.getElementById('btnToggleAll');

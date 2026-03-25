@@ -78,9 +78,11 @@ def criar_resumo_por_cadeia(con: duckdb.DuckDBPyConnection) -> None:
             cadeia,
             missao,
             nome_missao,
-            SUM(valor_total)                                                      AS valor_total_adquirido,
-            COUNT(DISTINCT {EMITENTE})                                            AS fornecedores_distintos,
-            COUNT(*)                                                              AS quantidade_itens,
+            SUM(valor_total)                                                                AS valor_total_adquirido,
+            COUNT(DISTINCT {EMITENTE})                                                      AS fornecedores_distintos,
+            COUNT(*)                                                                        AS quantidade_itens,
+            COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2025 THEN {EMITENTE} END)        AS fornecedores_2025,
+            COUNT(CASE WHEN YEAR(data_emissao) = 2025 THEN 1 END)                          AS quantidade_itens_2025,
             SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END) AS valor_2022,
             SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END) AS valor_2023,
             SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END) AS valor_2024,
@@ -99,14 +101,18 @@ def criar_totais_globais(con: duckdb.DuckDBPyConnection) -> None:
     con.execute(f"""
         CREATE OR REPLACE TABLE totais_globais AS
         SELECT
-            SUM(valor_total)         AS valor_total_global,
-            COUNT(DISTINCT emitente) AS fornecedores_global,
-            COUNT(*)                 AS itens_global
+            SUM(valor_total)                                                        AS valor_total_global,
+            COUNT(DISTINCT emitente)                                                AS fornecedores_global,
+            COUNT(*)                                                                AS itens_global,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)   AS valor_total_2025,
+            COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2025 THEN emitente END)  AS fornecedores_2025,
+            COUNT(CASE WHEN YEAR(data_emissao) = 2025 THEN 1 END)                  AS itens_2025
         FROM (
             SELECT
                 chave_de_acesso, numero, numero_produto,
-                ANY_VALUE(valor_total) AS valor_total,
-                ANY_VALUE({EMITENTE})  AS emitente
+                ANY_VALUE(valor_total)    AS valor_total,
+                ANY_VALUE({EMITENTE})     AS emitente,
+                ANY_VALUE(data_emissao)   AS data_emissao
             FROM itens_nib
             GROUP BY chave_de_acesso, numero, numero_produto
         )

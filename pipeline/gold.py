@@ -30,15 +30,17 @@ def criar_resumo_ecoadvance(con: duckdb.DuckDBPyConnection) -> None:
         SELECT
             "PRODUTO PESPP", PE,
             CODIGO, "DESCRIÇÃO",
-            SUM(valor_total)                                                        AS "VALOR TOTAL",
-            COUNT(DISTINCT {EMITENTE})                                              AS "FORNECEDORES DISTINTOS",
-            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END)   AS valor_2022,
-            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END)   AS valor_2023,
-            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END)   AS valor_2024,
-            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)   AS valor_2025
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END)               AS valor_2022,
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END)               AS valor_2023,
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END)               AS valor_2024,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)               AS valor_2025,
+            COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2022 THEN {EMITENTE} END)                AS "FORNECEDORES 2022",
+            COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2023 THEN {EMITENTE} END)                AS "FORNECEDORES 2023",
+            COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2024 THEN {EMITENTE} END)                AS "FORNECEDORES 2024",
+            COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2025 THEN {EMITENTE} END)                AS "FORNECEDORES 2025"
         FROM cruzamento
         GROUP BY ALL
-        ORDER BY "VALOR TOTAL" DESC
+        ORDER BY (valor_2022 + valor_2023 + valor_2024 + valor_2025) DESC
     """)
     count = con.execute("SELECT COUNT(*) FROM resumo_ecoadvance").fetchone()[0]
     imprimir_mensagem(f"resumo_ecoadvance: {count} linhas.")
@@ -56,15 +58,17 @@ def criar_resumo_por_pespp(con: duckdb.DuckDBPyConnection) -> None:
         )
         SELECT
             "PRODUTO PESPP",
-            SUM(valor_total)                                                        AS "VALOR TOTAL",
-            COUNT(DISTINCT {EMITENTE})                                              AS "FORNECEDORES DISTINTOS",
-            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END)   AS valor_2022,
-            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END)   AS valor_2023,
-            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END)   AS valor_2024,
-            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)   AS valor_2025
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END)               AS valor_2022,
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END)               AS valor_2023,
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END)               AS valor_2024,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)               AS valor_2025,
+            COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2022 THEN {EMITENTE} END)                AS "FORNECEDORES 2022",
+            COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2023 THEN {EMITENTE} END)                AS "FORNECEDORES 2023",
+            COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2024 THEN {EMITENTE} END)                AS "FORNECEDORES 2024",
+            COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2025 THEN {EMITENTE} END)                AS "FORNECEDORES 2025"
         FROM cruzamento
         GROUP BY ALL
-        ORDER BY "VALOR TOTAL" DESC
+        ORDER BY (valor_2022 + valor_2023 + valor_2024 + valor_2025) DESC
     """)
     count = con.execute("SELECT COUNT(*) FROM resumo_por_pespp").fetchone()[0]
     imprimir_mensagem(f"resumo_por_pespp: {count} linhas.")

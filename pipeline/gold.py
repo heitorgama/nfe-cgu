@@ -30,17 +30,17 @@ def criar_resumo_ecoadvance(con: duckdb.DuckDBPyConnection) -> None:
         SELECT
             "PRODUTO PESPP", PE,
             CODIGO, "DESCRIÇÃO",
-            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END)               AS valor_2022,
-            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END)               AS valor_2023,
-            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END)               AS valor_2024,
-            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)               AS valor_2025,
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END)               AS "VALOR 2022",
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END)               AS "VALOR 2023",
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END)               AS "VALOR 2024",
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)               AS "VALOR 2025",
             COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2022 THEN {EMITENTE} END)                AS "FORNECEDORES 2022",
             COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2023 THEN {EMITENTE} END)                AS "FORNECEDORES 2023",
             COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2024 THEN {EMITENTE} END)                AS "FORNECEDORES 2024",
             COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2025 THEN {EMITENTE} END)                AS "FORNECEDORES 2025"
         FROM cruzamento
         GROUP BY ALL
-        ORDER BY (valor_2022 + valor_2023 + valor_2024 + valor_2025) DESC
+        ORDER BY ("VALOR 2022" + "VALOR 2023" + "VALOR 2024" + "VALOR 2025") DESC
     """)
     count = con.execute("SELECT COUNT(*) FROM resumo_ecoadvance").fetchone()[0]
     imprimir_mensagem(f"resumo_ecoadvance: {count} linhas.")
@@ -58,17 +58,17 @@ def criar_resumo_por_pespp(con: duckdb.DuckDBPyConnection) -> None:
         )
         SELECT
             "PRODUTO PESPP",
-            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END)               AS valor_2022,
-            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END)               AS valor_2023,
-            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END)               AS valor_2024,
-            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)               AS valor_2025,
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END)               AS "VALOR 2022",
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END)               AS "VALOR 2023",
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END)               AS "VALOR 2024",
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)               AS "VALOR 2025",
             COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2022 THEN {EMITENTE} END)                AS "FORNECEDORES 2022",
             COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2023 THEN {EMITENTE} END)                AS "FORNECEDORES 2023",
             COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2024 THEN {EMITENTE} END)                AS "FORNECEDORES 2024",
             COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2025 THEN {EMITENTE} END)                AS "FORNECEDORES 2025"
         FROM cruzamento
         GROUP BY ALL
-        ORDER BY (valor_2022 + valor_2023 + valor_2024 + valor_2025) DESC
+        ORDER BY ("VALOR 2022" + "VALOR 2023" + "VALOR 2024" + "VALOR 2025") DESC
     """)
     count = con.execute("SELECT COUNT(*) FROM resumo_por_pespp").fetchone()[0]
     imprimir_mensagem(f"resumo_por_pespp: {count} linhas.")
@@ -79,13 +79,14 @@ def criar_totais_globais_ecoadvance(con: duckdb.DuckDBPyConnection) -> None:
     con.execute(f"""
         CREATE OR REPLACE TABLE totais_globais_ecoadvance AS
         SELECT
-            SUM(valor_total)            AS "VALOR TOTAL",
-            COUNT(DISTINCT emitente)    AS "FORNECEDORES DISTINTOS",
-            COUNT(*)                    AS "ITENS"
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)            AS "VALOR TOTAL 2025",
+            COUNT(DISTINCT CASE WHEN YEAR(data_emissao) = 2025 THEN emitente END)           AS "FORNECEDORES 2025",
+            COUNT(CASE WHEN YEAR(data_emissao) = 2025 THEN 1 END)                           AS "ITENS 2025"
         FROM (
             SELECT
                 chave_de_acesso, numero, numero_produto,
                 ANY_VALUE(valor_total)      AS valor_total,
+                ANY_VALUE(data_emissao)     AS data_emissao,
                 ANY_VALUE({EMITENTE})       AS emitente
             FROM (
                 SELECT *

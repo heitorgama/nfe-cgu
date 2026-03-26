@@ -528,7 +528,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   async function refreshGrupoA() {
     const tipo = selTipo.value;
     const w = tipo ? `WHERE tipo = '${tipo.replace(/'/g, "''")}'` : '';
-    const totalSumExpr = anosA.map(a => `SUM(COALESCE("Valor Total ${a}", 0))`).join(' + ');
+    const totalSumExpr = `SUM(COALESCE("Valor Total 2025", 0))`;
     const totalExpr    = anosA.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
 
     const stats = (await conn.query(`
@@ -540,7 +540,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
     document.getElementById('cards').innerHTML = `
       <div class="card">
-        <div class="card-label">Valor Total Acumulado</div>
+        <div class="card-label">Valor Total (2025)</div>
         <div class="card-value">${fmt(stats.total)}</div>
       </div>
       <div class="card green">
@@ -560,8 +560,8 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
     const cols = [
       { key: 'tipo', label: 'Tipo' },
-      ...anosA.map(a => ({ key: `Fornecedores ${a}`, label: `Fornec. ${a}`, numeric: true, fmt: fmtN })),
-      ...anosA.map(a => ({ key: `Valor Total ${a}`,  label: a,              numeric: true, fmt })),
+      ...anosA.map(a => ({ key: `Fornecedores ${a}`, label: `Fornecedores<br>${a}`, numeric: true, fmt: fmtN })),
+      ...anosA.map(a => ({ key: `Valor Total ${a}`,  label: `Valor total<br>${a}`,              numeric: true, fmt })),
     ];
 
     buildTable(document.getElementById('tblGrupoA'), rows, cols);
@@ -570,7 +570,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   async function refreshGrupoB() {
     const grupo = selGrupoB.value;
     const w = grupo ? `WHERE grupo_b = '${grupo.replace(/'/g, "''")}'` : '';
-    const totalSumExpr = anosB.map(a => `SUM(COALESCE("Valor Total ${a}", 0))`).join(' + ');
+    const totalSumExpr = `SUM(COALESCE("Valor Total 2025", 0))`;
     const totalExpr    = anosB.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
 
     const stats = (await conn.query(`
@@ -582,7 +582,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
     document.getElementById('cards').innerHTML = `
       <div class="card">
-        <div class="card-label">Valor Total Acumulado</div>
+        <div class="card-label">Valor Total (2025)</div>
         <div class="card-value">${fmt(stats.total)}</div>
       </div>
       <div class="card green">
@@ -603,8 +603,8 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     const cols = [
       { key: 'abreviacao', label: 'Abrev.' },
       { key: 'grupo_b',    label: 'Grupo / Palavras-Chave' },
-      ...anosB.map(a => ({ key: `Fornecedores ${a}`, label: `Fornec. ${a}`, numeric: true, fmt: fmtN })),
-      ...anosB.map(a => ({ key: `Valor Total ${a}`,  label: a,              numeric: true, fmt })),
+      ...anosB.map(a => ({ key: `Fornecedores ${a}`, label: `Fornecedores<br>${a}`, numeric: true, fmt: fmtN })),
+      ...anosB.map(a => ({ key: `Valor Total ${a}`,  label: `Valor total<br>${a}`, numeric: true, fmt })),
     ];
 
     buildTable(document.getElementById('tblGrupoB'), rows, cols);

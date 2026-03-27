@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compras Públicas — EcoAdvance · MGI</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue:      #1351B4;
+    --blue-dark: #071D41;
+    --blue-mid:  #0C326F;
+    --green:     #168821;
+    --yellow:    #FFCD07;
+    --yellow-dk: #A07800;
+    --gray-bg:   #F0F2F5;
+    --gray-10:   #E6E8EC;
+    --gray-20:   #C8CDD6;
+    --gray-50:   #8A9099;
+    --gray-70:   #4A5057;
+    --gray-90:   #1A1D21;
+    --white:     #FFFFFF;
+    --font: 'Raleway', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--gray-bg);
+    color: var(--gray-90);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .panel-header {
+    background: var(--blue-dark);
+    padding: 0 2.5rem;
+    display: flex;
+    align-items: stretch;
+    min-height: 72px;
+  }
+
+  .tricolor {
+    width: 8px;
+    flex-shrink: 0;
+    background: linear-gradient(to bottom,
+      var(--yellow) 0%, var(--yellow) 33.3%,
+      var(--green)  33.3%, var(--green)  66.6%,
+      var(--blue)   66.6%, var(--blue)   100%
+    );
+    margin: 14px 20px 14px 0;
+    border-radius: 2px;
+  }
+
+  .panel-header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 14px 0;
+  }
+
+  .panel-orgao {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .panel-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  .panel-subtitle {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: rgba(255,255,255,0.45);
+    margin-top: 3px;
+  }
+
+  .panel-header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .accent-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--yellow) 0%, var(--green) 40%, var(--blue) 100%);
+  }
+
+  .layout {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 1.8rem 2rem 3rem;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.4rem;
+    flex-wrap: wrap;
+  }
+
+  .toolbar label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--gray-50);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+  }
+
+  select {
+    background: var(--white);
+    color: var(--gray-90);
+    border: 1px solid var(--gray-20);
+    padding: 0.45rem 0.9rem;
+    border-radius: 4px;
+    font-family: var(--font);
+    font-size: 0.85rem;
+    font-weight: 500;
+    min-width: 300px;
+    cursor: pointer;
+  }
+
+  select:focus {
+    outline: 2px solid var(--blue);
+    outline-offset: 1px;
+    border-color: var(--blue);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: 6px;
+    padding: 1.1rem 1.3rem 1.2rem;
+    border-left: 4px solid var(--blue);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  .card.green  { border-left-color: var(--green); }
+  .card.yellow { border-left-color: var(--yellow); }
+
+  .card-label {
+    font-size: 0.67rem;
+    font-weight: 700;
+    color: var(--gray-50);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
+  .card-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--blue-dark);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .card.green  .card-value { color: var(--green); }
+  .card.yellow .card-value { color: var(--yellow-dk); }
+
+  .panel {
+    background: var(--white);
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid var(--gray-10);
+  }
+
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--gray-10);
+    background: var(--white);
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 0.7rem 1.3rem;
+    cursor: pointer;
+    color: var(--gray-50);
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.12s;
+    white-space: nowrap;
+  }
+
+  .tab:hover { color: var(--blue); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  .hidden { display: none; }
+
+  .table-wrap {
+    max-height: 60vh;
+    overflow: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    table-layout: auto;
+  }
+
+  thead th {
+    background: #EEF2FA;
+    color: var(--blue-mid);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.64rem;
+    letter-spacing: 0.07em;
+    padding: 0.65rem 0.9rem;
+    text-align: left;
+    border-bottom: 2px solid #C5D4F0;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  thead th:hover { background: #DDE6F7; color: var(--blue); }
+  thead th.sorted { color: var(--blue); background: #DDE6F7; }
+
+  tbody td {
+    padding: 0.5rem 0.9rem;
+    border-bottom: 1px solid var(--gray-10);
+    vertical-align: top;
+    color: var(--gray-90);
+  }
+
+  tbody tr:hover { background: #F5F8FF; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-weight: 600;
+  }
+
+  .chart-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.8rem 1.5rem 0;
+  }
+
+  .btn-toggle-all {
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: none;
+    border: 1px solid var(--blue);
+    border-radius: 4px;
+    padding: 0.35rem 0.9rem;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+  }
+
+  .btn-toggle-all:hover {
+    background: var(--blue);
+    color: var(--white);
+  }
+
+  .chart-wrap {
+    height: 620px;
+    position: relative;
+    padding: 1.5rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="panel-header">
+  <div class="tricolor"></div>
+  <div class="panel-header-text">
+    <div class="panel-orgao">MGI · Ministério da Gestão e da Inovação em Serviços Públicos</div>
+    <div class="panel-title">Compras Públicas — EcoAdvance</div>
+    <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2022–2025</div>
+  </div>
+  <div class="panel-header-right">
+    <span class="badge">Portal da Transparência · CGU</span>
+    <span class="badge">EcoAdvance</span>
+  </div>
+</div>
+<div class="accent-bar"></div>
+
+<div class="layout">
+  <div id="app">
+
+    <div class="toolbar">
+      <label for="selPespp">Produto PESPP:</label>
+      <select id="selPespp"><option value="">Todos os produtos</option></select>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="panel">
+      <div class="tabs">
+        <div class="tab active" data-tab="pespp">Por Produto PESPP</div>
+        <div class="tab" data-tab="tabela">Por Produto PESPP e NCM</div>
+        <div class="tab" data-tab="evolucao">Evolução Anual</div>
+      </div>
+
+      <div id="tab-pespp">
+        <div class="table-wrap"><table id="tblPespp"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div id="tab-tabela" class="hidden">
+        <div class="table-wrap"><table id="tblEcoAdvance"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div id="tab-evolucao" class="hidden">
+        <div class="chart-toolbar">
+          <button class="btn-toggle-all" id="btnToggleAll">Desmarcar tudo</button>
+        </div>
+        <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script type="module">
+import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
+
+(async () => {
+  const bundle = await duckdb.selectBundle(duckdb.getJsDelivrBundles());
+  const workerUrl = URL.createObjectURL(
+    new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
+  );
+  const worker = new Worker(workerUrl);
+  const db = new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(), worker);
+  await db.instantiate(bundle.mainModule);
+  URL.revokeObjectURL(workerUrl);
+  const conn = await db.connect();
+
+const _DATA_resumo_ecoadvance = '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';
+const _DATA_resumo_por_pespp = 'UEFSMRUAFbgBFbABLBUKFQAVBhUGAABc0AIAAAAKAQgAAABURVhURUlTIB4AAABQUk9EVVRPUyBERSBQTEFTVElDTyBSRUNJQ0xBRE8FASI0QVBFTAUAAABDQUbDiRIBEgk0KCBERSBMSU1QRVpBFQAVXBVSLBUKFQAVBhUGAAAuIAIAAAAKAeAMAAUBBBM2BQcIAL0XCQg8FAQAAAAAAAC5CwAAAAAAABUAFVwVUiwVChUAFQYVBgAALiACAAAACgEeDQAFAQQeNQUHCADBFgkIPEkDAAAAAAAAbAsAAAAAAAAVABVcFVIsFQoVABUGFQYAAC4gAgAAAAoBhQwABQEEVDIFBwgAHRUJCDxKAwAAAAAAANgKAAAAAAAAFQAVXBVSLBUKFQAVBhUGAAAuIAIAAAAKAcYNAAUBBHY2BQcIADEWCQg8wwMAAAAAAADFCwAAAAAAABUAFVwVXCwVChUAFQYVBgAALlACAAAACgEAAAC7b7W8QQAAAI0K5s0BCAwWbR6gAQgwNOq6lUEAAACgCbpuQRUAFVwVXCwVChUAFQYVBgAALlACAAAACgEAAACOoymyQQAAAErPKNEBCAzsG92gAQgw4IJ+iUEAAACA7FVwQRUAFVwVXCwVChUAFQYVBgAALlACAAAACgEAAABgOuS2QQAAAEE8xLMBCAyoaVCsAQgweGodhUEAAABwdK54QRUAFVwVXCwVChUAFQYVBgAALlACAAAACgEAAAACTCK9QQAAANp0+rMBCAwKTH2oAQgwEEaAnEEAAADALZ1wQRUCGaw1ABgNZHVja2RiX3NjaGVtYRUSABUMJQIYDVBST0RVVE8gUEVTUFAlAAAVBCUCGBFGT1JORUNFRE9SRVMgMjAyMiUkABUEJQIYEUZPUk5FQ0VET1JFUyAyMDIzJSQAFQQlAhgRRk9STkVDRURPUkVTIDIwMjQlJAAVBCUCGBFGT1JORUNFRE9SRVMgMjAyNSUkABUKJQIYClZBTE9SIDIwMjIAFQolAhgKVkFMT1IgMjAyMwAVCiUCGApWQUxPUiAyMDI0ABUKJQIYClZBTE9SIDIwMjUAFgoZHBmcJgAcFQwZFQAZGA1QUk9EVVRPIFBFU1BQFQIWChbeARbWASYIPBgIVEVYVEVJUyAYBUNBRsOJFgAoCFRFWFRFSVMgGAVDQUbDiRERAAAAJgAcFQQZFQAZGBFGT1JORUNFRE9SRVMgMjAyMhUCFgoWfhZ0Jt4BPBgIEzYAAAAAAAAYCBQEAAAAAAAAFgAoCBM2AAAAAAAAGAgUBAAAAAAAABERAAAAJgAcFQQZFQAZGBFGT1JORUNFRE9SRVMgMjAyMxUCFgoWfhZ0JtICPBgIHjUAAAAAAAAYCEkDAAAAAAAAFgAoCB41AAAAAAAAGAhJAwAAAAAAABERAAAAJgAcFQQZFQAZGBFGT1JORUNFRE9SRVMgMjAyNBUCFgoWfhZ0JsYDPBgIVDIAAAAAAAAYCEoDAAAAAAAAFgAoCFQyAAAAAAAAGAhKAwAAAAAAABERAAAAJgAcFQQZFQAZGBFGT1JORUNFRE9SRVMgMjAyNRUCFgoWfhZ0JroEPBgIdjYAAAAAAAAYCMMDAAAAAAAAFgAoCHY2AAAAAAAAGAjDAwAAAAAAABERAAAAJgAcFQoZFQAZGApWQUxPUiAyMDIyFQIWChZ+Fn4mrgU8NgAAAAAmABwVChkVABkYClZBTE9SIDIwMjMVAhYKFn4WfiasBjw2AAAAACYAHBUKGRUAGRgKVkFMT1IgMjAyNBUCFgoWfhZ+JqoHPDYAAAAAJgAcFQoZFQAZGApWQUxPUiAyMDI1FQIWChZ+Fn4mqAg8NgAAAAAWzgkWCiYIFp4JACgoRHVja0RCIHZlcnNpb24gdjEuNS4wIChidWlsZCAzYTM5NjdhYTgxKRmcHAAAHAAAHAAAHAAAHAAAHAAAHAAAHAAAHAAAAHUDAABQQVIx';
+const _DATA_totais_globais_ecoadvance = 'UEFSMRUAFRwVICwVAhUAFQYVBgAADjQCAAAAAgEAAGD1ps70QRUAFRwVICwVAhUAFQYVBgAADjQCAAAAAgF8tQAAAAAAABUAFRwVICwVAhUAFQYVBgAADjQCAAAAAgG6DhgAAAAAABUCGUw1ABgNZHVja2RiX3NjaGVtYRUGABUKJQIYC1ZBTE9SIFRPVEFMABUEJQIYFkZPUk5FQ0VET1JFUyBESVNUSU5UT1MlJAAVBCUCGAVJVEVOUyUkABYCGRwZPCYAHBUKGRUAGRgLVkFMT1IgVE9UQUwVAhYCFj4WQiYIPDYAAAAAJgAcFQQZFQAZGBZGT1JORUNFRE9SRVMgRElTVElOVE9TFQIWAhY+FkImSjwYCHy1AAAAAAAAGAh8tQAAAAAAABYAKAh8tQAAAAAAABgIfLUAAAAAAAAREQAAACYAHBUEGRUAGRgFSVRFTlMVAhYCFj4WQiaMATwYCLoOGAAAAAAAGAi6DhgAAAAAABYAKAi6DhgAAAAAABgIug4YAAAAAAAREQAAABa6ARYCJggWxgEAKChEdWNrREIgdmVyc2lvbiB2MS41LjAgKGJ1aWxkIDNhMzk2N2FhODEpGTwcAAAcAAAcAAAAagEAAFBBUjE=';
+
+const _PARQUET_DATA = {
+  'resumo_ecoadvance.parquet': _DATA_resumo_ecoadvance,
+  'resumo_por_pespp.parquet': _DATA_resumo_por_pespp,
+  'totais_globais_ecoadvance.parquet': _DATA_totais_globais_ecoadvance,
+};
+
+function base64ToUint8Array(b64) {
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return arr;
+}
+
+async function registerParquet(file) {
+  const buf = base64ToUint8Array(_PARQUET_DATA[file]);
+  await db.registerFileBuffer(file, buf);
+}
+
+  await registerParquet('resumo_ecoadvance.parquet');
+  await registerParquet('resumo_por_pespp.parquet');
+  await registerParquet('totais_globais_ecoadvance.parquet');
+
+  const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+  const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
+
+  // Popula filtro PRODUTO PESPP
+  const produtos = (await conn.query(
+    `SELECT DISTINCT "PRODUTO PESPP" AS p FROM 'resumo_ecoadvance.parquet' ORDER BY 1`
+  )).toArray();
+  const sel = document.getElementById('selPespp');
+  produtos.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.p;
+    opt.textContent = r.p;
+    sel.appendChild(opt);
+  });
+
+  function buildTable(tableEl, rows, cols) {
+    const thead = tableEl.querySelector('thead');
+    const tbody = tableEl.querySelector('tbody');
+    let sortIdx = null, sortAsc = true;
+
+    function renderBody(data) {
+      tbody.innerHTML = data.map((r, i) =>
+        `<tr data-idx="${i}">` +
+        cols.map(c => {
+          const v = r[c.key];
+          const cls = c.numeric ? ' class="num"' : '';
+          const display = c.fmt ? c.fmt(v) : (v ?? '—');
+          return `<td${cls}>${display}</td>`;
+        }).join('') + '</tr>'
+      ).join('');
+    }
+
+    function renderHead() {
+      thead.innerHTML = '<tr>' + cols.map((c, i) => {
+        const active = i === sortIdx;
+        const arrow  = active ? (sortAsc ? ' ▲' : ' ▼') : '';
+        return `<th data-colidx="${i}"${active ? ' class="sorted"' : ''}>${c.label}${arrow}</th>`;
+      }).join('') + '</tr>';
+      thead.querySelectorAll('th').forEach(th => {
+        th.addEventListener('click', () => {
+          const i = +th.dataset.colidx;
+          sortAsc = sortIdx === i ? !sortAsc : true;
+          sortIdx = i;
+          const col = cols[sortIdx];
+          const key = col.key;
+          const sorted = [...rows].sort((a, b) => {
+            const va = a[key], vb = b[key];
+            if (va == null && vb == null) return 0;
+            if (va == null) return sortAsc ? 1 : -1;
+            if (vb == null) return sortAsc ? -1 : 1;
+            if (col.numeric)
+              return sortAsc ? Number(va) - Number(vb) : Number(vb) - Number(va);
+            return sortAsc
+              ? String(va).localeCompare(String(vb), 'pt-BR')
+              : String(vb).localeCompare(String(va), 'pt-BR');
+          });
+          renderHead();
+          renderBody(sorted);
+        });
+      });
+    }
+
+    renderHead();
+    renderBody(rows);
+  }
+
+  const ANOS = ['2022', '2023', '2024', '2025'];
+  const PALETTE = [
+    '#1351B4','#168821','#A07800','#0C326F','#2E7D32','#8B6914',
+    '#2670E8','#388E3C','#C8961A','#1565C0','#43A047','#9E7B1E',
+    '#0D47A1','#2E7D32','#6D4C00','#1A237E','#1B5E20','#4E342E',
+    '#283593','#33691E'
+  ];
+
+  let chartInstance = null;
+  let allVisible = true;
+  const btnToggleAll = document.getElementById('btnToggleAll');
+
+  function buildChart(rows, groupKey) {
+    const ctx = document.getElementById('chartEvolucao').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+    allVisible = true;
+    btnToggleAll.textContent = 'Desmarcar tudo';
+
+    // Agrega por groupKey, top 20
+    const agg = {};
+    rows.forEach(r => {
+      const k = r[groupKey] ?? '—';
+      if (!agg[k]) agg[k] = { label: k, vals: [0, 0, 0, 0], total: 0 };
+      ANOS.forEach((a, i) => { agg[k].vals[i] += Number(r[`VALOR ${a}`]) || 0; });
+      agg[k].total += ANOS.reduce((s, a) => s + (Number(r[`VALOR ${a}`]) || 0), 0);
+    });
+
+    const top = Object.values(agg)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 20);
+
+    const datasets = top.map((g, i) => ({
+      label: g.label,
+      data: g.vals.map(v => v / 1e6),
+      borderColor: PALETTE[i % PALETTE.length],
+      backgroundColor: PALETTE[i % PALETTE.length] + '18',
+      tension: 0.3,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      borderWidth: 2,
+    }));
+
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: { labels: ANOS, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#4A5057',
+              font: { size: 11, family: "'Raleway',sans-serif", weight: '600' },
+              boxWidth: 12,
+              padding: 16,
+            },
+          },
+          tooltip: {
+            backgroundColor: '#071D41',
+            titleColor: '#FFCD07',
+            bodyColor: '#FFFFFF',
+            padding: 10,
+            callbacks: {
+              label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toFixed(1)} M`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: '#8A9099', font: { family: "'Raleway',sans-serif", weight: '600' } },
+            grid: { color: '#E6E8EC' },
+          },
+          y: {
+            ticks: {
+              color: '#8A9099',
+              font: { family: "'Raleway',sans-serif" },
+              callback: v => `R$ ${v.toFixed(0)} M`,
+            },
+            grid: { color: '#E6E8EC' },
+            title: {
+              display: true,
+              text: 'Valor (R$ milhões)',
+              color: '#8A9099',
+              font: { family: "'Raleway',sans-serif", size: 11 },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  btnToggleAll.addEventListener('click', () => {
+    if (!chartInstance) return;
+    allVisible = !allVisible;
+    chartInstance.data.datasets.forEach((_, i) => {
+      chartInstance.setDatasetVisibility(i, allVisible);
+    });
+    chartInstance.update();
+    btnToggleAll.textContent = allVisible ? 'Desmarcar tudo' : 'Marcar tudo';
+  });
+
+  async function refresh() {
+    const pespp = sel.value;
+    const where = pespp ? `WHERE "PRODUTO PESPP" = '${pespp.replace(/'/g, "''")}'` : '';
+
+    // Cards
+    let total, fornecedores, itens;
+    if (!pespp) {
+      const g = (await conn.query(`
+        SELECT "VALOR TOTAL"::DOUBLE AS total,
+               "FORNECEDORES DISTINTOS"::DOUBLE AS fornecedores,
+               "ITENS"::DOUBLE AS itens
+        FROM 'totais_globais_ecoadvance.parquet'
+      `)).toArray()[0];
+      total = g.total; fornecedores = g.fornecedores; itens = g.itens;
+    } else {
+      const s = (await conn.query(`
+        SELECT (COALESCE(SUM("VALOR 2022"),0) + COALESCE(SUM("VALOR 2023"),0)
+              + COALESCE(SUM("VALOR 2024"),0) + COALESCE(SUM("VALOR 2025"),0))::DOUBLE AS total
+        FROM 'resumo_ecoadvance.parquet' ${where}
+      `)).toArray()[0];
+      total = s.total; fornecedores = null; itens = null;
+    }
+
+    document.getElementById('cards').innerHTML = `
+      <div class="card">
+        <div class="card-label">Valor Total (2022–2025)</div>
+        <div class="card-value">${fmt(total)}</div>
+      </div>
+      ${fornecedores != null ? `
+      <div class="card green">
+        <div class="card-label">Fornecedores Distintos</div>
+        <div class="card-value">${fmtN(fornecedores)}</div>
+      </div>` : ''}
+      ${itens != null ? `
+      <div class="card yellow">
+        <div class="card-label">Itens de NF-e</div>
+        <div class="card-value">${fmtN(itens)}</div>
+      </div>` : ''}
+    `;
+
+    // Tabela Por NCM e Produto PESPP
+    const rows = (await conn.query(
+      `SELECT * FROM 'resumo_ecoadvance.parquet' ${where} ORDER BY "VALOR 2025" DESC NULLS LAST`
+    )).toArray();
+
+    buildTable(document.getElementById('tblEcoAdvance'), rows, [
+      { key: 'PRODUTO PESPP',    label: 'Produto PESPP' },
+      { key: 'PE',               label: 'PE' },
+      { key: 'CODIGO',           label: 'Código NCM' },
+      { key: 'DESCRIÇÃO',        label: 'Descrição' },
+      { key: 'FORNECEDORES 2022', label: 'Fornec. 2022', numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2023', label: 'Fornec. 2023', numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2024', label: 'Fornec. 2024', numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2025', label: 'Fornec. 2025', numeric: true, fmt: fmtN },
+      { key: 'VALOR 2022',       label: '2022',          numeric: true, fmt },
+      { key: 'VALOR 2023',       label: '2023',          numeric: true, fmt },
+      { key: 'VALOR 2024',       label: '2024',          numeric: true, fmt },
+      { key: 'VALOR 2025',       label: '2025',          numeric: true, fmt },
+    ]);
+
+    // Tabela Por Produto PESPP
+    const pesppRows = (await conn.query(
+      `SELECT * FROM 'resumo_por_pespp.parquet' ${where} ORDER BY "VALOR 2025" DESC NULLS LAST`
+    )).toArray();
+
+    buildTable(document.getElementById('tblPespp'), pesppRows, [
+      { key: 'PRODUTO PESPP',     label: 'Produto PESPP' },
+      { key: 'FORNECEDORES 2022', label: 'Fornec. 2022', numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2023', label: 'Fornec. 2023', numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2024', label: 'Fornec. 2024', numeric: true, fmt: fmtN },
+      { key: 'FORNECEDORES 2025', label: 'Fornec. 2025', numeric: true, fmt: fmtN },
+      { key: 'VALOR 2022',        label: '2022',          numeric: true, fmt },
+      { key: 'VALOR 2023',        label: '2023',          numeric: true, fmt },
+      { key: 'VALOR 2024',        label: '2024',          numeric: true, fmt },
+      { key: 'VALOR 2025',        label: '2025',          numeric: true, fmt },
+    ]);
+
+    // Gráfico sempre por PRODUTO PESPP
+    buildChart(pesppRows, 'PRODUTO PESPP');
+  }
+
+  sel.addEventListener('change', refresh);
+
+  // Tabs
+  const tabIds = { pespp: 'tab-pespp', tabela: 'tab-tabela', evolucao: 'tab-evolucao' };
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      Object.entries(tabIds).forEach(([key, id]) => {
+        document.getElementById(id).classList.toggle('hidden', tab.dataset.tab !== key);
+      });
+    });
+  });
+
+  await refresh();
+})().catch(err => {
+  document.body.innerHTML += `<p style="color:#C53030;padding:2rem">Erro ao carregar: ${err.message}</p>`;
+});
+</script>
+</body>
+</html>

@@ -402,6 +402,8 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
   await registerParquet('resumo_grupo_a.parquet');
   await registerParquet('resumo_grupo_b.parquet');
+  await registerParquet('totais_grupo_a.parquet');
+  await registerParquet('totais_grupo_b.parquet');
 
   const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
   const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
@@ -531,25 +533,33 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     const totalSumExpr = `SUM(COALESCE("Valor Total 2025", 0))`;
     const totalExpr    = anosA.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
 
-    const stats = (await conn.query(`
-      SELECT
-        (${totalSumExpr})::DOUBLE AS total,
-        COUNT(*)::DOUBLE AS ntipos
-      FROM 'resumo_grupo_a.parquet' ${w}
-    `)).toArray()[0];
+    const anoAtualA = anosA[anosA.length - 1] ?? '2025';
+    const stats = tipo
+      ? (await conn.query(`
+          SELECT
+            (${totalSumExpr})::DOUBLE                        AS total,
+            SUM("Fornecedores ${anoAtualA}")::DOUBLE         AS fornecedores,
+            SUM("Notas Distintas ${anoAtualA}")::DOUBLE      AS notas
+          FROM 'resumo_grupo_a.parquet' ${w}
+        `)).toArray()[0]
+      : (await conn.query(`
+          SELECT valor_total AS total, fornecedores_distintos AS fornecedores, notas_distintas AS notas
+          FROM 'totais_grupo_a.parquet'
+          WHERE ano = '${anoAtualA}'
+        `)).toArray()[0];
 
     document.getElementById('cards').innerHTML = `
       <div class="card">
-        <div class="card-label">Valor Total (2025)</div>
+        <div class="card-label">Valor Total (${anoAtualA})</div>
         <div class="card-value">${fmt(stats.total)}</div>
       </div>
       <div class="card green">
-        <div class="card-label">Tipos de Item</div>
-        <div class="card-value">${fmtN(stats.ntipos)}</div>
+        <div class="card-label">Fornecedores Distintos (${anoAtualA})</div>
+        <div class="card-value">${fmtN(stats.fornecedores)}</div>
       </div>
       <div class="card slate">
-        <div class="card-label">Anos com Dados</div>
-        <div class="card-value">${fmtN(anosA.length)}</div>
+        <div class="card-label">Notas Fiscais Distintas (${anoAtualA})</div>
+        <div class="card-value">${fmtN(stats.notas)}</div>
       </div>
     `;
 
@@ -573,12 +583,20 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     const totalSumExpr = `SUM(COALESCE("Valor Total 2025", 0))`;
     const totalExpr    = anosB.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
 
-    const stats = (await conn.query(`
-      SELECT
-        (${totalSumExpr})::DOUBLE AS total,
-        COUNT(*)::DOUBLE AS ngrupos
-      FROM 'resumo_grupo_b.parquet' ${w}
-    `)).toArray()[0];
+    const anoAtual = anosB[anosB.length - 1] ?? '2025';
+    const stats = grupo
+      ? (await conn.query(`
+          SELECT
+            (${totalSumExpr})::DOUBLE                    AS total,
+            SUM("Fornecedores ${anoAtual}")::DOUBLE      AS fornecedores,
+            SUM("Notas Distintas ${anoAtual}")::DOUBLE   AS notas
+          FROM 'resumo_grupo_b.parquet' ${w}
+        `)).toArray()[0]
+      : (await conn.query(`
+          SELECT valor_total AS total, fornecedores_distintos AS fornecedores, notas_distintas AS notas
+          FROM 'totais_grupo_b.parquet'
+          WHERE ano = '${anoAtual}'
+        `)).toArray()[0];
 
     document.getElementById('cards').innerHTML = `
       <div class="card">
@@ -586,12 +604,12 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
         <div class="card-value">${fmt(stats.total)}</div>
       </div>
       <div class="card green">
-        <div class="card-label">Grupos de Palavras-Chave</div>
-        <div class="card-value">${fmtN(stats.ngrupos)}</div>
+        <div class="card-label">Fornecedores Distintos (${anoAtual})</div>
+        <div class="card-value">${fmtN(stats.fornecedores)}</div>
       </div>
       <div class="card slate">
-        <div class="card-label">Anos com Dados</div>
-        <div class="card-value">${fmtN(anosB.length)}</div>
+        <div class="card-label">Notas Fiscais Distintas (${anoAtual})</div>
+        <div class="card-value">${fmtN(stats.notas)}</div>
       </div>
     `;
 

@@ -42,19 +42,24 @@ def criar_resumo_grupo_a(con: duckdb.DuckDBPyConnection) -> None:
         )
         SELECT
             tipo,
-            LEFT(periodo, 4)           AS ano,
-            SUM(valor_total)           AS valor_total,
-            COUNT(DISTINCT {EMITENTE}) AS fornecedores_distintos
+            LEFT(periodo, 4)                  AS ano,
+            SUM(valor_total)                  AS valor_total,
+            COUNT(DISTINCT {EMITENTE})         AS fornecedores_distintos,
+            COUNT(DISTINCT chave_de_acesso)    AS notas_distintas
         FROM itens_cruzados
         GROUP BY ALL
     """)
 
     anos = _anos_disponiveis(con, '_tmp_grupo_a')
     col_defs = _col_defs_pivot(anos, 'valor_total', 'fornecedores_distintos')
+    col_notas = ', '.join(
+        f"SUM(CASE WHEN ano = '{a}' THEN notas_distintas END)::BIGINT AS \"Notas Distintas {a}\""
+        for a in anos
+    )
 
     con.execute(f"""
         CREATE OR REPLACE TABLE resumo_grupo_a AS
-        SELECT tipo, {col_defs}
+        SELECT tipo, {col_defs}, {col_notas}
         FROM _tmp_grupo_a
         GROUP BY tipo
         ORDER BY SUM(valor_total) DESC
@@ -90,19 +95,25 @@ def criar_resumo_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
             TRIM(b."Palavras Chaves")         AS grupo_b,
             b."Abreviação"                    AS abreviacao,
             SUM(s.valor_total)               AS valor_total_adquirido,
-            COUNT(DISTINCT {EMITENTE})        AS fornecedores_distintos
+            COUNT(DISTINCT {EMITENTE})        AS fornecedores_distintos,
+            COUNT(DISTINCT s.chave_de_acesso) AS notas_distintas
         FROM chaves_normalizado AS b
-        JOIN itens_normalizado AS s
+        LEFT JOIN itens_normalizado AS s
             ON s.descricao_normalizada LIKE '%' || b.chave_normalizada || '%'
+            OR REGEXP_MATCHES(s.descricao_normalizada, '\b' || b."Abreviação" || '\b')
         GROUP BY ano, TRIM(b."Palavras Chaves"), b."Abreviação"
     """)
 
     anos = _anos_disponiveis(con, '_tmp_grupo_b')
     col_defs = _col_defs_pivot(anos, 'valor_total_adquirido', 'fornecedores_distintos')
+    col_notas = ', '.join(
+        f"SUM(CASE WHEN ano = '{a}' THEN notas_distintas END)::BIGINT AS \"Notas Distintas {a}\""
+        for a in anos
+    )
 
     con.execute(f"""
         CREATE OR REPLACE TABLE resumo_grupo_b AS
-        SELECT grupo_b, abreviacao, {col_defs}
+        SELECT grupo_b, abreviacao, {col_defs}, {col_notas}
         FROM _tmp_grupo_b
         GROUP BY grupo_b, abreviacao
         ORDER BY SUM(valor_total_adquirido) DESC
@@ -113,9 +124,64 @@ def criar_resumo_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
     imprimir_mensagem(f"resumo_grupo_b: {count} linhas.")
 
 
+def criar_totais_grupo_a(con: duckdb.DuckDBPyConnection) -> None:
+    """Totais distintos por ano para Grupo A (NCM exato)."""
+    con.execute(f"""
+        CREATE OR REPLACE TABLE totais_grupo_a AS
+        WITH itens_cruzados AS (
+            SELECT s.*, m.tipo
+            FROM 'extracoes/silver/itens.parquet' s
+            JOIN '{MAPEAMENTO_GRUPO_A}' m ON m.ncm = s.codigo_ncm_sh
+        )
+        SELECT
+            LEFT(periodo, 4)                                AS ano,
+            SUM(valor_total)::DOUBLE                        AS valor_total,
+            COUNT(DISTINCT {EMITENTE})                      AS fornecedores_distintos,
+            COUNT(DISTINCT chave_de_acesso)                 AS notas_distintas
+        FROM itens_cruzados
+        GROUP BY LEFT(periodo, 4)
+        ORDER BY ano
+    """)
+    imprimir_mensagem("totais_grupo_a calculado.")
+
+
+def criar_totais_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
+    """Totais distintos por ano para Grupo B (palavras-chave)."""
+    con.execute(f"""
+        CREATE OR REPLACE TABLE totais_grupo_b AS
+        WITH itens_normalizado AS (
+            SELECT *,
+                REGEXP_REPLACE(
+                    REPLACE(LOWER(descricao_do_produto_servico), '-', ' '),
+                    '\\s+', ' '
+                ) AS descricao_normalizada
+            FROM 'extracoes/silver/itens.parquet'
+        ),
+        chaves_normalizado AS (
+            SELECT *,
+                REGEXP_REPLACE(
+                    REPLACE(LOWER(TRIM("Palavras Chaves")), '-', ' '),
+                    '\\s+', ' '
+                ) AS chave_normalizada
+            FROM '{MAPEAMENTO_GRUPO_B}'
+        )
+        SELECT
+            LEFT(s.periodo, 4)                              AS ano,
+            SUM(s.valor_total)::DOUBLE                      AS valor_total,
+            COUNT(DISTINCT {EMITENTE})                      AS fornecedores_distintos,
+            COUNT(DISTINCT s.chave_de_acesso)               AS notas_distintas
+        FROM chaves_normalizado AS b
+        JOIN itens_normalizado AS s
+            ON s.descricao_normalizada LIKE '%' || b.chave_normalizada || '%'
+        GROUP BY LEFT(s.periodo, 4)
+        ORDER BY ano
+    """)
+    imprimir_mensagem("totais_grupo_b calculado.")
+
+
 def exportar_parquets(con: duckdb.DuckDBPyConnection) -> None:
     """Exporta tabelas gold como parquet."""
-    for tabela in ('resumo_grupo_a', 'resumo_grupo_b'):
+    for tabela in ('resumo_grupo_a', 'resumo_grupo_b', 'totais_grupo_a', 'totais_grupo_b'):
         caminho = os.path.join(DIRETORIO_GOLD, f'{tabela}.parquet')
         con.execute(f"COPY {tabela} TO '{caminho}' (FORMAT PARQUET, COMPRESSION SNAPPY)")
     imprimir_mensagem("Parquets gold exportados.")
@@ -134,7 +200,7 @@ def exportar_html_interativo() -> None:
     """Gera HTML standalone com os parquets embutidos em base64."""
     import base64
 
-    TABELAS = ('resumo_grupo_a', 'resumo_grupo_b')
+    TABELAS = ('resumo_grupo_a', 'resumo_grupo_b', 'totais_grupo_a', 'totais_grupo_b')
 
     def parquet_base64(tabela):
         with open(os.path.join(DIRETORIO_GOLD, f'{tabela}.parquet'), 'rb') as f:
@@ -219,6 +285,12 @@ def main():
 
     imprimir_mensagem("Calculando resumo Grupo B (por palavras-chave)...")
     criar_resumo_grupo_b(con)
+
+    imprimir_mensagem("Calculando totais distintos Grupo A...")
+    criar_totais_grupo_a(con)
+
+    imprimir_mensagem("Calculando totais distintos Grupo B...")
+    criar_totais_grupo_b(con)
 
     imprimir_mensagem("Exportando parquets gold...")
     exportar_parquets(con)

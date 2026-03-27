@@ -1,64 +1,104 @@
 import duckdb
 
+# Busca por NCMs relacionados a plásticos e polímeros
+
 duckdb.sql("""
     COPY(
         WITH
         
         totais AS (
             SELECT
-                YEAR(data_emissao) AS ano,
-                codigo_ncm_sh AS ncm_cod,
-                ncm_sh_tipo_de_produto AS ncm_descr,
-                descricao_do_produto_servico AS descricao,
-                SUM(valor_total)/100 AS total,
+                YEAR(i.data_emissao) AS ano,
+                m.tipo AS tipo_de_produto,
+                i.codigo_ncm_sh AS ncm_cod,
+                i.ncm_sh_tipo_de_produto AS ncm_descr,
+                i.descricao_do_produto_servico AS descricao,
+                SUM(i.valor_total) AS total,
                 -- COUNT(1) AS qtd_nfs,
-            FROM 'extracoes/itens_limpos.parquet'
-            GROUP BY 1, 2, 3, 4
-            ORDER BY 1, 5 DESC
+            FROM 'extracoes/silver/itens.parquet' AS i
+                JOIN 'dados/mapeamento_grupo_A.csv' AS m ON i.codigo_ncm_sh = m.ncm
+            GROUP BY 1, 2, 3, 4, 5
+            ORDER BY 1, 6 DESC
         ),
         
         ranking AS (
             SELECT
                 *,
-                SUM(total) OVER (PARTITION BY ano, ncm_cod) AS total_do_ncm,
-                ROW_NUMBER() OVER (PARTITION BY ano, ncm_cod ORDER BY total DESC) AS ranking_no_ncm,
-                ROUND(total / SUM(total) OVER (PARTITION BY ano, ncm_cod), 4) AS pct_no_ncm,
+                SUM(total) OVER (PARTITION BY ano, tipo_de_produto) AS total_do_tipo_de_produto,
+                ROW_NUMBER() OVER (PARTITION BY ano, tipo_de_produto ORDER BY total DESC) AS ranking_no_tipo_de_produto,
+                ROUND(total / SUM(total) OVER (PARTITION BY ano, tipo_de_produto), 4) AS pct_no_tipo_de_produto,
             FROM totais
-        ),
-        
-        pct_total AS (
-            SELECT
-                *,
-                SUM(pct_no_ncm) OVER (PARTITION BY ano, ncm_cod) AS pct_total_das_descricoes_exibidas,
-            FROM ranking
-            ORDER BY ano, total_do_ncm DESC, ranking_no_ncm
         )
         
         SELECT *
-        FROM pct_total
-        ORDER BY ano, total_do_ncm DESC
-    ) TO 'bioquimicos/totais_com_agregacao_das_descricoes.parquet' (FORMAT parquet)
+        FROM ranking
+        ORDER BY ano, total_do_tipo_de_produto DESC
+    ) TO 'bioquimicos_2026/totais_com_agregacao_das_descricoes.parquet' (FORMAT parquet)
 """)
 
+# Busca por palavras-chave e abreviações
+
 duckdb.sql("""
-COPY(
-    SELECT
-        REGEXP_MATCHES(LOWER(ncm_descr), 'plastico|plástico|polimero|polímero') AS ncm_contem_palavras_chave,
-        REGEXP_MATCHES(LOWER(descricao), 'plastico|plástico|polimero|polímero') AS produto_contem_palavras_chave,
-        CASE WHEN ano = 2025 THEN '2025 (até 30/09)' ELSE CAST(ano AS VARCHAR) END AS ano,
-        ncm_cod,
-        ncm_descr,
-        descricao,
-        total,
-        total_do_ncm,
-        ranking_no_ncm,
-        pct_no_ncm
-    FROM 'bioquimicos/totais_com_agregacao_das_descricoes.parquet'
-    WHERE REGEXP_MATCHES(LOWER(ncm_descr), 'plastico|plástico|polimero|polímero') OR 
-        REGEXP_MATCHES(LOWER(descricao), 'plastico|plástico|polimero|polímero')
-    ORDER BY ano, total_do_ncm DESC, total DESC
-) TO 'bioquimicos/totais_palavras_chave.parquet' (FORMAT parquet)
+    COPY (
+        WITH
+    
+        itens_normalizado AS (
+            SELECT *,
+                REGEXP_REPLACE(
+                    REPLACE(LOWER(descricao_do_produto_servico), '-', ' '),
+                    '\\s+', ' '
+                ) AS descricao_normalizada
+            FROM 'extracoes/silver/itens.parquet'
+        ),
+    
+        chaves_normalizado AS (
+            SELECT *,
+                REGEXP_REPLACE(
+                    REPLACE(LOWER(TRIM("Palavras Chaves")), '-', ' '),
+                    '\\s+', ' '
+                ) AS chave_normalizada
+            FROM 'dados/mapeamento_grupo_B.csv'
+        ),
+    
+        totais AS (
+            SELECT
+                YEAR(i.data_emissao)  AS ano,
+                TRIM(b."Palavras Chaves") AS tipo_de_produto,
+                i.descricao_normalizada LIKE '%' || b.chave_normalizada || '%' AS chave_encontrada,
+                REGEXP_MATCHES(LOWER(i.descricao_do_produto_servico), '\bpe\b') AS pe_encontrado,
+                REGEXP_MATCHES(LOWER(i.descricao_do_produto_servico), '\bpvc\b') AS pvc_encontrado,
+                REGEXP_MATCHES(LOWER(i.descricao_do_produto_servico), '\bps\b') AS ps_encontrado,
+                REGEXP_MATCHES(LOWER(i.descricao_do_produto_servico), '\bbr\b') AS br_encontrado,
+                REGEXP_MATCHES(LOWER(i.descricao_do_produto_servico), '\bsbr\b') AS sbr_encontrado,
+                i.descricao_do_produto_servico AS descricao,
+                SUM(i.valor_total) AS total
+            FROM itens_normalizado AS i
+            LEFT JOIN chaves_normalizado AS b
+                ON i.descricao_normalizada LIKE '%' || b.chave_normalizada || '%'
+            GROUP BY ALL
+            ORDER BY 1, 10 DESC
+        ),
+    
+        ranking AS (
+            SELECT
+                *,
+                SUM(total) OVER (PARTITION BY ano, tipo_de_produto)                          AS total_do_tipo_de_produto,
+                ROW_NUMBER() OVER (PARTITION BY ano, tipo_de_produto ORDER BY total DESC)    AS ranking_no_tipo_de_produto,
+                ROUND(total / SUM(total) OVER (PARTITION BY ano, tipo_de_produto), 4)        AS pct_no_grupo
+            FROM totais
+            -- WHERE chave_encontrada OR pe_encontrado OR pvc_encontrado OR ps_encontrado OR br_encontrado OR sbr_encontrado
+        )
+    
+        SELECT *
+        FROM ranking
+        ORDER BY ano, total_do_tipo_de_produto DESC
+    
+    ) TO 'bioquimicos_2026/totais_palavras_chave.parquet' (FORMAT parquet)
 """)
+
+import ipdb; ipdb.set_trace()
+
+
 
 duckdb.sql("""
     SELECT ncm_descr

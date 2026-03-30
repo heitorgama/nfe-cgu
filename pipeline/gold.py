@@ -32,7 +32,7 @@ def _col_defs_pivot(anos: list, col_valor: str, col_forn: str) -> str:
 
 
 def criar_resumo_grupo_a(con: duckdb.DuckDBPyConnection) -> None:
-    """Valor total e fornecedores distintos por tipo — anos como colunas (Grupo A, NCM exato)."""
+    """Valor total e fornecedores distintos por tipo - anos como colunas (Grupo A, NCM exato)"""
     con.execute(f"""
         CREATE OR REPLACE TABLE _tmp_grupo_a AS
         WITH itens_cruzados AS (
@@ -71,7 +71,7 @@ def criar_resumo_grupo_a(con: duckdb.DuckDBPyConnection) -> None:
 
 
 def criar_resumo_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
-    """Valor total e fornecedores distintos por palavra-chave — anos como colunas (Grupo B)."""
+    """Valor total e fornecedores distintos por palavra-chave - anos como colunas (Grupo B)"""
     con.execute(f"""
         CREATE OR REPLACE TABLE _tmp_grupo_b AS
         WITH itens_normalizado AS (
@@ -100,7 +100,7 @@ def criar_resumo_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
         FROM chaves_normalizado AS b
         LEFT JOIN itens_normalizado AS s
             ON s.descricao_normalizada LIKE '%' || b.chave_normalizada || '%'
-            OR REGEXP_MATCHES(s.descricao_normalizada, '\b' || b."Abreviação" || '\b')
+            OR ' ' || s.descricao_normalizada || ' ' LIKE '% ' || LOWER(b."Abreviação") || ' %'
         GROUP BY ano, TRIM(b."Palavras Chaves"), b."Abreviação"
     """)
 
@@ -125,7 +125,7 @@ def criar_resumo_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
 
 
 def criar_totais_grupo_a(con: duckdb.DuckDBPyConnection) -> None:
-    """Totais distintos por ano para Grupo A (NCM exato)."""
+    """Totais distintos por ano para Grupo A (NCM exato)"""
     con.execute(f"""
         CREATE OR REPLACE TABLE totais_grupo_a AS
         WITH itens_cruzados AS (
@@ -146,7 +146,7 @@ def criar_totais_grupo_a(con: duckdb.DuckDBPyConnection) -> None:
 
 
 def criar_totais_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
-    """Totais distintos por ano para Grupo B (palavras-chave)."""
+    """Totais distintos por ano para Grupo B (palavras-chave)"""
     con.execute(f"""
         CREATE OR REPLACE TABLE totais_grupo_b AS
         WITH itens_normalizado AS (
@@ -173,22 +173,173 @@ def criar_totais_grupo_b(con: duckdb.DuckDBPyConnection) -> None:
         FROM chaves_normalizado AS b
         JOIN itens_normalizado AS s
             ON s.descricao_normalizada LIKE '%' || b.chave_normalizada || '%'
+            OR ' ' || s.descricao_normalizada || ' ' LIKE '% ' || LOWER(b."Abreviação") || ' %'
         GROUP BY LEFT(s.periodo, 4)
         ORDER BY ano
     """)
     imprimir_mensagem("totais_grupo_b calculado.")
 
 
+def criar_resumo_grupo_b_intersecao(con: duckdb.DuckDBPyConnection) -> None:
+    """Resumo Grupo B filtrado pela interseção: palavra-chave AND abreviação AND NCM mapeada."""
+    con.execute(f"""
+        CREATE OR REPLACE TABLE _tmp_grupo_b_intersecao AS
+        WITH itens_normalizado AS (
+            SELECT *,
+                REGEXP_REPLACE(
+                    REPLACE(LOWER(descricao_do_produto_servico), '-', ' '),
+                    '\\s+', ' '
+                ) AS descricao_normalizada
+            FROM 'extracoes/silver/itens.parquet'
+        ),
+        chaves_normalizado AS (
+            SELECT *,
+                REGEXP_REPLACE(
+                    REPLACE(LOWER(TRIM("Palavras Chaves")), '-', ' '),
+                    '\\s+', ' '
+                ) AS chave_normalizada
+            FROM '{MAPEAMENTO_GRUPO_B}'
+        )
+        SELECT
+            LEFT(s.periodo, 4)                AS ano,
+            TRIM(b."Palavras Chaves")          AS grupo_b,
+            b."Abreviação"                     AS abreviacao,
+            SUM(s.valor_total)                 AS valor_total_adquirido,
+            COUNT(DISTINCT {EMITENTE})         AS fornecedores_distintos,
+            COUNT(DISTINCT s.chave_de_acesso)  AS notas_distintas
+        FROM chaves_normalizado AS b
+        JOIN itens_normalizado AS s
+            ON s.descricao_normalizada LIKE '%' || b.chave_normalizada || '%'
+            AND (
+                    b."Abreviação" IS NULL OR TRIM(b."Abreviação") = ''
+                OR  s.descricao_normalizada LIKE '% ' || b."Abreviação" || ' %'
+                OR  s.descricao_normalizada LIKE '% ' || b."Abreviação" || '%'
+                OR  s.descricao_normalizada LIKE '%' || b."Abreviação" || ' %'
+                OR  ' ' || s.descricao_normalizada || ' ' LIKE '% ' || LOWER(b."Abreviação") || ' %'
+            )
+        JOIN '{MAPEAMENTO_GRUPO_A}' AS a
+            ON CAST(s.codigo_ncm_sh AS VARCHAR) = CAST(a.ncm AS VARCHAR)
+        GROUP BY ano, TRIM(b."Palavras Chaves"), b."Abreviação"
+    """)
+
+    anos = _anos_disponiveis(con, '_tmp_grupo_b_intersecao')
+    col_defs = _col_defs_pivot(anos, 'valor_total_adquirido', 'fornecedores_distintos')
+    col_notas = ', '.join(
+        f"SUM(CASE WHEN ano = '{a}' THEN notas_distintas END)::BIGINT AS \"Notas Distintas {a}\""
+        for a in anos
+    )
+
+    con.execute(f"""
+        CREATE OR REPLACE TABLE resumo_grupo_b_intersecao AS
+        SELECT grupo_b, abreviacao, {col_defs}, {col_notas}
+        FROM _tmp_grupo_b_intersecao
+        GROUP BY grupo_b, abreviacao
+        ORDER BY SUM(valor_total_adquirido) DESC
+    """)
+    con.execute("DROP TABLE _tmp_grupo_b_intersecao")
+
+    count = con.execute("SELECT COUNT(*) FROM resumo_grupo_b_intersecao").fetchone()[0]
+    imprimir_mensagem(f"resumo_grupo_b_intersecao: {count} linhas.")
+
+
+def criar_itens_detalhados_a(con: duckdb.DuckDBPyConnection) -> None:
+    """Itens detalhados Grupo A (NCM exato), exporta CSV para 2025"""
+    con.execute(r"""
+        WITH totais AS (
+            SELECT
+                YEAR(i.data_emissao)                AS ano,
+                i.codigo_ncm_sh                     AS ncm,
+                TRIM(a.tipo)                        AS tipo_ncm,
+                a.tipo IS NOT NULL                  AS ncm_mapeada,
+                i.descricao_do_produto_servico       AS descricao,
+                SUM(i.valor_total)                  AS total
+            FROM 'extracoes\silver\itens.parquet' i
+            LEFT JOIN 'dados\mapeamento_grupo_A.csv' a
+                ON i.codigo_ncm_sh = a.ncm
+            GROUP BY ALL
+            ORDER BY ano, total DESC
+        )
+        SELECT * FROM totais
+        WHERE ano = 2025
+    """).df().to_csv(
+        'extracoes/gold/itens_grupo_a.csv',
+        sep=";",
+        decimal=",",
+        quotechar='"',
+        index=False,
+        encoding="windows-1252"
+    )
+    imprimir_mensagem("itens_grupo_a.csv exportado.")
+
+
+def criar_itens_detalhados_b(con: duckdb.DuckDBPyConnection) -> None:
+    """Itens detalhados Grupo B (palavras-chave), com flags por abreviação, exporta CSV para 2025"""
+    con.execute(f"""
+        WITH itens_normalizado AS (
+            SELECT *,
+                REGEXP_REPLACE(
+                    REPLACE(LOWER(descricao_do_produto_servico), '-', ' '),
+                    '\\s+', ' '
+                ) AS descricao_normalizada
+            FROM 'extracoes/silver/itens.parquet'
+        ),
+        chaves_normalizado AS (
+            SELECT *,
+                REGEXP_REPLACE(
+                    REPLACE(LOWER(TRIM("Palavras Chaves")), '-', ' '),
+                    '\\s+', ' '
+                ) AS chave_normalizada
+            FROM '{MAPEAMENTO_GRUPO_B}'
+        ),
+        totais AS (
+            SELECT
+                YEAR(i.data_emissao)                                            AS ano,
+                TRIM(b."Palavras Chaves")                                       AS tipo_de_produto,
+                i.codigo_ncm_sh                                                 AS ncm,
+                TRIM(a.tipo)                                                    AS tipo_ncm,
+                a.tipo IS NOT NULL                                              AS ncm_mapeada,
+                i.descricao_normalizada LIKE '%' || b.chave_normalizada || '%'  AS chave_encontrada,
+                ' ' || i.descricao_normalizada || ' ' LIKE '% pe %'             AS pe_encontrado,
+                ' ' || i.descricao_normalizada || ' ' LIKE '% pvc %'            AS pvc_encontrado,
+                ' ' || i.descricao_normalizada || ' ' LIKE '% ps %'             AS ps_encontrado,
+                ' ' || i.descricao_normalizada || ' ' LIKE '% br %'             AS br_encontrado,
+                ' ' || i.descricao_normalizada || ' ' LIKE '% sbr %'            AS sbr_encontrado,
+                i.descricao_do_produto_servico                                  AS descricao,
+                SUM(i.valor_total)                                              AS total
+            FROM itens_normalizado AS i
+            LEFT JOIN chaves_normalizado AS b
+                ON i.descricao_normalizada LIKE '%' || b.chave_normalizada || '%'
+                OR i.descricao_normalizada LIKE '% ' || b."Abreviação" || ' %'
+                OR i.descricao_normalizada LIKE '% ' || b."Abreviação" || '%'
+                OR i.descricao_normalizada LIKE '%' || b."Abreviação" || ' %'
+            LEFT JOIN '{MAPEAMENTO_GRUPO_A}' AS a
+                ON CAST(i.codigo_ncm_sh AS VARCHAR) = CAST(a.ncm AS VARCHAR)
+            GROUP BY ALL
+            ORDER BY ano, total DESC
+        )
+        SELECT * FROM totais
+        WHERE ano = 2025
+    """).df().to_csv(
+        'extracoes/gold/itens_grupo_b.csv',
+        sep=";",
+        decimal=",",
+        quotechar='"',
+        index=False,
+        encoding="windows-1252"
+    )
+    imprimir_mensagem("itens_grupo_b.csv exportado.")
+
+
 def exportar_parquets(con: duckdb.DuckDBPyConnection) -> None:
-    """Exporta tabelas gold como parquet."""
-    for tabela in ('resumo_grupo_a', 'resumo_grupo_b', 'totais_grupo_a', 'totais_grupo_b'):
+    """Exporta tabelas gold como parquet"""
+    for tabela in ('resumo_grupo_a', 'resumo_grupo_b', 'totais_grupo_a', 'totais_grupo_b', 'resumo_grupo_b_intersecao'):
         caminho = os.path.join(DIRETORIO_GOLD, f'{tabela}.parquet')
         con.execute(f"COPY {tabela} TO '{caminho}' (FORMAT PARQUET, COMPRESSION SNAPPY)")
     imprimir_mensagem("Parquets gold exportados.")
 
 
 def exportar_csvs_entrega(con: duckdb.DuckDBPyConnection) -> None:
-    """Exporta CSVs prontos para entrega."""
+    """Exporta CSVs prontos para entrega"""
     os.makedirs(DIRETORIO_ENTREGA, exist_ok=True)
     for tabela in ('resumo_grupo_a', 'resumo_grupo_b'):
         caminho = os.path.join(DIRETORIO_ENTREGA, f'{tabela}.csv')
@@ -197,10 +348,10 @@ def exportar_csvs_entrega(con: duckdb.DuckDBPyConnection) -> None:
 
 
 def exportar_html_interativo() -> None:
-    """Gera HTML standalone com os parquets embutidos em base64."""
+    """Gera HTML standalone com os parquets embutidos em base64"""
     import base64
 
-    TABELAS = ('resumo_grupo_a', 'resumo_grupo_b', 'totais_grupo_a', 'totais_grupo_b')
+    TABELAS = ('resumo_grupo_a', 'resumo_grupo_b', 'totais_grupo_a', 'totais_grupo_b', 'resumo_grupo_b_intersecao')
 
     def parquet_base64(tabela):
         with open(os.path.join(DIRETORIO_GOLD, f'{tabela}.parquet'), 'rb') as f:
@@ -291,6 +442,15 @@ def main():
 
     imprimir_mensagem("Calculando totais distintos Grupo B...")
     criar_totais_grupo_b(con)
+
+    imprimir_mensagem("Calculando resumo Grupo B interseção (chave AND abreviação AND NCM)...")
+    criar_resumo_grupo_b_intersecao(con)
+
+    imprimir_mensagem("Exportando itens detalhados Grupo A...")
+    criar_itens_detalhados_a(con)
+
+    imprimir_mensagem("Exportando itens detalhados Grupo B...")
+    criar_itens_detalhados_b(con)
 
     imprimir_mensagem("Exportando parquets gold...")
     exportar_parquets(con)

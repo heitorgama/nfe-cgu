@@ -320,9 +320,6 @@
     <div class="panel-title">Compras Públicas — Produtos da Química Renovável</div>
     <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2022–2025</div>
   </div>
-  <div class="panel-header-right">
-    <span class="badge">Portal da Transparência · CGU</span>
-  </div>
 </div>
 <div class="accent-bar"></div>
 
@@ -337,6 +334,9 @@
     <div class="toolbar hidden" id="toolbar-b">
       <label for="selGrupoB">Grupo B:</label>
       <select id="selGrupoB"><option value="">Todos os grupos</option></select>
+      <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.72rem;font-weight:700;color:var(--gray-50);text-transform:uppercase;letter-spacing:0.07em;">
+        <input type="checkbox" id="chkNcmFiltro"> NCM mapeada E Palavra-chave
+      </label>
     </div>
 
     <div class="toolbar hidden" id="toolbar-evo">
@@ -404,6 +404,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   await registerParquet('resumo_grupo_b.parquet');
   await registerParquet('totais_grupo_a.parquet');
   await registerParquet('totais_grupo_b.parquet');
+  await registerParquet('resumo_grupo_b_intersecao.parquet');
 
   const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
   const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
@@ -578,54 +579,112 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   }
 
   async function refreshGrupoB() {
-    const grupo = selGrupoB.value;
-    const w = grupo ? `WHERE grupo_b = '${grupo.replace(/'/g, "''")}'` : '';
-    const totalSumExpr = `SUM(COALESCE("Valor Total 2025", 0))`;
-    const totalExpr    = anosB.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
-
+    const grupo    = selGrupoB.value;
+    const filtroNcm = document.getElementById('chkNcmFiltro').checked;
     const anoAtual = anosB[anosB.length - 1] ?? '2025';
-    const stats = grupo
-      ? (await conn.query(`
-          SELECT
-            (${totalSumExpr})::DOUBLE                    AS total,
-            SUM("Fornecedores ${anoAtual}")::DOUBLE      AS fornecedores,
-            SUM("Notas Distintas ${anoAtual}")::DOUBLE   AS notas
-          FROM 'resumo_grupo_b.parquet' ${w}
-        `)).toArray()[0]
-      : (await conn.query(`
-          SELECT valor_total AS total, fornecedores_distintos AS fornecedores, notas_distintas AS notas
-          FROM 'totais_grupo_b.parquet'
-          WHERE ano = '${anoAtual}'
-        `)).toArray()[0];
 
-    document.getElementById('cards').innerHTML = `
-      <div class="card">
-        <div class="card-label">Valor Total (2025)</div>
-        <div class="card-value">${fmt(stats.total)}</div>
-      </div>
-      <div class="card green">
-        <div class="card-label">Fornecedores Distintos (${anoAtual})</div>
-        <div class="card-value">${fmtN(stats.fornecedores)}</div>
-      </div>
-      <div class="card slate">
-        <div class="card-label">Notas Fiscais Distintas (${anoAtual})</div>
-        <div class="card-value">${fmtN(stats.notas)}</div>
-      </div>
-    `;
+    if (filtroNcm) {
+      const schemaI = await conn.query("SELECT * FROM 'resumo_grupo_b_intersecao.parquet' LIMIT 0");
+      const anosI   = detectarAnos(schemaI.schema.fields);
+      const w = grupo ? `WHERE grupo_b = '${grupo.replace(/'/g, "''")}'` : '';
+      const totalSumExpr = anosI.length
+        ? `SUM(COALESCE("Valor Total ${anosI[anosI.length-1]}", 0))`
+        : '0';
+      const totalExpr = anosI.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ') || '0';
+      const anoI = anosI[anosI.length - 1] ?? anoAtual;
 
-    const rows = (await conn.query(`
-      SELECT * FROM 'resumo_grupo_b.parquet' ${w}
-      ORDER BY (${totalExpr}) DESC
-    `)).toArray();
+      const stats = grupo
+        ? (await conn.query(`
+            SELECT
+              (${totalSumExpr})::DOUBLE                  AS total,
+              SUM("Fornecedores ${anoI}")::DOUBLE         AS fornecedores,
+              SUM("Notas Distintas ${anoI}")::DOUBLE      AS notas
+            FROM 'resumo_grupo_b_intersecao.parquet' ${w}
+          `)).toArray()[0]
+        : (await conn.query(`
+            SELECT
+              SUM(COALESCE("Valor Total ${anoI}", 0))::DOUBLE   AS total,
+              SUM("Fornecedores ${anoI}")::DOUBLE                AS fornecedores,
+              SUM("Notas Distintas ${anoI}")::DOUBLE             AS notas
+            FROM 'resumo_grupo_b_intersecao.parquet'
+          `)).toArray()[0];
 
-    const cols = [
-      { key: 'abreviacao', label: 'Abrev.' },
-      { key: 'grupo_b',    label: 'Grupo / Palavras-Chave' },
-      ...anosB.map(a => ({ key: `Fornecedores ${a}`, label: `Fornecedores<br>${a}`, numeric: true, fmt: fmtN })),
-      ...anosB.map(a => ({ key: `Valor Total ${a}`,  label: `Valor total<br>${a}`, numeric: true, fmt })),
-    ];
+      document.getElementById('cards').innerHTML = `
+        <div class="card">
+          <div class="card-label">Valor Total Chave E Abrev. E NCM (${anoI})</div>
+          <div class="card-value">${fmt(stats?.total)}</div>
+        </div>
+        <div class="card green">
+          <div class="card-label">Fornecedores Distintos (${anoI})</div>
+          <div class="card-value">${fmtN(stats?.fornecedores)}</div>
+        </div>
+        <div class="card slate">
+          <div class="card-label">Notas Fiscais Distintas (${anoI})</div>
+          <div class="card-value">${fmtN(stats?.notas)}</div>
+        </div>
+      `;
 
-    buildTable(document.getElementById('tblGrupoB'), rows, cols);
+      const rows = (await conn.query(`
+        SELECT * FROM 'resumo_grupo_b_intersecao.parquet' ${w}
+        ORDER BY (${totalExpr}) DESC
+      `)).toArray();
+
+      const cols = [
+        { key: 'abreviacao', label: 'Abrev.' },
+        { key: 'grupo_b',    label: 'Grupo / Palavras-Chave' },
+        ...anosI.map(a => ({ key: `Fornecedores ${a}`, label: `Fornecedores<br>${a}`, numeric: true, fmt: fmtN })),
+        ...anosI.map(a => ({ key: `Valor Total ${a}`,  label: `Valor total<br>${a}`,  numeric: true, fmt })),
+      ];
+
+      buildTable(document.getElementById('tblGrupoB'), rows, cols);
+    } else {
+      const w = grupo ? `WHERE grupo_b = '${grupo.replace(/'/g, "''")}'` : '';
+      const totalSumExpr = `SUM(COALESCE("Valor Total 2025", 0))`;
+      const totalExpr    = anosB.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
+
+      const stats = grupo
+        ? (await conn.query(`
+            SELECT
+              (${totalSumExpr})::DOUBLE                    AS total,
+              SUM("Fornecedores ${anoAtual}")::DOUBLE      AS fornecedores,
+              SUM("Notas Distintas ${anoAtual}")::DOUBLE   AS notas
+            FROM 'resumo_grupo_b.parquet' ${w}
+          `)).toArray()[0]
+        : (await conn.query(`
+            SELECT valor_total AS total, fornecedores_distintos AS fornecedores, notas_distintas AS notas
+            FROM 'totais_grupo_b.parquet'
+            WHERE ano = '${anoAtual}'
+          `)).toArray()[0];
+
+      document.getElementById('cards').innerHTML = `
+        <div class="card">
+          <div class="card-label">Valor Total (${anoAtual})</div>
+          <div class="card-value">${fmt(stats.total)}</div>
+        </div>
+        <div class="card green">
+          <div class="card-label">Fornecedores Distintos (${anoAtual})</div>
+          <div class="card-value">${fmtN(stats.fornecedores)}</div>
+        </div>
+        <div class="card slate">
+          <div class="card-label">Notas Fiscais Distintas (${anoAtual})</div>
+          <div class="card-value">${fmtN(stats.notas)}</div>
+        </div>
+      `;
+
+      const rows = (await conn.query(`
+        SELECT * FROM 'resumo_grupo_b.parquet' ${w}
+        ORDER BY (${totalExpr}) DESC
+      `)).toArray();
+
+      const cols = [
+        { key: 'abreviacao', label: 'Abrev.' },
+        { key: 'grupo_b',    label: 'Grupo / Palavras-Chave' },
+        ...anosB.map(a => ({ key: `Fornecedores ${a}`, label: `Fornecedores<br>${a}`, numeric: true, fmt: fmtN })),
+        ...anosB.map(a => ({ key: `Valor Total ${a}`,  label: `Valor total<br>${a}`, numeric: true, fmt })),
+      ];
+
+      buildTable(document.getElementById('tblGrupoB'), rows, cols);
+    }
   }
 
   async function refreshEvolucao() {
@@ -728,12 +787,13 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   }
 
   async function buildChartGrupoB() {
-    const totalExpr = anosB.map(a => `COALESCE("Valor Total ${a}", 0)`).join(' + ');
-    const valorCols = anosB.map(a => `COALESCE("Valor Total ${a}", 0)::DOUBLE AS v${a}`).join(', ');
+    const totalExpr = anosB.map(a => `SUM(COALESCE("Valor Total ${a}", 0))`).join(' + ');
+    const valorCols = anosB.map(a => `SUM(COALESCE("Valor Total ${a}", 0))::DOUBLE AS v${a}`).join(', ');
 
     const rows = (await conn.query(`
-      SELECT COALESCE(abreviacao, grupo_b) AS label, ${valorCols}
+      SELECT grupo_b AS label, ${valorCols}
       FROM 'resumo_grupo_b.parquet'
+      GROUP BY grupo_b
       ORDER BY (${totalExpr}) DESC
       LIMIT 20
     `)).toArray();
@@ -765,6 +825,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   });
 
   document.getElementById('selGrupoEvo').addEventListener('change', refreshEvolucao);
+  document.getElementById('chkNcmFiltro').addEventListener('change', refresh);
   selTipo.addEventListener('change', refresh);
   selGrupoB.addEventListener('change', refresh);
 

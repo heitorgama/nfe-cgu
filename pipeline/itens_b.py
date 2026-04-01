@@ -31,10 +31,18 @@ df = duckdb.sql(r"""
             i.codigo_ncm_sh                                                                             AS ncm,
             TRIM(a.tipo)                                                                                AS tipo_ncm,
             COALESCE(a.tipo IS NOT NULL, false)                                                         AS ncm_mapeada,
-            CASE
-                WHEN REGEXP_MATCHES(i.descricao_normalizada, '\b' || b.chave_normalizada || '\b')
-                THEN TRIM(b."Palavras Chaves") END                                                      AS palavra_chave,
-            REGEXP_MATCHES(i.descricao_normalizada, '\bpolietileno\b')                            AS chave_encontrada,
+            REGEXP_MATCHES(i.descricao_normalizada, '\bpolietileno\b')                                  AS polietileno_encontrado,
+            REGEXP_MATCHES(i.descricao_normalizada, '\bpolicloreto de vinila\b')                        AS "policloreto de vinila_encontrado",
+            REGEXP_MATCHES(i.descricao_normalizada, '\bpoliestireno\b')                                 AS poliestireno_encontrado,
+            REGEXP_MATCHES(i.descricao_normalizada, '\bpolibutadieno\b')                                AS polibutadieno_encontrado,
+            REGEXP_MATCHES(i.descricao_normalizada, '\bestireno butadieno\b')                           AS estireno_butadieno_encontrado,
+            REGEXP_MATCHES(i.descricao_normalizada, '\bpneus?\b')                                       AS pneus_encontrado,
+            REGEXP_MATCHES(i.descricao_normalizada, '\bembalagem plástica\b')                           AS embalagem_plastica_encontrada,
+            REGEXP_MATCHES(i.descricao_normalizada, '\btubo pvc\b')                                     AS tubo_pvc_encontrado,
+            REGEXP_MATCHES(i.descricao_normalizada, '\bembalagem pet\b')                                AS embalagem_pet_encontrada,
+            REGEXP_MATCHES(i.descricao_normalizada, '\bpoliéster\b')                                    AS poliester_encontrado,
+            REGEXP_MATCHES(i.descricao_normalizada, '\bplástica\b')                                     AS plastica_encontrada,
+            REGEXP_MATCHES(i.descricao_normalizada, '\bplástico\b')                                     AS plastico_encontrada,
             REGEXP_MATCHES(i.descricao_normalizada, '\bpe\b')                                           AS pe_encontrado,
             REGEXP_MATCHES(i.descricao_normalizada, '\bpvc\b')                                          AS pvc_encontrado,
             REGEXP_MATCHES(i.descricao_normalizada, '\bps\b')                                           AS ps_encontrado,
@@ -49,34 +57,8 @@ df = duckdb.sql(r"""
         ORDER BY YEAR(i.data_emissao), SUM(i.valor_total) DESC
     )
 
-    SELECT
-        ano,
-        ncm,
-        tipo_ncm,
-        ncm_mapeada,
-        ANY_VALUE(palavra_chave) AS palavra_chave,
-        chave_encontrada,
-        pe_encontrado,
-        pvc_encontrado,
-        ps_encontrado,
-        br_encontrado,
-        sbr_encontrado,
-        descricao,
-        total        
+    SELECT *
     FROM totais
-    GROUP BY
-        ano,
-        ncm,
-        tipo_ncm,
-        ncm_mapeada,
-        chave_encontrada,
-        pe_encontrado,
-        pvc_encontrado,
-        ps_encontrado,
-        br_encontrado,
-        sbr_encontrado,
-        descricao,
-        total
 """).df()
 
 os.makedirs("extracoes/gold", exist_ok=True)

@@ -1,9 +1,6 @@
 import duckdb
 import os
 
-# A consulta SQL foi convertida em raw string para evitar o alerta:
-# SyntaxWarning: "\s" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\s"? A raw string is also an option.
-
 df = duckdb.sql(r"""
     WITH
 

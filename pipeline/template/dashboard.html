@@ -598,9 +598,9 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     let total, fornecedores, itens, ncadeias;
     if (!cadeia) {
       const g = (await conn.query(`
-        SELECT valor_total_global::DOUBLE AS total,
-               fornecedores_global::DOUBLE AS fornecedores,
-               itens_global::DOUBLE AS itens
+        SELECT valor_total_2025::DOUBLE AS total,
+               fornecedores_2025::DOUBLE AS fornecedores,
+               itens_2025::DOUBLE AS itens
         FROM 'totais_globais.parquet'
       `)).toArray()[0];
       const nc = (await conn.query(
@@ -609,9 +609,9 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       total = g.total; fornecedores = g.fornecedores; itens = g.itens; ncadeias = nc.n;
     } else {
       const s = (await conn.query(`
-        SELECT COALESCE(SUM(valor_total_adquirido),0)::DOUBLE AS total,
-               COALESCE(SUM(fornecedores_distintos),0)::DOUBLE AS fornecedores,
-               COALESCE(SUM(quantidade_itens),0)::DOUBLE AS itens,
+        SELECT COALESCE(SUM(valor_2025),0)::DOUBLE AS total,
+               COALESCE(SUM(fornecedores_2025),0)::DOUBLE AS fornecedores,
+               COALESCE(SUM(quantidade_itens_2025),0)::DOUBLE AS itens,
                COUNT(*)::DOUBLE AS ncadeias
         FROM 'resumo_cadeia.parquet' ${wBase}
       `)).toArray()[0];
@@ -620,15 +620,15 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
     document.getElementById('cards').innerHTML = `
       <div class="card">
-        <div class="card-label">Valor Total de Itens Distintos (2022–2025)</div>
+        <div class="card-label">Valor Total de Itens Distintos (2025)</div>
         <div class="card-value">${fmt(total)}</div>
       </div>
       <div class="card green">
-        <div class="card-label">Fornecedores Distintos</div>
+        <div class="card-label">Fornecedores Distintos (2025)</div>
         <div class="card-value">${fmtN(fornecedores)}</div>
       </div>
       <div class="card yellow">
-        <div class="card-label">Itens Distintos de NF-e</div>
+        <div class="card-label">Itens Distintos de NF-e (2025)</div>
         <div class="card-value">${fmtN(itens)}</div>
       </div>
       <div class="card slate">

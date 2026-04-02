@@ -1,39 +1,38 @@
-PRODUTO PESPP,"PE ",CODIGO,DESCRIÇÃO
-CAFÉ,399.3,"0901	
-","Café, mesmo torrado ou descafeinado; cascas e películas de café; sucedâneos do café que contenham café em qualquer proporção."
-"TEXTEIS ",125.04,4202,"Baús (arcas) para viagem, malas e maletas, incluindo as maletas de toucador e as maletas e pastas de documentos e para estudantes, os estojos para óculos, binóculos, câmeras fotográficas e de filmar, instrumentos musicais, armas e artigos semelhantes; sacos de viagem, sacos isolantes para gêneros alimentícios e bebidas, bolsas de toucador, mochilas, bolsas, sacolas (sacos para compras), carteiras, porta-moedas, porta-cartões, cigarreiras, tabaqueiras, estojos para ferramentas, bolsas e sacos para artigos de esporte, estojos para frascos ou para joias, caixas para pó de arroz, estojos para ourivesaria e artigos semelhantes, de couro natural ou reconstituído, de folhas de plástico, de matérias têxteis, de fibra vulcanizada ou de cartão, ou recobertos, no todo ou na maior parte, dessas mesmas matérias ou de papel."
-"TEXTEIS ",125.04,53110000,Tecidos de outras fibras têxteis vegetais; tecidos de fios de papel.
-"TEXTEIS ",125.04,5807,"Etiquetas, emblemas e artigos semelhantes de matérias têxteis, em peça, em fitas ou recortados em forma própria, não bordados."
-"TEXTEIS ",125.04,58090000,"Tecidos de fios de metal e tecidos de fios metálicos ou de fios têxteis metalizados da posição 56.05, do tipo utilizado em vestuário, para guarnição de interiores ou usos semelhantes, não especificados nem compreendidos noutras posições."
-"TEXTEIS ",125.04,6103,"Ternos (Fatos*), conjuntos, paletós (casacos*), calças, jardineiras, bermudas e shorts (calções) (exceto de banho), de malha, de uso masculino."
-"TEXTEIS ",125.04,6104,"Tailleurs (Fatos de saia-casaco*), conjuntos, blazers (casacos*), vestidos, saias, saias-calças, calças, jardineiras, bermudas e shorts (calções) (exceto de banho), de malha, de uso feminino."
-"TEXTEIS ",125.04,6105,"Camisas de malha, de uso masculino."
-"TEXTEIS ",125.04,6106,"Camisas (Camiseiros*), blusas, blusas chemisiers (blusas-camiseiros*), de malha, de uso feminino."
-"TEXTEIS ",125.04,6107,"Cuecas, ceroulas, camisolões (camisas de noite*), pijamas, roupões de banho, robes e semelhantes, de malha, de uso masculino."
-"TEXTEIS ",125.04,6108,"Combinações, anáguas (saiotes), calcinhas, camisolas (camisas de noite*), pijamas, déshabillés, roupões de banho, penhoares (robes de quarto*) e semelhantes, de malha, de uso feminino."
-"TEXTEIS ",125.04,6109,"Camisetas (T-shirts), camisetas interiores (camisolas interiores*), e artigos semelhantes, de malha."
-"TEXTEIS ",125.04,6110,"Suéteres (Camisolas*), pulôveres, cardigãs, coletes e artigos semelhantes, de malha."
-"TEXTEIS ",125.04,6111,"Vestuário e seus acessórios, de malha, para bebês."
-"TEXTEIS ",125.04,650500,"Chapéus e outros artigos de uso semelhante, de malha ou confeccionados com rendas, feltro ou outros produtos têxteis, em peça (mas não em tiras), mesmo guarnecidos; coifas e redes, para o cabelo, de qualquer matéria, mesmo guarnecidas."
-"TEXTEIS ",125.04,6112,"Abrigos (Fatos de treino*) para esporte, macacões (fatos-macacos*) e conjuntos, de esqui, maiôs (fatos de banho*), biquínis, shorts (calções) e sungas (slips), de banho, de malha."
-"TEXTEIS ",125.04,6114,Outro vestuário de malha.
-"TEXTEIS ",125.04,6115,"Meias-calças, meias acima do joelho, meias até o joelho e artigos semelhantes, incluindo as meias-calças, meias acima do joelho e meias até o joelho, de compressão degressiva (as meias para varizes, por exemplo), de malha."
-"TEXTEIS ",125.04,6116,"Luvas, mitenes e semelhantes, de malha."
-"TEXTEIS ",125.04,6201,"Sobretudos, japonas, gabões, capas, anoraques, casacos (blusões*) e semelhantes, de uso masculino, exceto os artigos da posição 62.03."
-"TEXTEIS ",125.04,6202,"Mantôs (Casacos compridos*), capas, anoraques, casacos (blusões*) e semelhantes, de uso feminino, exceto os artigos da posição 62.04."
-"TEXTEIS ",125.04,6203,"Ternos (Fatos*), conjuntos, paletós (casacos*), calças, jardineiras, bermudas e shorts (calções) (exceto de banho), de uso masculino."
-"TEXTEIS ",125.04,6204,"Tailleurs (Fatos de saia-casaco*), conjuntos, blazers (casacos*), vestidos, saias, saias-calças, calças, jardineiras, bermudas e shorts (calções) (exceto de banho), de uso feminino."
-"TEXTEIS ",125.04,6205,Camisas de uso masculino.
-"TEXTEIS ",125.04,6206,"Camisas (Camiseiros*), blusas, blusas chemisiers (blusas-camiseiros*), de uso feminino."
-"TEXTEIS ",125.04,6207,"Camisetas interiores (Camisolas interiores*), cuecas, ceroulas, camisolões (camisas de noite*), pijamas, roupões de banho, robes, e artigos semelhantes, de uso masculino."
-"TEXTEIS ",125.04,6208,"Corpetes (Camisolas interiores*), combinações, anáguas (saiotes), calcinhas, camisolas (camisas de noite*), pijamas, déshabillés, roupões de banho, penhoares (robes de quarto*), e artigos semelhantes, de uso feminino."
-"TEXTEIS ",125.04,6209,"Vestuário e seus acessórios, para bebês."
-"TEXTEIS ",125.04,6211,"Abrigos (Fatos de treino*) para esporte, macacões (fatos-macacos*) e conjuntos, de esqui, maiôs (fatos de banho*), biquínis, shorts (calções) e sungas (slips), de banho; outro vestuário."
-"TEXTEIS ",125.04,6213,Lenços de assoar e de bolso.
-"TEXTEIS ",125.04,6214,"Xales, echarpes, lenços de pescoço, cachenês, cachecóis, mantilhas, véus e artigos semelhantes."
-"TEXTEIS ",125.04,6215,"Gravatas, gravatas-borboletas (laços*) e plastrões."
-"TEXTEIS ",125.04,6302,"Roupa de cama, mesa, toucador ou cozinha."
-"TEXTEIS ",125.04,6303,"Cortinados, cortinas, reposteiros e estores; sanefas."
+PRODUTO PESPP,"PE ",NCM,DESCRIÇÃO
+CAFÉ,399.3,"0901","Café, mesmo torrado ou descafeinado; cascas e películas de café; sucedâneos do café que contenham café em qualquer proporção."
+"TEXTEIS",125.04,4202,"Baús (arcas) para viagem, malas e maletas, incluindo as maletas de toucador e as maletas e pastas de documentos e para estudantes, os estojos para óculos, binóculos, câmeras fotográficas e de filmar, instrumentos musicais, armas e artigos semelhantes; sacos de viagem, sacos isolantes para gêneros alimentícios e bebidas, bolsas de toucador, mochilas, bolsas, sacolas (sacos para compras), carteiras, porta-moedas, porta-cartões, cigarreiras, tabaqueiras, estojos para ferramentas, bolsas e sacos para artigos de esporte, estojos para frascos ou para joias, caixas para pó de arroz, estojos para ourivesaria e artigos semelhantes, de couro natural ou reconstituído, de folhas de plástico, de matérias têxteis, de fibra vulcanizada ou de cartão, ou recobertos, no todo ou na maior parte, dessas mesmas matérias ou de papel."
+"TEXTEIS",125.04,53110000,Tecidos de outras fibras têxteis vegetais; tecidos de fios de papel.
+"TEXTEIS",125.04,5807,"Etiquetas, emblemas e artigos semelhantes de matérias têxteis, em peça, em fitas ou recortados em forma própria, não bordados."
+"TEXTEIS",125.04,58090000,"Tecidos de fios de metal e tecidos de fios metálicos ou de fios têxteis metalizados da posição 56.05, do tipo utilizado em vestuário, para guarnição de interiores ou usos semelhantes, não especificados nem compreendidos noutras posições."
+"TEXTEIS",125.04,6103,"Ternos (Fatos*), conjuntos, paletós (casacos*), calças, jardineiras, bermudas e shorts (calções) (exceto de banho), de malha, de uso masculino."
+"TEXTEIS",125.04,6104,"Tailleurs (Fatos de saia-casaco*), conjuntos, blazers (casacos*), vestidos, saias, saias-calças, calças, jardineiras, bermudas e shorts (calções) (exceto de banho), de malha, de uso feminino."
+"TEXTEIS",125.04,6105,"Camisas de malha, de uso masculino."
+"TEXTEIS",125.04,6106,"Camisas (Camiseiros*), blusas, blusas chemisiers (blusas-camiseiros*), de malha, de uso feminino."
+"TEXTEIS",125.04,6107,"Cuecas, ceroulas, camisolões (camisas de noite*), pijamas, roupões de banho, robes e semelhantes, de malha, de uso masculino."
+"TEXTEIS",125.04,6108,"Combinações, anáguas (saiotes), calcinhas, camisolas (camisas de noite*), pijamas, déshabillés, roupões de banho, penhoares (robes de quarto*) e semelhantes, de malha, de uso feminino."
+"TEXTEIS",125.04,6109,"Camisetas (T-shirts), camisetas interiores (camisolas interiores*), e artigos semelhantes, de malha."
+"TEXTEIS",125.04,6110,"Suéteres (Camisolas*), pulôveres, cardigãs, coletes e artigos semelhantes, de malha."
+"TEXTEIS",125.04,6111,"Vestuário e seus acessórios, de malha, para bebês."
+"TEXTEIS",125.04,650500,"Chapéus e outros artigos de uso semelhante, de malha ou confeccionados com rendas, feltro ou outros produtos têxteis, em peça (mas não em tiras), mesmo guarnecidos; coifas e redes, para o cabelo, de qualquer matéria, mesmo guarnecidas."
+"TEXTEIS",125.04,6112,"Abrigos (Fatos de treino*) para esporte, macacões (fatos-macacos*) e conjuntos, de esqui, maiôs (fatos de banho*), biquínis, shorts (calções) e sungas (slips), de banho, de malha."
+"TEXTEIS",125.04,6114,Outro vestuário de malha.
+"TEXTEIS",125.04,6115,"Meias-calças, meias acima do joelho, meias até o joelho e artigos semelhantes, incluindo as meias-calças, meias acima do joelho e meias até o joelho, de compressão degressiva (as meias para varizes, por exemplo), de malha."
+"TEXTEIS",125.04,6116,"Luvas, mitenes e semelhantes, de malha."
+"TEXTEIS",125.04,6201,"Sobretudos, japonas, gabões, capas, anoraques, casacos (blusões*) e semelhantes, de uso masculino, exceto os artigos da posição 62.03."
+"TEXTEIS",125.04,6202,"Mantôs (Casacos compridos*), capas, anoraques, casacos (blusões*) e semelhantes, de uso feminino, exceto os artigos da posição 62.04."
+"TEXTEIS",125.04,6203,"Ternos (Fatos*), conjuntos, paletós (casacos*), calças, jardineiras, bermudas e shorts (calções) (exceto de banho), de uso masculino."
+"TEXTEIS",125.04,6204,"Tailleurs (Fatos de saia-casaco*), conjuntos, blazers (casacos*), vestidos, saias, saias-calças, calças, jardineiras, bermudas e shorts (calções) (exceto de banho), de uso feminino."
+"TEXTEIS",125.04,6205,Camisas de uso masculino.
+"TEXTEIS",125.04,6206,"Camisas (Camiseiros*), blusas, blusas chemisiers (blusas-camiseiros*), de uso feminino."
+"TEXTEIS",125.04,6207,"Camisetas interiores (Camisolas interiores*), cuecas, ceroulas, camisolões (camisas de noite*), pijamas, roupões de banho, robes, e artigos semelhantes, de uso masculino."
+"TEXTEIS",125.04,6208,"Corpetes (Camisolas interiores*), combinações, anáguas (saiotes), calcinhas, camisolas (camisas de noite*), pijamas, déshabillés, roupões de banho, penhoares (robes de quarto*), e artigos semelhantes, de uso feminino."
+"TEXTEIS",125.04,6209,"Vestuário e seus acessórios, para bebês."
+"TEXTEIS",125.04,6211,"Abrigos (Fatos de treino*) para esporte, macacões (fatos-macacos*) e conjuntos, de esqui, maiôs (fatos de banho*), biquínis, shorts (calções) e sungas (slips), de banho; outro vestuário."
+"TEXTEIS",125.04,6213,Lenços de assoar e de bolso.
+"TEXTEIS",125.04,6214,"Xales, echarpes, lenços de pescoço, cachenês, cachecóis, mantilhas, véus e artigos semelhantes."
+"TEXTEIS",125.04,6215,"Gravatas, gravatas-borboletas (laços*) e plastrões."
+"TEXTEIS",125.04,6302,"Roupa de cama, mesa, toucador ou cozinha."
+"TEXTEIS",125.04,6303,"Cortinados, cortinas, reposteiros e estores; sanefas."
 MOB,165.8,N/A,N/A
 PAPEL,151.02 E 428.1,4706,Pastas de fibras obtidas a partir de papel ou cartão reciclados (desperdícios e resíduos) ou de outras matérias fibrosas celulósicas.
 PAPEL,151.02 E 428.1,4707,Papel ou cartão para reciclar (desperdícios e resíduos).

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compras Públicas — EcoAdvance · MGI</title>
+<title>EcoAdvance — Compras Públicas · CGU</title>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -24,6 +24,7 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
 
   body {
     font-family: var(--font);
@@ -115,45 +116,30 @@
     padding: 1.8rem 2rem 3rem;
   }
 
-  .toolbar {
+  #loading {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.4rem;
-    flex-wrap: wrap;
-  }
-
-  .toolbar label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--gray-50);
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    white-space: nowrap;
-  }
-
-  select {
-    background: var(--white);
-    color: var(--gray-90);
-    border: 1px solid var(--gray-20);
-    padding: 0.45rem 0.9rem;
-    border-radius: 4px;
-    font-family: var(--font);
+    gap: 10px;
+    color: var(--blue);
     font-size: 0.85rem;
-    font-weight: 500;
-    min-width: 300px;
-    cursor: pointer;
+    font-weight: 600;
+    padding: 3rem 0;
   }
 
-  select:focus {
-    outline: 2px solid var(--blue);
-    outline-offset: 1px;
-    border-color: var(--blue);
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--gray-10);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
   }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ── CARDS ── */
   .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1rem;
     margin-bottom: 1.4rem;
   }
@@ -189,6 +175,7 @@
   .card.green  .card-value { color: var(--green); }
   .card.yellow .card-value { color: var(--yellow-dk); }
 
+  /* ── PANEL / TABLE ── */
   .panel {
     background: var(--white);
     border-radius: 6px;
@@ -197,34 +184,8 @@
     border: 1px solid var(--gray-10);
   }
 
-  .tabs {
-    display: flex;
-    border-bottom: 1px solid var(--gray-10);
-    background: var(--white);
-    overflow-x: auto;
-  }
-
-  .tab {
-    padding: 0.7rem 1.3rem;
-    cursor: pointer;
-    color: var(--gray-50);
-    font-weight: 700;
-    font-size: 0.72rem;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -1px;
-    transition: color 0.12s;
-    white-space: nowrap;
-  }
-
-  .tab:hover { color: var(--blue); }
-  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
-
-  .hidden { display: none; }
-
   .table-wrap {
-    max-height: 60vh;
+    max-height: 65vh;
     overflow: auto;
   }
 
@@ -254,7 +215,14 @@
   }
 
   thead th:hover { background: #DDE6F7; color: var(--blue); }
-  thead th.sorted { color: var(--blue); background: #DDE6F7; }
+  thead th.sorted { color: var(--blue); background: #D4E1F7; }
+
+  tbody tr { animation: rowIn 0.2s ease both; }
+
+  @keyframes rowIn {
+    from { opacity:0; transform:translateX(-4px); }
+    to   { opacity:1; transform:translateX(0); }
+  }
 
   tbody td {
     padding: 0.5rem 0.9rem;
@@ -272,38 +240,6 @@
     font-feature-settings: "tnum";
     font-weight: 600;
   }
-
-  .chart-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    padding: 0.8rem 1.5rem 0;
-  }
-
-  .btn-toggle-all {
-    font-family: var(--font);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--blue);
-    background: none;
-    border: 1px solid var(--blue);
-    border-radius: 4px;
-    padding: 0.35rem 0.9rem;
-    cursor: pointer;
-    transition: background 0.12s, color 0.12s;
-  }
-
-  .btn-toggle-all:hover {
-    background: var(--blue);
-    color: var(--white);
-  }
-
-  .chart-wrap {
-    height: 620px;
-    position: relative;
-    padding: 1.5rem;
-  }
 </style>
 </head>
 <body>
@@ -311,9 +247,9 @@
 <div class="panel-header">
   <div class="tricolor"></div>
   <div class="panel-header-text">
-    <div class="panel-orgao">MGI · Ministério da Gestão e da Inovação em Serviços Públicos</div>
-    <div class="panel-title">Compras Públicas — EcoAdvance</div>
-    <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2022–2025</div>
+    <div class="panel-orgao">CGU · Controladoria-Geral da União</div>
+    <div class="panel-title">EcoAdvance — Compras Públicas por Produto</div>
+    <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2024–2025</div>
   </div>
   <div class="panel-header-right">
     <span class="badge">Portal da Transparência · CGU</span>
@@ -323,40 +259,17 @@
 <div class="accent-bar"></div>
 
 <div class="layout">
-  <div id="app">
-
-    <div class="toolbar">
-      <label for="selPespp">Produto PESPP:</label>
-      <select id="selPespp"><option value="">Todos os produtos</option></select>
-    </div>
-
+  <div id="loading"><div class="spinner"></div>Carregando dados…</div>
+  <div id="app" style="display:none">
     <div class="cards" id="cards"></div>
-
     <div class="panel">
-      <div class="tabs">
-        <div class="tab active" data-tab="pespp">Por Produto PESPP</div>
-        <div class="tab" data-tab="tabela">Por Produto PESPP e NCM</div>
-        <div class="tab" data-tab="evolucao">Evolução Anual</div>
-      </div>
-
-      <div id="tab-pespp">
-        <div class="table-wrap"><table id="tblPespp"><thead></thead><tbody></tbody></table></div>
-      </div>
-      <div id="tab-tabela" class="hidden">
-        <div class="table-wrap"><table id="tblEcoAdvance"><thead></thead><tbody></tbody></table></div>
-      </div>
-      <div id="tab-evolucao" class="hidden">
-        <div class="chart-toolbar">
-          <button class="btn-toggle-all" id="btnToggleAll">Desmarcar tudo</button>
-        </div>
-        <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
+      <div class="table-wrap">
+        <table id="tbl"><thead></thead><tbody></tbody></table>
       </div>
     </div>
-
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
 
@@ -378,269 +291,102 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   }
 
   await registerParquet('resumo_ecoadvance.parquet');
-  await registerParquet('resumo_por_pespp.parquet');
-  await registerParquet('totais_globais_ecoadvance.parquet');
 
   const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
   const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
 
-  // Popula filtro PRODUTO PESPP
-  const produtos = (await conn.query(
-    `SELECT DISTINCT "PRODUTO PESPP" AS p FROM 'resumo_ecoadvance.parquet' ORDER BY 1`
+  // ── Cards ──
+  const totais = (await conn.query(`
+    SELECT
+      SUM(valor_2025)::DOUBLE           AS valor_total_2025,
+      SUM(qtd_emitentes_2025)::DOUBLE   AS emitentes_2025,
+      SUM(qtd_notas_fiscais_2025)::DOUBLE AS notas_2025
+    FROM 'resumo_ecoadvance.parquet'
+  `)).toArray()[0];
+
+  document.getElementById('cards').innerHTML = `
+    <div class="card">
+      <div class="card-label">Valor Total (2025)</div>
+      <div class="card-value">${fmt(totais.valor_total_2025)}</div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Fornecedores Distintos (2025)</div>
+      <div class="card-value">${fmtN(totais.emitentes_2025)}</div>
+    </div>
+    <div class="card yellow">
+      <div class="card-label">Notas Fiscais (2025)</div>
+      <div class="card-value">${fmtN(totais.notas_2025)}</div>
+    </div>
+  `;
+
+  // ── Table ──
+  const rows = (await conn.query(
+    "SELECT * FROM 'resumo_ecoadvance.parquet' ORDER BY valor_2025 DESC"
   )).toArray();
-  const sel = document.getElementById('selPespp');
-  produtos.forEach(r => {
-    const opt = document.createElement('option');
-    opt.value = r.p;
-    opt.textContent = r.p;
-    sel.appendChild(opt);
-  });
 
-  function buildTable(tableEl, rows, cols) {
-    const thead = tableEl.querySelector('thead');
-    const tbody = tableEl.querySelector('tbody');
-    let sortIdx = null, sortAsc = true;
-
-    function renderBody(data) {
-      tbody.innerHTML = data.map((r, i) =>
-        `<tr data-idx="${i}">` +
-        cols.map(c => {
-          const v = r[c.key];
-          const cls = c.numeric ? ' class="num"' : '';
-          const display = c.fmt ? c.fmt(v) : (v ?? '—');
-          return `<td${cls}>${display}</td>`;
-        }).join('') + '</tr>'
-      ).join('');
-    }
-
-    function renderHead() {
-      thead.innerHTML = '<tr>' + cols.map((c, i) => {
-        const active = i === sortIdx;
-        const arrow  = active ? (sortAsc ? ' ▲' : ' ▼') : '';
-        const labelHtml = c.label.replace(/\n/g, '<br>');
-        return `<th data-colidx="${i}"${active ? ' class="sorted"' : ''}>${labelHtml}${arrow}</th>`;
-      }).join('') + '</tr>';
-      thead.querySelectorAll('th').forEach(th => {
-        th.addEventListener('click', () => {
-          const i = +th.dataset.colidx;
-          sortAsc = sortIdx === i ? !sortAsc : true;
-          sortIdx = i;
-          const col = cols[sortIdx];
-          const key = col.key;
-          const sorted = [...rows].sort((a, b) => {
-            const va = a[key], vb = b[key];
-            if (va == null && vb == null) return 0;
-            if (va == null) return sortAsc ? 1 : -1;
-            if (vb == null) return sortAsc ? -1 : 1;
-            if (col.numeric)
-              return sortAsc ? Number(va) - Number(vb) : Number(vb) - Number(va);
-            return sortAsc
-              ? String(va).localeCompare(String(vb), 'pt-BR')
-              : String(vb).localeCompare(String(va), 'pt-BR');
-          });
-          renderHead();
-          renderBody(sorted);
-        });
-      });
-    }
-
-    renderHead();
-    renderBody(rows);
-  }
-
-  const ANOS = ['2022', '2023', '2024', '2025'];
-  const PALETTE = [
-    '#1351B4','#168821','#A07800','#0C326F','#2E7D32','#8B6914',
-    '#2670E8','#388E3C','#C8961A','#1565C0','#43A047','#9E7B1E',
-    '#0D47A1','#2E7D32','#6D4C00','#1A237E','#1B5E20','#4E342E',
-    '#283593','#33691E'
+  const cols = [
+    { key: 'ecoadvance_produto_pespp', label: 'Produto PESPP' },
+    { key: 'ecoadvance_pe',            label: 'PE' },
+    { key: 'valor_2024',               label: 'Valor 2024',        numeric: true, fmt },
+    { key: 'valor_2025',               label: 'Valor 2025',        numeric: true, fmt },
+    { key: 'qtd_emitentes_2024',       label: 'Fornecedores 2024', numeric: true, fmt: fmtN },
+    { key: 'qtd_emitentes_2025',       label: 'Fornecedores 2025', numeric: true, fmt: fmtN },
+    { key: 'qtd_notas_fiscais_2024',   label: 'Notas Fiscais 2024', numeric: true, fmt: fmtN },
+    { key: 'qtd_notas_fiscais_2025',   label: 'Notas Fiscais 2025', numeric: true, fmt: fmtN },
   ];
 
-  let chartInstance = null;
-  let allVisible = true;
-  const btnToggleAll = document.getElementById('btnToggleAll');
+  const tableEl = document.getElementById('tbl');
+  const thead = tableEl.querySelector('thead');
+  const tbody = tableEl.querySelector('tbody');
+  let sortIdx = null, sortAsc = true;
+  let currentRows = [...rows];
 
-  function buildChart(rows, groupKey) {
-    const ctx = document.getElementById('chartEvolucao').getContext('2d');
-    if (chartInstance) chartInstance.destroy();
-    allVisible = true;
-    btnToggleAll.textContent = 'Desmarcar tudo';
-
-    // Agrega por groupKey, top 20
-    const agg = {};
-    rows.forEach(r => {
-      const k = r[groupKey] ?? '—';
-      if (!agg[k]) agg[k] = { label: k, vals: [0, 0, 0, 0], total: 0 };
-      ANOS.forEach((a, i) => { agg[k].vals[i] += Number(r[`VALOR ${a}`]) || 0; });
-      agg[k].total += ANOS.reduce((s, a) => s + (Number(r[`VALOR ${a}`]) || 0), 0);
-    });
-
-    const top = Object.values(agg)
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 20);
-
-    const datasets = top.map((g, i) => ({
-      label: g.label,
-      data: g.vals.map(v => v / 1e6),
-      borderColor: PALETTE[i % PALETTE.length],
-      backgroundColor: PALETTE[i % PALETTE.length] + '18',
-      tension: 0.3,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      borderWidth: 2,
-    }));
-
-    chartInstance = new Chart(ctx, {
-      type: 'line',
-      data: { labels: ANOS, datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: '#4A5057',
-              font: { size: 11, family: "'Raleway',sans-serif", weight: '600' },
-              boxWidth: 12,
-              padding: 16,
-            },
-          },
-          tooltip: {
-            backgroundColor: '#071D41',
-            titleColor: '#FFCD07',
-            bodyColor: '#FFFFFF',
-            padding: 10,
-            callbacks: {
-              label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toFixed(1)} M`,
-            },
-          },
-        },
-        scales: {
-          x: {
-            ticks: { color: '#8A9099', font: { family: "'Raleway',sans-serif", weight: '600' } },
-            grid: { color: '#E6E8EC' },
-          },
-          y: {
-            ticks: {
-              color: '#8A9099',
-              font: { family: "'Raleway',sans-serif" },
-              callback: v => `R$ ${v.toFixed(0)} M`,
-            },
-            grid: { color: '#E6E8EC' },
-            title: {
-              display: true,
-              text: 'Valor (R$ milhões)',
-              color: '#8A9099',
-              font: { family: "'Raleway',sans-serif", size: 11 },
-            },
-          },
-        },
-      },
-    });
+  function renderBody(data) {
+    tbody.innerHTML = data.map(r =>
+      '<tr>' + cols.map(c => {
+        const v = r[c.key];
+        const cls = c.numeric ? ' class="num"' : '';
+        const display = c.fmt ? c.fmt(v) : (v ?? '—');
+        return `<td${cls}>${display}</td>`;
+      }).join('') + '</tr>'
+    ).join('');
   }
 
-  btnToggleAll.addEventListener('click', () => {
-    if (!chartInstance) return;
-    allVisible = !allVisible;
-    chartInstance.data.datasets.forEach((_, i) => {
-      chartInstance.setDatasetVisibility(i, allVisible);
-    });
-    chartInstance.update();
-    btnToggleAll.textContent = allVisible ? 'Desmarcar tudo' : 'Marcar tudo';
-  });
-
-  async function refresh() {
-    const pespp = sel.value;
-    const where = pespp ? `WHERE "PRODUTO PESPP" = '${pespp.replace(/'/g, "''")}'` : '';
-
-    // Cards
-    let total, itens;
-    if (!pespp) {
-      const g = (await conn.query(`
-        SELECT "VALOR TOTAL 2025"::DOUBLE AS total,
-               "ITENS 2025"::DOUBLE AS itens
-        FROM 'totais_globais_ecoadvance.parquet'
-      `)).toArray()[0];
-      total = g.total; itens = g.itens;
-    } else {
-      const s = (await conn.query(`
-        SELECT COALESCE(SUM("VALOR 2025"),0)::DOUBLE AS total
-        FROM 'resumo_ecoadvance.parquet' ${where}
-      `)).toArray()[0];
-      total = s.total; itens = null;
-    }
-
-    document.getElementById('cards').innerHTML = `
-      <div class="card">
-        <div class="card-label">Valor Total (2025)</div>
-        <div class="card-value">${fmt(total)}</div>
-      </div>
-      ${itens != null ? `
-      <div class="card yellow">
-        <div class="card-label">Itens de NF-e (2025) </div>
-        <div class="card-value">${fmtN(itens)}</div>
-      </div>` : ''}
-    `;
-
-    // Tabela Por NCM e Produto PESPP
-    const rows = (await conn.query(
-      `SELECT * FROM 'resumo_ecoadvance.parquet' ${where} ORDER BY ("VALOR 2022"+"VALOR 2023"+"VALOR 2024"+"VALOR 2025") DESC`
-    )).toArray();
-
-    buildTable(document.getElementById('tblEcoAdvance'), rows, [
-      { key: 'PRODUTO PESPP',     label: 'Produto PESPP' },
-      { key: 'PE',                label: 'PE' },
-      { key: 'CODIGO',            label: 'Código NCM' },
-      { key: 'DESCRIÇÃO',         label: 'Descrição' },
-      { key: 'FORNECEDORES 2022', label: 'Fornecedores\n2022',   numeric: true, fmt: fmtN },
-      { key: 'FORNECEDORES 2023', label: 'Fornecedores\n2023',   numeric: true, fmt: fmtN },
-      { key: 'FORNECEDORES 2024', label: 'Fornecedores\n2024',   numeric: true, fmt: fmtN },
-      { key: 'FORNECEDORES 2025', label: 'Fornecedores\n2025',   numeric: true, fmt: fmtN },
-      { key: 'VALOR 2022',        label: 'Valor\n2022',    numeric: true, fmt },
-      { key: 'VALOR 2023',        label: 'Valor\n2023',    numeric: true, fmt },
-      { key: 'VALOR 2024',        label: 'Valor\n2024',    numeric: true, fmt },
-      { key: 'VALOR 2025',        label: 'Valor\n2025',    numeric: true, fmt },
-    ]);
-
-    // Tabela Por Produto PESPP
-    const pesppRows = (await conn.query(
-      `SELECT * FROM 'resumo_por_pespp.parquet' ${where} ORDER BY ("VALOR 2022"+"VALOR 2023"+"VALOR 2024"+"VALOR 2025") DESC`
-    )).toArray();
-
-    buildTable(document.getElementById('tblPespp'), pesppRows, [
-      { key: 'PRODUTO PESPP',     label: 'Produto PESPP' },
-      { key: 'FORNECEDORES 2022', label: 'Fornecedores\n2022',  numeric: true, fmt: fmtN },
-      { key: 'FORNECEDORES 2023', label: 'Fornecedores\n2023',  numeric: true, fmt: fmtN },
-      { key: 'FORNECEDORES 2024', label: 'Fornecedores\n2024',  numeric: true, fmt: fmtN },
-      { key: 'FORNECEDORES 2025', label: 'Fornecedores\n2025',  numeric: true, fmt: fmtN },
-      { key: 'VALOR 2022',        label: 'Valor\n2022',    numeric: true, fmt },
-      { key: 'VALOR 2023',        label: 'Valor\n2023',    numeric: true, fmt },
-      { key: 'VALOR 2024',        label: 'Valor\n2024',    numeric: true, fmt },
-      { key: 'VALOR 2025',        label: 'Valor\n2025',    numeric: true, fmt },
-    ]);
-
-    // Gráfico sempre por PRODUTO PESPP
-    buildChart(pesppRows, 'PRODUTO PESPP');
-  }
-
-  sel.addEventListener('change', refresh);
-
-  // Tabs
-  const tabIds = { pespp: 'tab-pespp', tabela: 'tab-tabela', evolucao: 'tab-evolucao' };
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      Object.entries(tabIds).forEach(([key, id]) => {
-        document.getElementById(id).classList.toggle('hidden', tab.dataset.tab !== key);
+  function renderHead() {
+    thead.innerHTML = '<tr>' + cols.map((c, i) => {
+      const active = i === sortIdx;
+      const arrow  = active ? (sortAsc ? ' ▲' : ' ▼') : '';
+      return `<th data-i="${i}"${active ? ' class="sorted"' : ''}>${c.label}${arrow}</th>`;
+    }).join('') + '</tr>';
+    thead.querySelectorAll('th').forEach(th => {
+      th.addEventListener('click', () => {
+        const i = +th.dataset.i;
+        sortAsc = sortIdx === i ? !sortAsc : true;
+        sortIdx = i;
+        const col = cols[sortIdx];
+        currentRows = [...rows].sort((a, b) => {
+          const va = a[col.key], vb = b[col.key];
+          if (va == null && vb == null) return 0;
+          if (va == null) return sortAsc ? 1 : -1;
+          if (vb == null) return sortAsc ? -1 : 1;
+          if (col.numeric) return sortAsc ? Number(va) - Number(vb) : Number(vb) - Number(va);
+          return sortAsc
+            ? String(va).localeCompare(String(vb), 'pt-BR')
+            : String(vb).localeCompare(String(va), 'pt-BR');
+        });
+        renderHead();
+        renderBody(currentRows);
       });
     });
-  });
+  }
 
-  await refresh();
+  renderHead();
+  renderBody(currentRows);
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = '';
 })().catch(err => {
-  document.body.innerHTML += `<p style="color:#C53030;padding:2rem">Erro ao carregar: ${err.message}</p>`;
+  document.getElementById('loading').innerHTML = `<span style="color:#C53030">Erro ao carregar: ${err.message}</span>`;
 });
 </script>
 </body>

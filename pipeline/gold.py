@@ -40,13 +40,20 @@ def criar_resumo_grupo_a(con: duckdb.DuckDBPyConnection) -> None:
             JOIN '{MAPEAMENTO_GRUPO_A}' m ON m.ncm = s.codigo_ncm_sh
         )
         SELECT
-            tipo,
-            LEFT(periodo, 4)                  AS ano,
-            SUM(valor_total)                  AS valor_total,
-            COUNT(DISTINCT {EMITENTE})         AS fornecedores_distintos,
-            COUNT(DISTINCT chave_de_acesso)    AS notas_distintas
-        FROM itens_cruzados
-        GROUP BY ALL
+            codigo_cadeia,
+            cadeia,
+            missao,
+            nome_missao,
+            SUM(valor_total)                                                      AS valor_total_adquirido,
+            COUNT(DISTINCT {EMITENTE})                                            AS fornecedores_distintos,
+            COUNT(*)                                                              AS quantidade_itens,
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END) AS valor_2022,
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END) AS valor_2023,
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END) AS valor_2024,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END) AS valor_2025
+        FROM itens_nib
+        GROUP BY codigo_cadeia, cadeia, missao, nome_missao
+        ORDER BY valor_total_adquirido DESC
     """)
 
     anos = _anos_disponiveis(con, '_tmp_grupo_a')
@@ -79,15 +86,24 @@ def criar_totais_grupo_a(con: duckdb.DuckDBPyConnection) -> None:
             JOIN '{MAPEAMENTO_GRUPO_A}' m ON m.ncm = s.codigo_ncm_sh
         )
         SELECT
-            LEFT(periodo, 4)                                AS ano,
-            SUM(valor_total)::DOUBLE                        AS valor_total,
-            COUNT(DISTINCT {EMITENTE})                      AS fornecedores_distintos,
-            COUNT(DISTINCT chave_de_acesso)                 AS notas_distintas
-        FROM itens_cruzados
-        GROUP BY LEFT(periodo, 4)
-        ORDER BY ano
+            codigo_cadeia, cadeia, missao, nome_missao,
+            cnae, desc_cnae, criterio, icp,
+            codigo_ncm_sh, ncm_sh_tipo_de_produto, descricao_do_produto_servico,
+            SUM(valor_total)                                                      AS valor_total,
+            COUNT(DISTINCT {EMITENTE})                                            AS fornecedores_distintos,
+            SUM(quantidade)                                                       AS quantidade_total,
+            COUNT(*)                                                              AS registros,
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END) AS valor_2022,
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END) AS valor_2023,
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END) AS valor_2024,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END) AS valor_2025
+        FROM itens_nib
+        GROUP BY ALL
+        ORDER BY valor_total DESC
+        LIMIT 2000
     """)
-    imprimir_mensagem("totais_grupo_a calculado.")
+    count = con.execute("SELECT COUNT(*) FROM detalhado_cadeia").fetchone()[0]
+    imprimir_mensagem(f"detalhado_cadeia: {count} linhas (top 2000 por valor).")
 
 
 def criar_itens_grupo_b_regex(con: duckdb.DuckDBPyConnection) -> None:
@@ -103,34 +119,34 @@ def criar_itens_grupo_b_regex(con: duckdb.DuckDBPyConnection) -> None:
             FROM 'extracoes/silver/itens.parquet'
         )
         SELECT
-            YEAR(i.data_emissao)                                                        AS ano,
-            i.codigo_ncm_sh                                                             AS ncm,
-            TRIM(a.tipo)                                                                AS tipo_ncm,
-            COALESCE(a.tipo IS NOT NULL, false)                                         AS ncm_mapeada,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bpolietileno\\b')                AS polietileno_encontrado,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bpolicloreto de vinila\\b')      AS "policloreto de vinila_encontrado",
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bpoliestireno\\b')               AS poliestireno_encontrado,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bpolibutadieno\\b')              AS polibutadieno_encontrado,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bestireno butadieno\\b')         AS estireno_butadieno_encontrado,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bpneus?\\b')                     AS pneus_encontrado,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bembalagem plástica\\b')         AS embalagem_plastica_encontrada,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\btubo pvc\\b')                   AS tubo_pvc_encontrado,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bembalagem pet\\b')              AS embalagem_pet_encontrada,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bpoliéster\\b')                  AS poliester_encontrado,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bplástica\\b')                   AS plastica_encontrada,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bplástico\\b')                   AS plastico_encontrada,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bpe\\b')                         AS pe_encontrado,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bpvc\\b')                        AS pvc_encontrado,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bps\\b')                         AS ps_encontrado,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bbr\\b')                         AS br_encontrado,
-            REGEXP_MATCHES(i.descricao_normalizada, '\\bsbr\\b')                        AS sbr_encontrado,
-            i.descricao_do_produto_servico                                              AS descricao,
-            SUM(i.valor_total)                                                          AS total
-        FROM itens_normalizado AS i
-            LEFT JOIN '{MAPEAMENTO_GRUPO_A}' AS a
-                ON CAST(i.codigo_ncm_sh AS VARCHAR) = CAST(a.ncm AS VARCHAR)
-        GROUP BY ALL
-        ORDER BY ano, total DESC
+            missao            AS "Número da Missão",
+            nome_missao       AS "Nome da Missão",
+            codigo_cadeia     AS "Código da Cadeia",
+            cadeia            AS "Cadeia Prioritária",
+            cnae              AS "CNAE",
+            desc_cnae         AS "Descrição da CNAE",
+            criterio          AS "Critério",
+            missoes           AS "Missões",
+            icp               AS "ICP",
+            secao_cnae        AS "Seção CNAE",
+            sh_correspondente AS "SH Correspondente",
+            SUM(valor_total)  AS "Valor Total",
+            COUNT(DISTINCT {EMITENTE})
+                              AS "Número de Fornecedores",
+            COUNT(DISTINCT chave_de_acesso)
+                              AS "Número de Notas Fiscais",
+            COUNT(DISTINCT chave_de_acesso || '-' || CAST(numero AS VARCHAR) || '-' || CAST(numero_produto AS VARCHAR))
+                              AS "Número de Itens",
+            SUM(CASE WHEN YEAR(data_emissao) = 2022 THEN valor_total ELSE 0 END) AS valor_2022,
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END) AS valor_2023,
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END) AS valor_2024,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END) AS valor_2025
+        FROM '{parquet_itens}'
+        GROUP BY
+            missao, nome_missao, codigo_cadeia, cadeia,
+            cnae, desc_cnae, criterio, missoes,
+            icp, secao_cnae, sh_correspondente
+        ORDER BY "Código da Cadeia" ASC
     """)
     count = con.execute("SELECT COUNT(*) FROM itens_grupo_b_regex").fetchone()[0]
     imprimir_mensagem(f"itens_grupo_b_regex: {count} linhas.")
@@ -215,7 +231,12 @@ const conn = await db.connect();
 async function registerParquet(file) {{
   const buf = base64ToUint8Array(_PARQUET_DATA[file]);
   await db.registerFileBuffer(file, buf);
-}}"""
+}}
+
+  await registerParquet('resumo_cadeia.parquet');
+  await registerParquet('detalhado_cadeia.parquet');
+  await registerParquet('totais_globais.parquet');
+  await registerParquet(TABELA_NIB);"""
 
     old_register = (
         "  const bundle = await duckdb.selectBundle(duckdb.getJsDelivrBundles());\n"
@@ -233,12 +254,17 @@ async function registerParquet(file) {{
         "    const resp = await fetch(file);\n"
         "    const buf = new Uint8Array(await resp.arrayBuffer());\n"
         "    await db.registerFileBuffer(file, buf);\n"
-        "  }"
+        "  }\n"
+        "\n"
+        "  await registerParquet('resumo_cadeia.parquet');\n"
+        "  await registerParquet('detalhado_cadeia.parquet');\n"
+        "  await registerParquet('totais_globais.parquet');\n"
+        "  await registerParquet(TABELA_NIB);"
     )
     html = html.replace(old_register, inline_register)
 
     os.makedirs(DIRETORIO_ENTREGA, exist_ok=True)
-    destino = os.path.join(DIRETORIO_ENTREGA, 'index.html')
+    destino = os.path.join(DIRETORIO_ENTREGA, 'preview.html')
     with open(destino, 'w', encoding='utf-8') as f:
         f.write(html)
 

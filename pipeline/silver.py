@@ -140,7 +140,7 @@ def aplicar_ncm_pad(rel: duckdb.DuckDBPyRelation, con: duckdb.DuckDBPyConnection
     """Substitui codigo_ncm_sh pela versão preenchida com zeros à esquerda até 8 dígitos"""
     ncm_pad = """
         CASE
-            WHEN codigo_ncm_sh = '-1' THEN codigo_ncm_sh
+            WHEN codigo_ncm_sh = '-1' THEN '00000000'
             ELSE LPAD(codigo_ncm_sh, 8, '0')
         END
     """

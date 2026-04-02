@@ -24,6 +24,7 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
 
   body {
     font-family: var(--font);
@@ -171,6 +172,7 @@
     border-color: var(--blue);
   }
 
+  /* ── CARDS ── */
   .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -273,6 +275,37 @@
     position: sticky;
     top: 0;
     z-index: 1;
+    transition: var(--tr);
+  }
+
+  thead th:hover { background: #DDE6F7; color: var(--blue); }
+  thead th.sorted { color: var(--blue); background: #D4E1F7; }
+
+  .sort-icon {
+    display: inline-block;
+    margin-left: 4px;
+    opacity: .45;
+    font-size: 0.7em;
+    vertical-align: middle;
+    transition: var(--tr);
+  }
+
+  th.sorted .sort-icon { opacity: 1; }
+
+  tbody tr { transition: background 0.1s ease; animation: rowIn 0.2s ease both; }
+
+  tbody tr:nth-child(1) { animation-delay:  0ms; }
+  tbody tr:nth-child(2) { animation-delay: 20ms; }
+  tbody tr:nth-child(3) { animation-delay: 35ms; }
+  tbody tr:nth-child(4) { animation-delay: 50ms; }
+  tbody tr:nth-child(5) { animation-delay: 62ms; }
+  tbody tr:nth-child(6) { animation-delay: 72ms; }
+  tbody tr:nth-child(7) { animation-delay: 80ms; }
+  tbody tr:nth-child(8) { animation-delay: 88ms; }
+
+  @keyframes rowIn {
+    from { opacity:0; transform:translateX(-4px); }
+    to   { opacity:1; transform:translateX(0); }
   }
 
   thead th:hover { background: #DDE6F7; color: var(--blue); }
@@ -336,6 +369,13 @@
     z-index: 200;
     align-items: center;
     justify-content: center;
+    padding: 4rem 2rem;
+    gap: 10px;
+    color: var(--gray-50);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
   .overlay.visible { display: flex; }
 
@@ -427,8 +467,6 @@
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
 
-const TABELA_NIB = 'cnae_cadeia.parquet';
-
 (async () => {
   const bundle = await duckdb.selectBundle(duckdb.getJsDelivrBundles());
   const workerUrl = URL.createObjectURL(
@@ -447,15 +485,42 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
     await db.registerFileBuffer(file, buf);
   }
 
-  await registerParquet('resumo_cadeia.parquet');
-  await registerParquet('detalhado_cadeia.parquet');
-  await registerParquet('totais_globais.parquet');
-  await registerParquet(TABELA_NIB);
+  await registerParquet('resumo_grupo_a.parquet');
+  await registerParquet('totais_grupo_a.parquet');
+  await registerParquet('itens_grupo_b_regex.parquet');
 
   const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
   const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
 
-  function buildTable(tableEl, rows, cols, onRowClick) {
+  function detectarAnos(fields) {
+    return fields
+      .map(f => f.name)
+      .filter(n => /^Valor Total \d{4}$/.test(n))
+      .map(n => n.slice(-4))
+      .sort();
+  }
+
+  const schemaA = await conn.query("SELECT * FROM 'resumo_grupo_a.parquet' LIMIT 0");
+  const anosA = detectarAnos(schemaA.schema.fields);
+
+  /* ── Animated counter ── */
+  function animateValue(el, endVal, formatter) {
+    if (endVal == null || isNaN(Number(endVal))) { el.textContent = '—'; return; }
+    const end = Number(endVal);
+    const duration = 600;
+    const start = Date.now();
+    el.classList.add('counting');
+    const run = () => {
+      const t = Math.min((Date.now() - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = formatter(end * eased);
+      if (t < 1) requestAnimationFrame(run);
+      else { el.textContent = formatter(end); el.classList.remove('counting'); }
+    };
+    requestAnimationFrame(run);
+  }
+
+  function buildTable(tableEl, rows, cols) {
     const thead = tableEl.querySelector('thead');
     const tbody = tableEl.querySelector('tbody');
     let sortIdx = null, sortAsc = true;
@@ -518,12 +583,11 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
   const cadeias = (await conn.query(
     "SELECT DISTINCT codigo_cadeia || ' — ' || cadeia AS label, codigo_cadeia AS value FROM 'resumo_cadeia.parquet' ORDER BY codigo_cadeia"
   )).toArray();
-  const sel = document.getElementById('selCadeia');
-  cadeias.forEach(r => {
+  const selTipo = document.getElementById('selTipo');
+  tiposRows.forEach(r => {
     const opt = document.createElement('option');
-    opt.value = r.value;
-    opt.textContent = r.label;
-    sel.appendChild(opt);
+    opt.value = r.tipo; opt.textContent = r.tipo;
+    selTipo.appendChild(opt);
   });
 
   async function refresh() {
@@ -737,9 +801,13 @@ const TABELA_NIB = 'cnae_cadeia.parquet';
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
+      activeTab = tab.dataset.tab;
       Object.entries(tabIds).forEach(([key, id]) => {
-        document.getElementById(id).classList.toggle('hidden', tab.dataset.tab !== key);
+        document.getElementById(id).classList.toggle('hidden', key !== activeTab);
       });
+      document.getElementById('toolbar-a').classList.toggle('hidden', activeTab !== 'grupoA');
+      document.getElementById('toolbar-b').classList.toggle('hidden', activeTab !== 'grupoB');
+      refresh();
     });
   });
 

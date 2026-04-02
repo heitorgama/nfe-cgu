@@ -10,7 +10,7 @@ from tqdm import tqdm
 DIRETORIO_DADOS = 'dados/nfe'
 DIRETORIO_EXTRACAO = 'extracoes/bronze'
 URL_BASE = 'https://dadosabertos-download.cgu.gov.br/PortalDaTransparencia/saida/nfe'
-PERIODO_INICIO = '202401'
+PERIODO_INICIO = '202201'
 PERIODO_FIM = '202512'
 CAMINHO_DUCKDB = os.path.join(DIRETORIO_EXTRACAO, 'bronze.duckdb')
 

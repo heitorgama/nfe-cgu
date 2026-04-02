@@ -38,8 +38,8 @@ TIPOS_DE_DADOS_ITENS = {
     'CFOP':                            'int64',
     'QUANTIDADE':                      'int64',
     'UNIDADE':                         'str',
-    'VALOR UNITÁRIO':                  'int64',
-    'VALOR TOTAL':                     'int64',
+    'VALOR UNITÁRIO':                  'decimal',
+    'VALOR TOTAL':                     'decimal',
     'periodo':                         'str',
 }
 
@@ -66,7 +66,7 @@ TIPOS_DE_DADOS_NF = {
     'DESTINO DA OPERAÇÃO':              'str',
     'CONSUMIDOR FINAL':                 'str',
     'PRESENÇA DO COMPRADOR':            'str',
-    'VALOR NOTA FISCAL':                'int64',
+    'VALOR NOTA FISCAL':                'decimal',
     'periodo':                          'str',
 }
 
@@ -119,7 +119,11 @@ def converter_dados(rel: duckdb.DuckDBPyRelation, tipos_de_dados: dict, con: duc
         elif tipo == 'int64':
             expr = f"TRY_CAST(REPLACE(REPLACE(CAST(\"{c}\" AS VARCHAR), '.', ''), ',', '.') AS BIGINT)"
         elif tipo == 'decimal':
-            expr = f"TRY_CAST(NULLIF(REGEXP_REPLACE(CAST(\"{c}\" AS VARCHAR), '\\D', '', 'g'), '') AS DECIMAL(14,0))"
+            expr = (
+                f"TRY_CAST(NULLIF(REGEXP_REPLACE("
+                f"REPLACE(REPLACE(CAST(\"{c}\" AS VARCHAR), '.', ''), ',', '.'), "
+                f"'[^0-9.]', '', 'g'), '') AS DECIMAL(18,2))"
+            )
         else:
             expr = f'"{c}"'
         select_parts.append(f'{expr} AS "{c}"')

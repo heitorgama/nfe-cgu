@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compras Públicas — Cadeias NIB · MGI</title>
+<title>Compras Públicas — Cadeias NIB (NCM) · MGI</title>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -275,7 +275,7 @@
     position: sticky;
     top: 0;
     z-index: 1;
-    transition: var(--tr);
+    transition: background 0.12s, color 0.12s;
   }
 
   thead th:hover { background: #DDE6F7; color: var(--blue); }
@@ -287,7 +287,6 @@
     opacity: .45;
     font-size: 0.7em;
     vertical-align: middle;
-    transition: var(--tr);
   }
 
   th.sorted .sort-icon { opacity: 1; }
@@ -307,9 +306,6 @@
     from { opacity:0; transform:translateX(-4px); }
     to   { opacity:1; transform:translateX(0); }
   }
-
-  thead th:hover { background: #DDE6F7; color: var(--blue); }
-  thead th.sorted { color: var(--blue); background: #DDE6F7; }
 
   tbody td {
     padding: 0.5rem 0.9rem;
@@ -406,8 +402,8 @@
   <div class="tricolor"></div>
   <div class="panel-header-text">
     <div class="panel-orgao">MGI · Ministério da Gestão e da Inovação em Serviços Públicos</div>
-    <div class="panel-title">Compras Públicas — Cadeias NIB</div>
-    <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2022–2025</div>
+    <div class="panel-title">Compras Públicas — Cadeias NIB (NCM)</div>
+    <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2023–2025</div>
   </div>
   <div class="panel-header-right">
     <span class="badge">Portal da Transparência · CGU</span>
@@ -417,41 +413,38 @@
 <div class="accent-bar"></div>
 
 <div class="layout">
-
   <div id="app">
+    <div id="loading"><div class="spinner"></div>Carregando dados…</div>
 
-    <div class="toolbar">
-      <label for="selCadeia">Cadeia:</label>
-      <select id="selCadeia"><option value="">Todas as cadeias</option></select>
-    </div>
-
-    <div class="cards" id="cards"></div>
-
-    <div class="panel">
-      <div class="tabs">
-        <div class="tab" data-tab="resumo">Por Cadeia</div>
-        <div class="tab active" data-tab="cnae">Por Cadeia e CNAE</div>
-        <div class="tab" data-tab="detalhado">Por Cadeia e Item (Primeiras 2.000 linhas)</div>
-        <div class="tab" data-tab="evolucao">Evolução Anual</div>
+    <div id="main" class="hidden">
+      <div class="toolbar">
+        <label for="selCadeia">Cadeia:</label>
+        <select id="selCadeia"><option value="">Todas as cadeias</option></select>
       </div>
 
-      <div id="tab-cnae">
-        <div class="table-wrap"><table id="tblCnae"><thead></thead><tbody></tbody></table></div>
-      </div>
-      <div id="tab-resumo" class="hidden">
-        <div class="table-wrap"><table id="tblResumo"><thead></thead><tbody></tbody></table></div>
-      </div>
-      <div id="tab-detalhado" class="hidden">
-        <div class="table-wrap"><table id="tblDetalhe"><thead></thead><tbody></tbody></table></div>
-      </div>
-      <div id="tab-evolucao" class="hidden">
-        <div class="chart-toolbar">
-          <button class="btn-toggle-all" id="btnToggleAll">Desmarcar tudo</button>
+      <div class="cards" id="cards"></div>
+
+      <div class="panel">
+        <div class="tabs">
+          <div class="tab active" data-tab="cadeia">Por Cadeia</div>
+          <div class="tab" data-tab="detalhe">Por Cadeia e Detalhe</div>
+          <div class="tab" data-tab="evolucao">Evolução Anual</div>
         </div>
-        <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
+
+        <div id="tab-cadeia">
+          <div class="table-wrap"><table id="tblCadeia"><thead></thead><tbody></tbody></table></div>
+        </div>
+        <div id="tab-detalhe" class="hidden">
+          <div class="table-wrap"><table id="tblDetalhe"><thead></thead><tbody></tbody></table></div>
+        </div>
+        <div id="tab-evolucao" class="hidden">
+          <div class="chart-toolbar">
+            <button class="btn-toggle-all" id="btnToggleAll">Desmarcar tudo</button>
+          </div>
+          <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
+        </div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -485,23 +478,11 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     await db.registerFileBuffer(file, buf);
   }
 
-  await registerParquet('resumo_grupo_a.parquet');
-  await registerParquet('totais_grupo_a.parquet');
-  await registerParquet('itens_grupo_b_regex.parquet');
+  await registerParquet('resumo_cadeia_nib.parquet');
+  await registerParquet('resumo_nib.parquet');
 
   const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
   const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
-
-  function detectarAnos(fields) {
-    return fields
-      .map(f => f.name)
-      .filter(n => /^Valor Total \d{4}$/.test(n))
-      .map(n => n.slice(-4))
-      .sort();
-  }
-
-  const schemaA = await conn.query("SELECT * FROM 'resumo_grupo_a.parquet' LIMIT 0");
-  const anosA = detectarAnos(schemaA.schema.fields);
 
   /* ── Animated counter ── */
   function animateValue(el, endVal, formatter) {
@@ -509,16 +490,34 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     const end = Number(endVal);
     const duration = 600;
     const start = Date.now();
-    el.classList.add('counting');
     const run = () => {
       const t = Math.min((Date.now() - start) / duration, 1);
       const eased = 1 - Math.pow(1 - t, 3);
       el.textContent = formatter(end * eased);
       if (t < 1) requestAnimationFrame(run);
-      else { el.textContent = formatter(end); el.classList.remove('counting'); }
+      else el.textContent = formatter(end);
     };
     requestAnimationFrame(run);
   }
+
+  /* ── Cadeia selector ── */
+  const cadeiaOpts = (await conn.query(
+    "SELECT DISTINCT codigo_cadeia || ' — ' || cadeia AS label, codigo_cadeia AS val FROM 'resumo_cadeia_nib.parquet' ORDER BY codigo_cadeia"
+  )).toArray();
+  const selCadeia = document.getElementById('selCadeia');
+  cadeiaOpts.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.val; opt.textContent = r.label;
+    selCadeia.appendChild(opt);
+  });
+
+  /* ── Overlay ── */
+  const overlay = document.getElementById('overlay');
+  document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('visible'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('visible'); });
+
+  /* ── buildTable ── */
+  let onRowClick = null;
 
   function buildTable(tableEl, rows, cols) {
     const thead = tableEl.querySelector('thead');
@@ -576,136 +575,8 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     renderBody(rows);
   }
 
-  const overlay = document.getElementById('overlay');
-  document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('visible'));
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('visible'); });
-
-  const cadeias = (await conn.query(
-    "SELECT DISTINCT codigo_cadeia || ' — ' || cadeia AS label, codigo_cadeia AS value FROM 'resumo_cadeia.parquet' ORDER BY codigo_cadeia"
-  )).toArray();
-  const selTipo = document.getElementById('selTipo');
-  tiposRows.forEach(r => {
-    const opt = document.createElement('option');
-    opt.value = r.tipo; opt.textContent = r.tipo;
-    selTipo.appendChild(opt);
-  });
-
-  async function refresh() {
-    const cadeia = sel.value;
-    const wBase  = cadeia ? `WHERE codigo_cadeia = '${cadeia}'` : '';
-    const wNib   = cadeia ? `WHERE "Código da Cadeia" = '${cadeia}'` : '';
-
-    let total, fornecedores, itens, ncadeias;
-    if (!cadeia) {
-      const g = (await conn.query(`
-        SELECT valor_total_2025::DOUBLE AS total,
-               fornecedores_2025::DOUBLE AS fornecedores,
-               itens_2025::DOUBLE AS itens
-        FROM 'totais_globais.parquet'
-      `)).toArray()[0];
-      const nc = (await conn.query(
-        "SELECT COUNT(*)::DOUBLE AS n FROM 'resumo_cadeia.parquet'"
-      )).toArray()[0];
-      total = g.total; fornecedores = g.fornecedores; itens = g.itens; ncadeias = nc.n;
-    } else {
-      const s = (await conn.query(`
-        SELECT COALESCE(SUM(valor_2025),0)::DOUBLE AS total,
-               COALESCE(SUM(fornecedores_2025),0)::DOUBLE AS fornecedores,
-               COALESCE(SUM(quantidade_itens_2025),0)::DOUBLE AS itens,
-               COUNT(*)::DOUBLE AS ncadeias
-        FROM 'resumo_cadeia.parquet' ${wBase}
-      `)).toArray()[0];
-      total = s.total; fornecedores = s.fornecedores; itens = s.itens; ncadeias = s.ncadeias;
-    }
-
-    document.getElementById('cards').innerHTML = `
-      <div class="card">
-        <div class="card-label">Valor Total de Itens Distintos (2025)</div>
-        <div class="card-value">${fmt(total)}</div>
-      </div>
-      <div class="card green">
-        <div class="card-label">Fornecedores Distintos (2025)</div>
-        <div class="card-value">${fmtN(fornecedores)}</div>
-      </div>
-      <div class="card yellow">
-        <div class="card-label">Itens Distintos de NF-e (2025)</div>
-        <div class="card-value">${fmtN(itens)}</div>
-      </div>
-      <div class="card slate">
-        <div class="card-label">Cadeias NIB</div>
-        <div class="card-value">${fmtN(ncadeias)}</div>
-      </div>
-    `;
-
-    const cnaeRows = (await conn.query(
-      `SELECT * FROM '${TABELA_NIB}' ${wNib} ORDER BY "Código da Cadeia", "Valor Total" DESC`
-    )).toArray();
-    buildTable(document.getElementById('tblCnae'), cnaeRows, [
-      { key: 'Número da Missão',        label: 'Missão' },
-      { key: 'Código da Cadeia',        label: 'Código' },
-      { key: 'Cadeia Prioritária',      label: 'Cadeia' },
-      { key: 'CNAE',                    label: 'CNAE' },
-      { key: 'Descrição da CNAE',       label: 'Descrição CNAE' },
-      { key: 'Critério',                label: 'Critério' },
-      { key: 'Missões',                 label: 'Missões' },
-      { key: 'Seção CNAE',              label: 'Seção CNAE' },
-      { key: 'SH Correspondente',       label: 'SH Correspondente' },
-      { key: 'Nome da Missão',          label: 'Nome da Missão' },
-      { key: 'ICP',                     label: 'ICP',          numeric: true },
-      { key: 'Número de Fornecedores',  label: 'Fornecedores', numeric: true, fmt: fmtN },
-      { key: 'Número de Notas Fiscais', label: 'NFs',          numeric: true, fmt: fmtN },
-      { key: 'Número de Itens',         label: 'Itens',        numeric: true, fmt: fmtN },
-      { key: 'valor_2022',              label: '2022',         numeric: true, fmt },
-      { key: 'valor_2023',              label: '2023',         numeric: true, fmt },
-      { key: 'valor_2024',              label: '2024',         numeric: true, fmt },
-      { key: 'valor_2025',              label: '2025',         numeric: true, fmt },
-      { key: 'Valor Total',             label: 'Total',        numeric: true, fmt },
-    ]);
-
-    const resumoRows = (await conn.query(
-      `SELECT * FROM 'resumo_cadeia.parquet' ${wBase} ORDER BY valor_total_adquirido DESC`
-    )).toArray();
-    buildChart(resumoRows);
-    buildTable(document.getElementById('tblResumo'), resumoRows, [
-      { key: 'missao',                  label: 'Missão' },
-      { key: 'codigo_cadeia',           label: 'Código' },
-      { key: 'cadeia',                  label: 'Cadeia' },
-      { key: 'fornecedores_distintos',  label: 'Fornecedores', numeric: true, fmt: fmtN },
-      { key: 'quantidade_itens',        label: 'Itens',        numeric: true, fmt: fmtN },
-      { key: 'valor_2022',              label: '2022',         numeric: true, fmt },
-      { key: 'valor_2023',              label: '2023',         numeric: true, fmt },
-      { key: 'valor_2024',              label: '2024',         numeric: true, fmt },
-      { key: 'valor_2025',              label: '2025',         numeric: true, fmt },
-      { key: 'valor_total_adquirido',   label: 'Total',        numeric: true, fmt },
-    ]);
-
-    const detalheRows = (await conn.query(
-      `SELECT * FROM 'detalhado_cadeia.parquet' ${wBase} ORDER BY valor_total DESC LIMIT 500`
-    )).toArray();
-    buildTable(document.getElementById('tblDetalhe'), detalheRows, [
-      { key: 'codigo_cadeia',               label: 'Código' },
-      { key: 'cadeia',                      label: 'Cadeia' },
-      { key: 'cnae',                        label: 'CNAE' },
-      { key: 'criterio',                    label: 'Critério' },
-      { key: 'descricao_do_produto_servico', label: 'Descrição' },
-      { key: 'codigo_ncm_sh',               label: 'NCM/SH',       numeric: true },
-      { key: 'ncm_sh_tipo_de_produto',      label: 'Tipo NCM/SH' },
-      { key: 'icp',                         label: 'ICP',          numeric: true },
-      { key: 'quantidade_total',            label: 'Quantidade',   numeric: true, fmt: fmtN },
-      { key: 'fornecedores_distintos',      label: 'Fornecedores', numeric: true, fmt: fmtN },
-      { key: 'registros',                   label: 'Registros',    numeric: true, fmt: fmtN },
-      { key: 'valor_2022',                  label: '2022',         numeric: true, fmt },
-      { key: 'valor_2023',                  label: '2023',         numeric: true, fmt },
-      { key: 'valor_2024',                  label: '2024',         numeric: true, fmt },
-      { key: 'valor_2025',                  label: '2025',         numeric: true, fmt },
-      { key: 'valor_total',                 label: 'Total',        numeric: true, fmt },
-    ]);
-  }
-
-  sel.addEventListener('change', refresh);
-
-  let chartInstance = null;
-  const ANOS = ['2022', '2023', '2024', '2025'];
+  /* ── Chart ── */
+  const ANOS = ['2023', '2024', '2025'];
   const PALETTE = [
     '#1351B4','#168821','#A07800','#0C326F','#2E7D32','#8B6914',
     '#2670E8','#388E3C','#C8961A','#1565C0','#43A047','#9E7B1E',
@@ -713,19 +584,26 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     '#283593','#33691E'
   ];
 
+  let chartInstance = null;
+  let allVisible = true;
+
   function buildChart(rows) {
     const ctx = document.getElementById('chartEvolucao').getContext('2d');
     if (chartInstance) chartInstance.destroy();
     allVisible = true;
-    btnToggleAll.textContent = 'Desmarcar tudo';
+    document.getElementById('btnToggleAll').textContent = 'Desmarcar tudo';
 
     const top = [...rows]
-      .sort((a, b) => (Number(b.valor_total_adquirido) || 0) - (Number(a.valor_total_adquirido) || 0))
+      .sort((a, b) => {
+        const totA = ANOS.reduce((s, yr) => s + (Number(a[`valor_${yr}`]) || 0), 0);
+        const totB = ANOS.reduce((s, yr) => s + (Number(b[`valor_${yr}`]) || 0), 0);
+        return totB - totA;
+      })
       .slice(0, 20);
 
     const datasets = top.map((r, i) => ({
       label: r.cadeia,
-      data: ANOS.map(a => (Number(r[`valor_${a}`]) || 0) / 1e9),
+      data: ANOS.map(yr => (Number(r[`valor_${yr}`]) || 0) / 1e9),
       borderColor: PALETTE[i % PALETTE.length],
       backgroundColor: PALETTE[i % PALETTE.length] + '18',
       tension: 0.3,
@@ -784,19 +662,20 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     });
   }
 
-  const btnToggleAll = document.getElementById('btnToggleAll');
-  let allVisible = true;
-  btnToggleAll.addEventListener('click', () => {
+  document.getElementById('btnToggleAll').addEventListener('click', () => {
     if (!chartInstance) return;
     allVisible = !allVisible;
     chartInstance.data.datasets.forEach((_, i) => {
       chartInstance.setDatasetVisibility(i, allVisible);
     });
     chartInstance.update();
-    btnToggleAll.textContent = allVisible ? 'Desmarcar tudo' : 'Marcar tudo';
+    document.getElementById('btnToggleAll').textContent = allVisible ? 'Desmarcar tudo' : 'Marcar tudo';
   });
 
-  const tabIds = { cnae: 'tab-cnae', resumo: 'tab-resumo', detalhado: 'tab-detalhado', evolucao: 'tab-evolucao' };
+  /* ── Tabs ── */
+  let activeTab = 'cadeia';
+  const tabIds = { cadeia: 'tab-cadeia', detalhe: 'tab-detalhe', evolucao: 'tab-evolucao' };
+
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -805,15 +684,104 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       Object.entries(tabIds).forEach(([key, id]) => {
         document.getElementById(id).classList.toggle('hidden', key !== activeTab);
       });
-      document.getElementById('toolbar-a').classList.toggle('hidden', activeTab !== 'grupoA');
-      document.getElementById('toolbar-b').classList.toggle('hidden', activeTab !== 'grupoB');
       refresh();
     });
   });
 
+  /* ── Refresh ── */
+  async function refresh() {
+    const cadeia = selCadeia.value;
+    const w = cadeia ? `WHERE codigo_cadeia = '${cadeia}'` : '';
+
+    const g = (await conn.query(`
+      SELECT
+        COALESCE(SUM(valor_2025), 0)::DOUBLE              AS total,
+        COALESCE(SUM(qtd_emitentes_2025), 0)::DOUBLE      AS emitentes,
+        COALESCE(SUM(qtd_notas_fiscais_2025), 0)::DOUBLE  AS notas,
+        COUNT(DISTINCT codigo_cadeia)::DOUBLE              AS ncadeias
+      FROM 'resumo_cadeia_nib.parquet' ${w}
+    `)).toArray()[0];
+
+    document.getElementById('cards').innerHTML = `
+      <div class="card">
+        <div class="card-label">Valor Total Comprado (2025)</div>
+        <div class="card-value" id="cv-total"></div>
+      </div>
+      <div class="card green">
+        <div class="card-label">Emitentes Distintos (2025)</div>
+        <div class="card-value" id="cv-emit"></div>
+      </div>
+      <div class="card yellow">
+        <div class="card-label">Notas Fiscais Distintas (2025)</div>
+        <div class="card-value" id="cv-notas"></div>
+      </div>
+      <div class="card slate">
+        <div class="card-label">Cadeias NIB</div>
+        <div class="card-value" id="cv-cadeias"></div>
+      </div>
+    `;
+    animateValue(document.getElementById('cv-total'),   g.total,    fmt);
+    animateValue(document.getElementById('cv-emit'),    g.emitentes, fmtN);
+    animateValue(document.getElementById('cv-notas'),   g.notas,    fmtN);
+    animateValue(document.getElementById('cv-cadeias'), g.ncadeias, fmtN);
+
+    const cadrRows = (await conn.query(
+      `SELECT * FROM 'resumo_cadeia_nib.parquet' ${w} ORDER BY valor_2025 DESC`
+    )).toArray();
+
+    const detRows = (await conn.query(
+      `SELECT * FROM 'resumo_nib.parquet' ${w} ORDER BY codigo_cadeia, valor_2025 DESC`
+    )).toArray();
+
+    buildChart(cadrRows);
+
+    buildTable(document.getElementById('tblCadeia'), cadrRows, [
+      { key: 'codigo_cadeia',          label: 'Código' },
+      { key: 'cadeia',                 label: 'Cadeia' },
+      { key: 'valor_2023',             label: '2023',       numeric: true, fmt },
+      { key: 'valor_2024',             label: '2024',       numeric: true, fmt },
+      { key: 'valor_2025',             label: '2025',       numeric: true, fmt },
+      { key: 'qtd_emitentes_2023',     label: 'Emit. 2023', numeric: true, fmt: fmtN },
+      { key: 'qtd_emitentes_2024',     label: 'Emit. 2024', numeric: true, fmt: fmtN },
+      { key: 'qtd_emitentes_2025',     label: 'Emit. 2025', numeric: true, fmt: fmtN },
+      { key: 'qtd_notas_fiscais_2023', label: 'NFs 2023',   numeric: true, fmt: fmtN },
+      { key: 'qtd_notas_fiscais_2024', label: 'NFs 2024',   numeric: true, fmt: fmtN },
+      { key: 'qtd_notas_fiscais_2025', label: 'NFs 2025',   numeric: true, fmt: fmtN },
+    ]);
+
+    buildTable(document.getElementById('tblDetalhe'), detRows, [
+      { key: 'missao',                  label: 'Missão' },
+      { key: 'codigo_cadeia',           label: 'Código' },
+      { key: 'cadeia',                  label: 'Cadeia' },
+      { key: 'nome_missao',             label: 'Nome da Missão' },
+      { key: 'cnae',                    label: 'CNAE' },
+      { key: 'desc_cnae',               label: 'Descrição CNAE' },
+      { key: 'criterio',                label: 'Critério' },
+      { key: 'icp',                     label: 'ICP',        numeric: true },
+      { key: 'missoes',                 label: 'Missões' },
+      { key: 'secao_cnae',              label: 'Seção CNAE' },
+      { key: 'sh_correspondente',       label: 'SH Correspondente' },
+      { key: 'valor_2023',              label: '2023',       numeric: true, fmt },
+      { key: 'valor_2024',              label: '2024',       numeric: true, fmt },
+      { key: 'valor_2025',              label: '2025',       numeric: true, fmt },
+      { key: 'qtd_emitentes_2023',      label: 'Emit. 2023', numeric: true, fmt: fmtN },
+      { key: 'qtd_emitentes_2024',      label: 'Emit. 2024', numeric: true, fmt: fmtN },
+      { key: 'qtd_emitentes_2025',      label: 'Emit. 2025', numeric: true, fmt: fmtN },
+      { key: 'qtd_notas_fiscais_2023',  label: 'NFs 2023',   numeric: true, fmt: fmtN },
+      { key: 'qtd_notas_fiscais_2024',  label: 'NFs 2024',   numeric: true, fmt: fmtN },
+      { key: 'qtd_notas_fiscais_2025',  label: 'NFs 2025',   numeric: true, fmt: fmtN },
+    ]);
+  }
+
+  selCadeia.addEventListener('change', refresh);
+
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('main').classList.remove('hidden');
+
   await refresh();
 })().catch(err => {
-  document.getElementById('loading').innerHTML = `<span style="color:#C53030">Erro ao carregar: ${err.message}</span>`;
+  document.getElementById('loading').innerHTML =
+    `<span style="color:#C53030">Erro ao carregar: ${err.message}</span>`;
 });
 </script>
 </body>

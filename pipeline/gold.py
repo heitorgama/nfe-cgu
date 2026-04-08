@@ -133,9 +133,39 @@ def criar_resumo_cadeia_nib(con: duckdb.DuckDBPyConnection) -> None:
     imprimir_mensagem(f"resumo_cadeia_nib: {count} linhas.")
 
 
+def criar_resumo_uf_cadeia_nib(con: duckdb.DuckDBPyConnection) -> None:
+    """Resumo NIB agregado por UF do emitente e cadeia: valores por ano"""
+    con.execute(r"""
+        CREATE OR REPLACE TABLE resumo_uf_cadeia_nib AS
+        WITH mapeamento AS (
+            SELECT *
+            FROM 'dados/mapeamento_ncm.csv' AS nib
+                LEFT JOIN 'dados/ncm.csv' AS map
+                    ON  nib.prefixo_sh = map.prefixo
+                    OR  RPAD(CAST(nib.prefixo_sh AS VARCHAR), 6, '0') = map.prefixo
+                    OR  RPAD(CAST(nib.prefixo_sh AS VARCHAR), 8, '0') = map.prefixo
+                    OR  (nib.prefixo_sh = '560390' AND map.prefixo = '56039')
+                    OR  (nib.prefixo_sh = '401511' AND map.prefixo = '40151')
+        )
+        SELECT
+            codigo_cadeia,
+            s.uf_emitente                                                                                                                                     AS uf,
+            SUM(CASE WHEN YEAR(data_emissao) = 2023 THEN valor_total ELSE 0 END)::DOUBLE                                                                     AS valor_2023,
+            SUM(CASE WHEN YEAR(data_emissao) = 2024 THEN valor_total ELSE 0 END)::DOUBLE                                                                     AS valor_2024,
+            SUM(CASE WHEN YEAR(data_emissao) = 2025 THEN valor_total ELSE 0 END)::DOUBLE                                                                     AS valor_2025
+        FROM mapeamento
+            JOIN 'extracoes/silver/itens.parquet' AS s
+                ON s.codigo_ncm_sh = mapeamento.codigo
+        GROUP BY 1, 2
+        ORDER BY valor_2025 DESC
+    """)
+    count = con.execute("SELECT COUNT(*) FROM resumo_uf_cadeia_nib").fetchone()[0]
+    imprimir_mensagem(f"resumo_uf_cadeia_nib: {count} linhas.")
+
+
 def exportar_parquets(con: duckdb.DuckDBPyConnection) -> None:
     """Exporta tabelas gold como parquet"""
-    for tabela in ('itens_nib', 'resumo_nib', 'resumo_cadeia_nib'):
+    for tabela in ('itens_nib', 'resumo_nib', 'resumo_cadeia_nib', 'resumo_uf_cadeia_nib'):
         caminho = os.path.join(DIRETORIO_GOLD, f'{tabela}.parquet')
         con.execute(f"COPY {tabela} TO '{caminho}' (FORMAT PARQUET, COMPRESSION SNAPPY)")
     imprimir_mensagem("Parquets gold exportados.")
@@ -143,7 +173,7 @@ def exportar_parquets(con: duckdb.DuckDBPyConnection) -> None:
 
 def exportar_csvs_entrega(con: duckdb.DuckDBPyConnection) -> None:
     """Exporta CSVs prontos para entrega"""
-    for tabela in ('itens_nib', 'resumo_nib', 'resumo_cadeia_nib'):
+    for tabela in ('itens_nib', 'resumo_nib', 'resumo_cadeia_nib', 'resumo_uf_cadeia_nib'):
         df = con.execute(f"SELECT * FROM {tabela}").df()
         df.to_csv(
             os.path.join(DIRETORIO_GOLD, f'{tabela}.csv'),
@@ -165,7 +195,7 @@ def exportar_html_interativo() -> None:
     """Gera HTML standalone com os parquets embutidos em base64"""
     import base64
 
-    TABELAS = ('resumo_cadeia_nib', 'resumo_nib')
+    TABELAS = ('resumo_cadeia_nib', 'resumo_nib', 'resumo_uf_cadeia_nib')
 
     def parquet_base64(tabela):
         with open(os.path.join(DIRETORIO_GOLD, f'{tabela}.parquet'), 'rb') as f:
@@ -211,7 +241,8 @@ function base64ToUint8Array(b64) {{
   }}
 
   await registerParquet('resumo_cadeia_nib.parquet');
-  await registerParquet('resumo_nib.parquet');"""
+  await registerParquet('resumo_nib.parquet');
+  await registerParquet('resumo_uf_cadeia_nib.parquet');"""
 
     old_register = (
         "  const bundle = await duckdb.selectBundle(duckdb.getJsDelivrBundles());\n"
@@ -247,21 +278,24 @@ function base64ToUint8Array(b64) {{
 
 def main():
     """Gera a tabela itens_nib e exporta entregáveis."""
-    #os.makedirs(DIRETORIO_GOLD, exist_ok=True)
-    #con = duckdb.connect(GOLD_DB, config={'temp_directory': tempfile.gettempdir()})
-    #con.execute("SET preserve_insertion_order=false")
+    os.makedirs(DIRETORIO_GOLD, exist_ok=True)
+    con = duckdb.connect(GOLD_DB, config={'temp_directory': tempfile.gettempdir()})
+    con.execute("SET preserve_insertion_order=false")
 
-    #imprimir_mensagem("Calculando itens NIB...")
-    #criar_itens_nib(con)
+    imprimir_mensagem("Calculando itens NIB...")
+    criar_itens_nib(con)
 
-    #imprimir_mensagem("Calculando resumo NIB...")
-    #criar_resumo_nib(con)
+    imprimir_mensagem("Calculando resumo NIB...")
+    criar_resumo_nib(con)
 
-    #imprimir_mensagem("Calculando resumo por cadeia NIB...")
-    #criar_resumo_cadeia_nib(con)
+    imprimir_mensagem("Calculando resumo por cadeia NIB...")
+    criar_resumo_cadeia_nib(con)
 
-    #imprimir_mensagem("Exportando parquets gold...")
-    #exportar_parquets(con)
+    imprimir_mensagem("Calculando resumo por UF NIB...")
+    criar_resumo_uf_cadeia_nib(con)
+
+    imprimir_mensagem("Exportando parquets gold...")
+    exportar_parquets(con)
 
     #imprimir_mensagem("Exportando CSVs de entrega...")
     #exportar_csvs_entrega(con)

@@ -7,3 +7,5 @@
 /tests/__pycache__
 *.pickle
 .DS_Store
+.tmp/
+.vscode/

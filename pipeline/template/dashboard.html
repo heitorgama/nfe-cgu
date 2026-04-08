@@ -405,10 +405,6 @@
     <div class="panel-title">Compras Públicas — Cadeias NIB (NCM)</div>
     <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2023–2025</div>
   </div>
-  <div class="panel-header-right">
-    <span class="badge">Portal da Transparência · CGU</span>
-    <span class="badge">Nova Indústria Brasil</span>
-  </div>
 </div>
 <div class="accent-bar"></div>
 
@@ -427,8 +423,9 @@
       <div class="panel">
         <div class="tabs">
           <div class="tab active" data-tab="cadeia">Por Cadeia</div>
-          <div class="tab" data-tab="detalhe">Por Cadeia e Detalhe</div>
+          <div class="tab" data-tab="detalhe">Por Cadeia e CNAE</div>
           <div class="tab" data-tab="evolucao">Evolução Anual</div>
+          <div class="tab" data-tab="uf">Gastos por UF</div>
         </div>
 
         <div id="tab-cadeia">
@@ -442,6 +439,9 @@
             <button class="btn-toggle-all" id="btnToggleAll">Desmarcar tudo</button>
           </div>
           <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
+        </div>
+        <div id="tab-uf" class="hidden">
+          <div class="chart-wrap" style="height:560px"><canvas id="chartUF"></canvas></div>
         </div>
       </div>
     </div>
@@ -480,6 +480,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
   await registerParquet('resumo_cadeia_nib.parquet');
   await registerParquet('resumo_nib.parquet');
+  await registerParquet('resumo_uf_cadeia_nib.parquet');
 
   const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
   const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
@@ -585,6 +586,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
   ];
 
   let chartInstance = null;
+  let chartUFInstance = null;
   let allVisible = true;
 
   function buildChart(rows) {
@@ -634,7 +636,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
             bodyColor: '#FFFFFF',
             padding: 10,
             callbacks: {
-              label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toFixed(2)} B`,
+              label: c => ` ${c.dataset.label}: ${(c.parsed.y * 1e9).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}`,
             },
           },
         },
@@ -662,6 +664,56 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     });
   }
 
+  function buildChartUF(rows) {
+    const ctx = document.getElementById('chartUF').getContext('2d');
+    if (chartUFInstance) chartUFInstance.destroy();
+
+    const sorted = [...rows].sort((a, b) => (Number(b.valor_2025) || 0) - (Number(a.valor_2025) || 0));
+    const labels = sorted.map(r => r.uf || 'N/D');
+    const values = sorted.map(r => Number(r.valor_2025) || 0);
+
+    chartUFInstance = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: PALETTE.concat(PALETTE).slice(0, labels.length),
+          borderWidth: 1,
+          borderColor: '#fff',
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              color: '#4A5057',
+              font: { size: 11, family: "'Raleway',sans-serif", weight: '600' },
+              boxWidth: 12,
+              padding: 14,
+            },
+          },
+          tooltip: {
+            backgroundColor: '#071D41',
+            titleColor: '#FFCD07',
+            bodyColor: '#FFFFFF',
+            padding: 10,
+            callbacks: {
+              label: c => {
+                const total = c.dataset.data.reduce((s, v) => s + v, 0);
+                const pct = total > 0 ? (c.parsed / total * 100).toFixed(1) : '0.0';
+                return ` ${c.label}: ${c.parsed.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })} (${pct}%)`;
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   document.getElementById('btnToggleAll').addEventListener('click', () => {
     if (!chartInstance) return;
     allVisible = !allVisible;
@@ -674,7 +726,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
   /* ── Tabs ── */
   let activeTab = 'cadeia';
-  const tabIds = { cadeia: 'tab-cadeia', detalhe: 'tab-detalhe', evolucao: 'tab-evolucao' };
+  const tabIds = { cadeia: 'tab-cadeia', detalhe: 'tab-detalhe', evolucao: 'tab-evolucao', uf: 'tab-uf' };
 
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -733,17 +785,24 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       `SELECT * FROM 'resumo_nib.parquet' ${w} ORDER BY codigo_cadeia, valor_2025 DESC`
     )).toArray();
 
+    const ufWhere = cadeia ? `WHERE codigo_cadeia = '${cadeia}'` : '';
+    const ufRows = (await conn.query(
+      `SELECT uf, SUM(valor_2023)::DOUBLE AS valor_2023, SUM(valor_2024)::DOUBLE AS valor_2024, SUM(valor_2025)::DOUBLE AS valor_2025
+       FROM 'resumo_uf_cadeia_nib.parquet' ${ufWhere} GROUP BY uf ORDER BY valor_2025 DESC`
+    )).toArray();
+
     buildChart(cadrRows);
+    buildChartUF(ufRows);
 
     buildTable(document.getElementById('tblCadeia'), cadrRows, [
       { key: 'codigo_cadeia',          label: 'Código' },
       { key: 'cadeia',                 label: 'Cadeia' },
-      { key: 'valor_2023',             label: '2023',       numeric: true, fmt },
-      { key: 'valor_2024',             label: '2024',       numeric: true, fmt },
-      { key: 'valor_2025',             label: '2025',       numeric: true, fmt },
-      { key: 'qtd_emitentes_2023',     label: 'Emit. 2023', numeric: true, fmt: fmtN },
-      { key: 'qtd_emitentes_2024',     label: 'Emit. 2024', numeric: true, fmt: fmtN },
-      { key: 'qtd_emitentes_2025',     label: 'Emit. 2025', numeric: true, fmt: fmtN },
+      { key: 'valor_2023',             label: 'Valor Total 2023',       numeric: true, fmt },
+      { key: 'valor_2024',             label: 'Valor Total 2024',       numeric: true, fmt },
+      { key: 'valor_2025',             label: 'Valor Total 2025',       numeric: true, fmt },
+      { key: 'qtd_emitentes_2023',     label: 'Fornecedores 2023', numeric: true, fmt: fmtN },
+      { key: 'qtd_emitentes_2024',     label: 'Fornecedores 2024', numeric: true, fmt: fmtN },
+      { key: 'qtd_emitentes_2025',     label: 'Fornecedores 2025', numeric: true, fmt: fmtN },
       { key: 'qtd_notas_fiscais_2023', label: 'NFs 2023',   numeric: true, fmt: fmtN },
       { key: 'qtd_notas_fiscais_2024', label: 'NFs 2024',   numeric: true, fmt: fmtN },
       { key: 'qtd_notas_fiscais_2025', label: 'NFs 2025',   numeric: true, fmt: fmtN },
@@ -761,12 +820,12 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       { key: 'missoes',                 label: 'Missões' },
       { key: 'secao_cnae',              label: 'Seção CNAE' },
       { key: 'sh_correspondente',       label: 'SH Correspondente' },
-      { key: 'valor_2023',              label: '2023',       numeric: true, fmt },
-      { key: 'valor_2024',              label: '2024',       numeric: true, fmt },
-      { key: 'valor_2025',              label: '2025',       numeric: true, fmt },
-      { key: 'qtd_emitentes_2023',      label: 'Emit. 2023', numeric: true, fmt: fmtN },
-      { key: 'qtd_emitentes_2024',      label: 'Emit. 2024', numeric: true, fmt: fmtN },
-      { key: 'qtd_emitentes_2025',      label: 'Emit. 2025', numeric: true, fmt: fmtN },
+      { key: 'valor_2023',              label: 'Valor Total 2023',       numeric: true, fmt },
+      { key: 'valor_2024',              label: 'Valor Total 2024',       numeric: true, fmt },
+      { key: 'valor_2025',              label: 'Valor Total 2025',       numeric: true, fmt },
+      { key: 'qtd_emitentes_2023',      label: 'Fornecedores 2023', numeric: true, fmt: fmtN },
+      { key: 'qtd_emitentes_2024',      label: 'Fornecedores 2024', numeric: true, fmt: fmtN },
+      { key: 'qtd_emitentes_2025',      label: 'Fornecedores 2025', numeric: true, fmt: fmtN },
       { key: 'qtd_notas_fiscais_2023',  label: 'NFs 2023',   numeric: true, fmt: fmtN },
       { key: 'qtd_notas_fiscais_2024',  label: 'NFs 2024',   numeric: true, fmt: fmtN },
       { key: 'qtd_notas_fiscais_2025',  label: 'NFs 2025',   numeric: true, fmt: fmtN },
@@ -775,7 +834,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
   selCadeia.addEventListener('change', refresh);
 
-  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('loading').style.display = 'none';
   document.getElementById('main').classList.remove('hidden');
 
   await refresh();

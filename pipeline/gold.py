@@ -376,8 +376,8 @@ def main():
     imprimir_mensagem("Exportando parquets gold...")
     exportar_parquets(con)
 
-    #imprimir_mensagem("Exportando CSVs de entrega...")
-    #exportar_csvs_entrega(con)
+    imprimir_mensagem("Exportando CSVs de entrega...")
+    exportar_csvs_entrega(con)
 
     template = os.path.join(os.path.dirname(__file__), 'template', 'dashboard.html')
     if os.path.exists(template):

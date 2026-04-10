@@ -357,6 +357,34 @@
     color: var(--white);
   }
 
+  .uf-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--gray-10);
+  }
+
+  .uf-toggle {
+    font-family: var(--font);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 3px;
+    border: 1px solid var(--gray-20);
+    background: var(--white);
+    color: var(--gray-50);
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
+  }
+
+  .uf-toggle.active {
+    background: var(--blue);
+    color: var(--white);
+    border-color: var(--blue);
+  }
+
   .overlay {
     display: none;
     position: fixed;
@@ -422,10 +450,10 @@
 
       <div class="panel">
         <div class="tabs">
-          <div class="tab active" data-tab="cadeia">Por Cadeia</div>
-          <div class="tab" data-tab="detalhe">Por Cadeia e CNAE</div>
-          <div class="tab" data-tab="evolucao">Evolução Anual</div>
-          <div class="tab" data-tab="uf">Gastos por UF</div>
+          <div class="tab active" data-tab="cadeia">Resumo por Cadeia</div>
+          <div class="tab" data-tab="detalhe">Tabela Original Enriquecida</div>
+          <div class="tab" data-tab="evolucao">Evolução Anual por Cadeia</div>
+          <div class="tab" data-tab="uf">Vendas por UF</div>
         </div>
 
         <div id="tab-cadeia">
@@ -441,7 +469,16 @@
           <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
         </div>
         <div id="tab-uf" class="hidden">
-          <div class="chart-wrap" style="height:560px"><canvas id="chartUF"></canvas></div>
+          <div class="chart-toolbar">
+            <button class="btn-toggle-all" id="btnToggleAllUF">Desmarcar todas</button>
+          </div>
+          <div class="uf-toggles" id="ufToggles"></div>
+          <div class="chart-wrap" style="height:500px">
+            <canvas id="chartUF"></canvas>
+            <div id="chartUFMsg" style="display:none;align-items:center;justify-content:center;height:100%;color:var(--gray-50);font-size:0.85rem;font-weight:600;">
+              Selecione uma cadeia no filtro acima para ver o gráfico por UF e NCM
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -480,7 +517,8 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
 
   await registerParquet('resumo_cadeia_nib.parquet');
   await registerParquet('resumo_nib.parquet');
-  await registerParquet('resumo_uf_cadeia_nib.parquet');
+  await registerParquet('resumo_uf_cnae_nib.parquet');
+  await registerParquet('totais_nib.parquet');
 
   const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
   const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
@@ -664,36 +702,115 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
     });
   }
 
-  function buildChartUF(rows) {
-    const ctx = document.getElementById('chartUF').getContext('2d');
-    if (chartUFInstance) chartUFInstance.destroy();
+  let ufChartState = null;
 
-    const sorted = [...rows].sort((a, b) => (Number(b.valor_2025) || 0) - (Number(a.valor_2025) || 0));
-    const labels = sorted.map(r => r.uf || 'N/D');
-    const values = sorted.map(r => Number(r.valor_2025) || 0);
+  function renderUFToggles() {
+    const { allUFs, visibleUFs } = ufChartState;
+    const container = document.getElementById('ufToggles');
+    const btnAll    = document.getElementById('btnToggleAllUF');
+    container.innerHTML = '';
+    allUFs.forEach(uf => {
+      const btn = document.createElement('button');
+      btn.className = 'uf-toggle' + (visibleUFs.has(uf) ? ' active' : '');
+      btn.textContent = uf || 'N/D';
+      btn.addEventListener('click', () => {
+        if (visibleUFs.has(uf)) visibleUFs.delete(uf); else visibleUFs.add(uf);
+        btn.classList.toggle('active', visibleUFs.has(uf));
+        btnAll.textContent = visibleUFs.size === allUFs.length ? 'Desmarcar todas' : 'Marcar todas';
+        updateUFChart();
+      });
+      container.appendChild(btn);
+    });
+    btnAll.textContent = visibleUFs.size === allUFs.length ? 'Desmarcar todas' : 'Marcar todas';
+  }
 
-    chartUFInstance = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels,
-        datasets: [{
-          data: values,
-          backgroundColor: PALETTE.concat(PALETTE).slice(0, labels.length),
-          borderWidth: 1,
-          borderColor: '#fff',
-        }],
-      },
+  function updateUFChart() {
+    const { allUFs, topNCMs, lookup, ufTotals, visibleUFs } = ufChartState;
+    /* allUFs já está em ordem decrescente — só filtra mantendo essa ordem */
+    const labels = allUFs.filter(uf => visibleUFs.has(uf));
+    chartUFInstance.data.labels = labels;
+    chartUFInstance.data.datasets.forEach((ds, i) => {
+      ds.data = labels.map(uf => lookup[uf]?.[topNCMs[i]] || 0);
+    });
+    chartUFInstance.update();
+  }
+
+  document.getElementById('btnToggleAllUF').addEventListener('click', () => {
+    if (!ufChartState) return;
+    const { allUFs, visibleUFs } = ufChartState;
+    const allOn = visibleUFs.size === allUFs.length;
+    if (allOn) allUFs.forEach(uf => visibleUFs.delete(uf));
+    else       allUFs.forEach(uf => visibleUFs.add(uf));
+    renderUFToggles();
+    updateUFChart();
+  });
+
+  function buildChartUF(cnaeRows, cadeia) {
+    const canvas = document.getElementById('chartUF');
+    const msg    = document.getElementById('chartUFMsg');
+    if (chartUFInstance) { chartUFInstance.destroy(); chartUFInstance = null; }
+    document.getElementById('ufToggles').innerHTML = '';
+
+    if (!cadeia || cnaeRows.length === 0) {
+      canvas.style.display = 'none';
+      msg.style.display = 'flex';
+      return;
+    }
+    canvas.style.display = '';
+    msg.style.display = 'none';
+
+    /* totais por UF */
+    const ufTotals = {};
+    cnaeRows.forEach(r => {
+      const uf = r.uf || 'N/D';
+      ufTotals[uf] = (ufTotals[uf] || 0) + (Number(r.valor_2025) || 0);
+    });
+
+    /* todas as UFs ordenadas por gasto */
+    const allUFs = Object.entries(ufTotals)
+      .sort((a, b) => b[1] - a[1]).map(([uf]) => uf);
+
+    /* top 8 NCMs por gasto total */
+    const ncmTotals = {};
+    cnaeRows.forEach(r => {
+      const key = r.ncm ? String(r.ncm).slice(0, 4) : 'N/D';
+      ncmTotals[key] = (ncmTotals[key] || 0) + (Number(r.valor_2025) || 0);
+    });
+    const topNCMs = Object.entries(ncmTotals)
+      .sort((a, b) => b[1] - a[1]).map(([c]) => c);
+
+    /* lookup uf → ncm → valor */
+    const lookup = {};
+    cnaeRows.forEach(r => {
+      const uf = r.uf || 'N/D';
+      const nc = r.ncm ? String(r.ncm).slice(0, 4) : 'N/D';
+      if (!lookup[uf]) lookup[uf] = {};
+      lookup[uf][nc] = (lookup[uf][nc] || 0) + (Number(r.valor_2025) || 0);
+    });
+
+    ufChartState = { allUFs, topNCMs, lookup, ufTotals, visibleUFs: new Set(allUFs) };
+    renderUFToggles();
+
+    const datasets = topNCMs.map((ncm, i) => ({
+      label: ncm,
+      data: allUFs.map(uf => lookup[uf]?.[ncm] || 0),
+      backgroundColor: PALETTE[i % PALETTE.length],
+      borderWidth: 0,
+    }));
+
+    chartUFInstance = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: { labels: [...allUFs], datasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'right',
+            position: 'bottom',
             labels: {
               color: '#4A5057',
-              font: { size: 11, family: "'Raleway',sans-serif", weight: '600' },
-              boxWidth: 12,
-              padding: 14,
+              font: { size: 10, family: "'Raleway',sans-serif", weight: '600' },
+              boxWidth: 12, padding: 12,
             },
           },
           tooltip: {
@@ -702,11 +819,40 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
             bodyColor: '#FFFFFF',
             padding: 10,
             callbacks: {
-              label: c => {
-                const total = c.dataset.data.reduce((s, v) => s + v, 0);
-                const pct = total > 0 ? (c.parsed / total * 100).toFixed(1) : '0.0';
-                return ` ${c.label}: ${c.parsed.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })} (${pct}%)`;
+              title: items => {
+                const uf    = chartUFInstance.data.labels[items[0].dataIndex];
+                const total = ufChartState.ufTotals[uf] || 0;
+                return `${uf}  —  Total: ${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}`;
               },
+              label: c => {
+                const uf    = chartUFInstance.data.labels[c.dataIndex];
+                const abs   = c.raw;                              /* valor do segmento, não cumulativo */
+                const total = ufChartState.ufTotals[uf] || 1;
+                const pct   = (abs / total * 100).toFixed(1);
+                return ` ${c.dataset.label}: ${abs.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })} (${pct}% do total da UF na cadeia)`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { color: '#8A9099', font: { family: "'Raleway',sans-serif", weight: '600' } },
+            grid:  { color: '#E6E8EC' },
+          },
+          y: {
+            stacked: true,
+            ticks: {
+              color: '#8A9099',
+              font: { family: "'Raleway',sans-serif" },
+              callback: v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }),
+            },
+            grid: { color: '#E6E8EC' },
+            title: {
+              display: true,
+              text: 'Valor Total (R$)',
+              color: '#8A9099',
+              font: { family: "'Raleway',sans-serif", size: 11 },
             },
           },
         },
@@ -754,6 +900,23 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       FROM 'resumo_cadeia_nib.parquet' ${w}
     `)).toArray()[0];
 
+    const gTotal = cadeia
+      ? (await conn.query(`
+          SELECT
+            COALESCE(SUM(valor_2025), 0)::DOUBLE              AS total,
+            COALESCE(SUM(qtd_emitentes_2025), 0)::DOUBLE      AS emitentes,
+            COALESCE(SUM(qtd_notas_fiscais_2025), 0)::DOUBLE  AS notas
+          FROM 'resumo_cadeia_nib.parquet'
+          WHERE codigo_cadeia = '${cadeia}'
+        `)).toArray()[0]
+      : (await conn.query(`
+          SELECT
+            COALESCE(valor_2025, 0)::DOUBLE             AS total,
+            COALESCE(qtd_emitentes_2025, 0)::DOUBLE     AS emitentes,
+            COALESCE(qtd_notas_fiscais_2025, 0)::DOUBLE AS notas
+          FROM 'totais_nib.parquet'
+        `)).toArray()[0];
+
     document.getElementById('cards').innerHTML = `
       <div class="card">
         <div class="card-label">Valor Total Comprado (2025)</div>
@@ -772,9 +935,9 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
         <div class="card-value" id="cv-cadeias"></div>
       </div>
     `;
-    animateValue(document.getElementById('cv-total'),   g.total,    fmt);
-    animateValue(document.getElementById('cv-emit'),    g.emitentes, fmtN);
-    animateValue(document.getElementById('cv-notas'),   g.notas,    fmtN);
+    animateValue(document.getElementById('cv-total'),   gTotal?.total,    fmt);
+    animateValue(document.getElementById('cv-emit'),    gTotal?.emitentes, fmtN);
+    animateValue(document.getElementById('cv-notas'),   gTotal?.notas,    fmtN);
     animateValue(document.getElementById('cv-cadeias'), g.ncadeias, fmtN);
 
     const cadrRows = (await conn.query(
@@ -785,14 +948,16 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0
       `SELECT * FROM 'resumo_nib.parquet' ${w} ORDER BY codigo_cadeia, valor_2025 DESC`
     )).toArray();
 
-    const ufWhere = cadeia ? `WHERE codigo_cadeia = '${cadeia}'` : '';
-    const ufRows = (await conn.query(
-      `SELECT uf, SUM(valor_2023)::DOUBLE AS valor_2023, SUM(valor_2024)::DOUBLE AS valor_2024, SUM(valor_2025)::DOUBLE AS valor_2025
-       FROM 'resumo_uf_cadeia_nib.parquet' ${ufWhere} GROUP BY uf ORDER BY valor_2025 DESC`
-    )).toArray();
+    const cnaeRows = cadeia
+      ? (await conn.query(
+          `SELECT uf, ncm, valor_2025
+           FROM 'resumo_uf_cnae_nib.parquet'
+           WHERE codigo_cadeia = '${cadeia}'`
+        )).toArray()
+      : [];
 
     buildChart(cadrRows);
-    buildChartUF(ufRows);
+    buildChartUF(cnaeRows, cadeia);
 
     buildTable(document.getElementById('tblCadeia'), cadrRows, [
       { key: 'codigo_cadeia',          label: 'Código' },

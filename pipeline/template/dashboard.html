@@ -3,1010 +3,1995 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compras Públicas — Cadeias NIB (NCM) · MGI</title>
-<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<title>NCM · Contratações Públicas 2025 · MGI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
-  :root {
-    --blue:      #1351B4;
-    --blue-dark: #071D41;
-    --blue-mid:  #0C326F;
-    --green:     #168821;
-    --yellow:    #FFCD07;
-    --yellow-dk: #A07800;
-    --gray-bg:   #F0F2F5;
-    --gray-10:   #E6E8EC;
-    --gray-20:   #C8CDD6;
-    --gray-50:   #8A9099;
-    --gray-70:   #4A5057;
-    --gray-90:   #1A1D21;
-    --white:     #FFFFFF;
-    --font: 'Raleway', sans-serif;
-  }
+/* ════════════════════════════════════════════════
+   TOKENS & RESET
+════════════════════════════════════════════════ */
+:root {
+  --blue:      #1351B4;
+  --blue-dark: #071D41;
+  --blue-mid:  #0C326F;
+  --blue-light:#2670E8;
+  --blue-pale: #EEF3FC;
+  --green:     #168821;
+  --green-pale:#E3F5E1;
+  --yellow:    #FFCD07;
+  --yellow-dk: #875A00;
+  --yellow-pale:#FFF8DC;
+  --red:       #E52207;
+  --gray-bg:   #F0F2F5;
+  --gray-05:   #F8F9FA;
+  --gray-10:   #E8EAED;
+  --gray-20:   #CACDD4;
+  --gray-40:   #9EA4AF;
+  --gray-60:   #6C737F;
+  --gray-80:   #3D4450;
+  --gray-90:   #1A1D21;
+  --white:     #FFFFFF;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.1), 0 2px 6px rgba(0,0,0,.06);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+  --radius:    6px;
+  --font: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  /* Animation timing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth:   cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  body {
-    font-family: var(--font);
-    background: var(--gray-bg);
-    color: var(--gray-90);
-    font-size: 14px;
-    line-height: 1.5;
-    min-height: 100vh;
-  }
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box }
+html { scroll-behavior:smooth; -webkit-font-smoothing:antialiased }
+body {
+  font-family: var(--font);
+  background: var(--gray-bg);
+  color: var(--gray-90);
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0;
+  animation: bodyReveal .4s .05s var(--ease-smooth) forwards;
+}
 
-  .panel-header {
-    background: var(--blue-dark);
-    padding: 0 2.5rem;
-    display: flex;
-    align-items: stretch;
-    min-height: 72px;
-  }
+@keyframes bodyReveal {
+  from { opacity: 0 }
+  to   { opacity: 1 }
+}
 
-  .tricolor {
-    width: 8px;
-    flex-shrink: 0;
-    background: linear-gradient(to bottom,
-      var(--yellow) 0%, var(--yellow) 33.3%,
-      var(--green)  33.3%, var(--green)  66.6%,
-      var(--blue)   66.6%, var(--blue)   100%
-    );
-    margin: 14px 20px 14px 0;
-    border-radius: 2px;
-  }
+/* ════════════════════════════════════════════════
+   HEADER
+════════════════════════════════════════════════ */
+.header {
+  background: var(--blue-dark);
+  position: relative;
+  overflow: hidden;
+}
 
-  .panel-header-text {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 14px 0;
-  }
+/* Animated gradient mesh */
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 120% at 80% 50%, rgba(38,112,232,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 80% at 10% 80%, rgba(22,136,33,.08) 0%, transparent 50%);
+  animation: headerPulse 8s ease-in-out infinite alternate;
+}
 
-  .panel-orgao {
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: rgba(255,255,255,0.5);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 3px;
-  }
+@keyframes headerPulse {
+  0%   { opacity: .7; transform: scale(1) }
+  100% { opacity: 1;  transform: scale(1.04) }
+}
 
-  .panel-title {
-    font-size: 1.15rem;
-    font-weight: 800;
-    color: var(--white);
-    letter-spacing: -0.01em;
-    line-height: 1.2;
-  }
+/* Moving shimmer line */
+.header::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.03), transparent);
+  animation: headerShimmer 6s 1s linear infinite;
+}
 
-  .panel-subtitle {
-    font-size: 0.75rem;
-    font-weight: 400;
-    color: rgba(255,255,255,0.45);
-    margin-top: 3px;
-  }
+@keyframes headerShimmer {
+  0%   { left: -60% }
+  100% { left: 160% }
+}
 
-  .panel-header-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 60px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  position: relative;
+  z-index: 1;
+}
 
-  .badge {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 3px;
-    background: rgba(255,255,255,0.07);
-    color: rgba(255,255,255,0.55);
-    border: 1px solid rgba(255,255,255,0.1);
-  }
+/* Tricolor animated */
+.tricolor {
+  width: 5px;
+  height: 46px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-right: 16px;
+  background: linear-gradient(to bottom, var(--yellow) 33.3%, var(--green) 33.3% 66.6%, var(--blue-light) 66.6%);
+  animation: tricolorSlide .6s var(--ease-out-expo) both;
+  box-shadow: 0 0 12px rgba(255,205,7,.25);
+}
 
-  .accent-bar {
-    height: 3px;
-    background: linear-gradient(90deg, var(--yellow) 0%, var(--green) 40%, var(--blue) 100%);
-  }
+@keyframes tricolorSlide {
+  from { transform: scaleY(0); opacity: 0 }
+  to   { transform: scaleY(1); opacity: 1 }
+}
 
-  .layout {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 1.8rem 2rem 3rem;
-  }
+.header-org {
+  font-size: .6rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.38);
+  margin-bottom: 2px;
+  animation: headerTextIn .5s .15s var(--ease-out-expo) both;
+}
 
-  #loading {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--blue);
-    font-size: 0.85rem;
-    font-weight: 600;
-    padding: 3rem 0;
-  }
+.header-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+  animation: headerTextIn .5s .2s var(--ease-out-expo) both;
+}
 
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid var(--gray-10);
-    border-top-color: var(--blue);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+.header-sub {
+  font-size: .68rem;
+  font-weight: 400;
+  color: rgba(255,255,255,.38);
+  margin-top: 2px;
+  animation: headerTextIn .5s .25s var(--ease-out-expo) both;
+}
 
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.4rem;
-    flex-wrap: wrap;
-  }
+@keyframes headerTextIn {
+  from { transform: translateY(6px); opacity: 0 }
+  to   { transform: translateY(0);   opacity: 1 }
+}
 
-  .toolbar label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--gray-50);
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    white-space: nowrap;
-  }
+/* Animated accent bar */
+.accent-bar {
+  height: 2px;
+  background: linear-gradient(90deg, var(--yellow), var(--green), var(--blue-light));
+  background-size: 200%;
+  animation: accentFlow 4s linear infinite;
+}
 
-  select {
-    background: var(--white);
-    color: var(--gray-90);
-    border: 1px solid var(--gray-20);
-    padding: 0.45rem 0.9rem;
-    border-radius: 4px;
-    font-family: var(--font);
-    font-size: 0.85rem;
-    font-weight: 500;
-    min-width: 300px;
-    cursor: pointer;
-  }
+@keyframes accentFlow {
+  0%   { background-position: 0% }
+  100% { background-position: 200% }
+}
 
-  select:focus {
-    outline: 2px solid var(--blue);
-    outline-offset: 1px;
-    border-color: var(--blue);
-  }
+/* ════════════════════════════════════════════════
+   LAYOUT
+════════════════════════════════════════════════ */
+.layout {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 1.5rem;
+}
 
-  /* ── CARDS ── */
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.4rem;
-  }
+.content-wrap {
+  display: flex;
+  gap: .875rem;
+  align-items: flex-start;
+}
 
-  .card {
-    background: var(--white);
-    border-radius: 6px;
-    padding: 1.1rem 1.3rem 1.2rem;
-    border-left: 4px solid var(--blue);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  }
+/* ════════════════════════════════════════════════
+   METRIC CARDS
+════════════════════════════════════════════════ */
+.metric-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .75rem;
+  margin-bottom: .75rem;
+}
 
-  .card.green  { border-left-color: var(--green); }
-  .card.yellow { border-left-color: var(--yellow); }
-  .card.slate  { border-left-color: var(--blue-mid); }
+.metric-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: .6rem .875rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-10);
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow .25s var(--ease-smooth), transform .25s var(--ease-smooth);
+  animation: cardIn .5s var(--ease-out-expo) both;
+}
 
-  .card-label {
-    font-size: 0.67rem;
-    font-weight: 700;
-    color: var(--gray-50);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 6px;
-  }
+.metric-card:nth-child(1) { animation-delay: .1s }
+.metric-card:nth-child(2) { animation-delay: .18s }
+.metric-card:nth-child(3) { animation-delay: .26s }
 
-  .card-value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--blue-dark);
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
+@keyframes cardIn {
+  from { transform: translateY(16px) scale(.97); opacity: 0 }
+  to   { transform: translateY(0)    scale(1);   opacity: 1 }
+}
 
-  .card.green  .card-value { color: var(--green); }
-  .card.yellow .card-value { color: var(--yellow-dk); }
-  .card.slate  .card-value { color: var(--blue-mid); }
+.metric-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
 
-  .panel {
-    background: var(--white);
-    border-radius: 6px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    overflow: hidden;
-    border: 1px solid var(--gray-10);
-  }
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  transition: height .25s var(--ease-smooth);
+}
 
-  .tabs {
-    display: flex;
-    border-bottom: 1px solid var(--gray-10);
-    background: var(--white);
-    overflow-x: auto;
-  }
+.metric-card:hover::before { height: 4px }
 
-  .tab {
-    padding: 0.7rem 1.3rem;
-    cursor: pointer;
-    color: var(--gray-50);
-    font-weight: 700;
-    font-size: 0.72rem;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -1px;
-    transition: color 0.12s;
-    white-space: nowrap;
-  }
+.metric-card.blue::before  { background: linear-gradient(90deg, var(--blue), var(--blue-light)) }
+.metric-card.green::before { background: linear-gradient(90deg, var(--green), #22c55e) }
+.metric-card.yellow::before{ background: linear-gradient(90deg, var(--yellow), #f59e0b) }
 
-  .tab:hover { color: var(--blue); }
-  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+/* Ripple on hover bg */
+.metric-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .25s;
+  pointer-events: none;
+}
 
-  .hidden { display: none; }
+.metric-card.blue::after   { background: radial-gradient(ellipse at 80% 120%, rgba(19,81,180,.04), transparent 70%) }
+.metric-card.green::after  { background: radial-gradient(ellipse at 80% 120%, rgba(22,136,33,.04), transparent 70%) }
+.metric-card.yellow::after { background: radial-gradient(ellipse at 80% 120%, rgba(255,205,7,.06), transparent 70%) }
+.metric-card:hover::after  { opacity: 1 }
 
-  .table-wrap {
-    max-height: 60vh;
-    overflow: auto;
-  }
+.metric-bg {
+  position: absolute;
+  right: -8px; bottom: -8px;
+  font-size: 3.5rem;
+  opacity: .04;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  transition: transform .3s var(--ease-smooth), opacity .3s;
+}
+.metric-card:hover .metric-bg { transform: scale(1.1) rotate(-5deg); opacity: .07 }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.82rem;
-    table-layout: auto;
-  }
+.metric-label {
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gray-40);
+  margin-bottom: .2rem;
+}
 
-  thead th {
-    background: #EEF2FA;
-    color: var(--blue-mid);
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 0.64rem;
-    letter-spacing: 0.07em;
-    padding: 0.65rem 0.9rem;
-    text-align: left;
-    border-bottom: 2px solid #C5D4F0;
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    transition: background 0.12s, color 0.12s;
-  }
+.metric-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -.025em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition: color .3s;
+}
 
-  thead th:hover { background: #DDE6F7; color: var(--blue); }
-  thead th.sorted { color: var(--blue); background: #D4E1F7; }
+.metric-card.blue   .metric-value { color: var(--blue-dark) }
+.metric-card.green  .metric-value { color: var(--green) }
+.metric-card.yellow .metric-value { color: var(--yellow-dk) }
+.metric-delta { font-size: .68rem; font-weight: 500; margin-top: .25rem; color: var(--gray-40) }
 
-  .sort-icon {
-    display: inline-block;
-    margin-left: 4px;
-    opacity: .45;
-    font-size: 0.7em;
-    vertical-align: middle;
-  }
+/* ════════════════════════════════════════════════
+   PANEL
+════════════════════════════════════════════════ */
+.panel {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-10);
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  animation: panelIn .5s .3s var(--ease-out-expo) both;
+}
 
-  th.sorted .sort-icon { opacity: 1; }
+@keyframes panelIn {
+  from { transform: translateY(20px); opacity: 0 }
+  to   { transform: translateY(0);    opacity: 1 }
+}
 
-  tbody tr { transition: background 0.1s ease; animation: rowIn 0.2s ease both; }
+.panel-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .6rem .875rem;
+  border-bottom: 1px solid var(--gray-10);
+  gap: .75rem;
+  flex-wrap: wrap;
+  background: var(--gray-05);
+}
 
-  tbody tr:nth-child(1) { animation-delay:  0ms; }
-  tbody tr:nth-child(2) { animation-delay: 20ms; }
-  tbody tr:nth-child(3) { animation-delay: 35ms; }
-  tbody tr:nth-child(4) { animation-delay: 50ms; }
-  tbody tr:nth-child(5) { animation-delay: 62ms; }
-  tbody tr:nth-child(6) { animation-delay: 72ms; }
-  tbody tr:nth-child(7) { animation-delay: 80ms; }
-  tbody tr:nth-child(8) { animation-delay: 88ms; }
+.toolbar-left  { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap }
+.toolbar-right { display: flex; align-items: center; gap: .625rem; flex-wrap: wrap }
+.panel-title {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gray-40);
+}
 
-  @keyframes rowIn {
-    from { opacity:0; transform:translateX(-4px); }
-    to   { opacity:1; transform:translateX(0); }
-  }
+/* ════════════════════════════════════════════════
+   YEAR TABS – sliding indicator
+════════════════════════════════════════════════ */
+.seg-ctrl {
+  display: flex;
+  background: var(--gray-10);
+  border-radius: 5px;
+  padding: 2px;
+  gap: 2px;
+  position: relative;
+}
 
-  tbody td {
-    padding: 0.5rem 0.9rem;
-    border-bottom: 1px solid var(--gray-10);
-    vertical-align: top;
-    color: var(--gray-90);
-  }
+.seg-btn {
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--gray-60);
+  transition: color .2s var(--ease-smooth);
+  position: relative;
+  z-index: 1;
+}
 
-  tbody tr:hover { background: #F5F8FF; }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr.clickable { cursor: pointer; }
+.seg-btn:hover { color: var(--blue) }
 
-  .num {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
-    font-weight: 600;
-  }
+.seg-btn.active {
+  color: var(--blue-dark);
+  font-weight: 700;
+}
 
-  .chart-wrap {
-    height: 680px;
-    position: relative;
-    padding: 1.5rem;
-  }
+/* Animated active pill behind buttons */
+.seg-indicator {
+  position: absolute;
+  top: 2px; left: 2px;
+  height: calc(100% - 4px);
+  background: var(--white);
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  transition: transform .25s var(--ease-spring), width .25s var(--ease-spring);
+  pointer-events: none;
+  z-index: 0;
+}
 
-  .chart-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    padding: 0.8rem 1.5rem 0;
-  }
+/* ════════════════════════════════════════════════
+   SEARCH
+════════════════════════════════════════════════ */
+.search-wrap { position: relative }
 
-  .btn-toggle-all {
-    font-family: var(--font);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--blue);
-    background: none;
-    border: 1px solid var(--blue);
-    border-radius: 4px;
-    padding: 0.35rem 0.9rem;
-    cursor: pointer;
-    transition: background 0.12s, color 0.12s;
-  }
+.search-icon {
+  position: absolute;
+  left: 9px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-40);
+  font-size: .75rem;
+  pointer-events: none;
+  transition: color .2s;
+}
 
-  .btn-toggle-all:hover {
-    background: var(--blue);
-    color: var(--white);
-  }
+.search-input {
+  padding: 4px 10px 4px 28px;
+  border: 1px solid var(--gray-20);
+  border-radius: 4px;
+  font-family: var(--font);
+  font-size: .8rem;
+  min-width: 200px;
+  background: var(--white);
+  color: var(--gray-90);
+  transition: border-color .2s, box-shadow .2s, min-width .25s var(--ease-smooth);
+}
 
-  .uf-toggles {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    padding: 0.75rem 1.5rem;
-    border-bottom: 1px solid var(--gray-10);
-  }
+.search-input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(19,81,180,.12);
+  min-width: 260px;
+}
 
-  .uf-toggle {
-    font-family: var(--font);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    padding: 3px 9px;
-    border-radius: 3px;
-    border: 1px solid var(--gray-20);
-    background: var(--white);
-    color: var(--gray-50);
-    cursor: pointer;
-    transition: background 0.1s, color 0.1s, border-color 0.1s;
-  }
+.search-input:focus + .search-icon,
+.search-wrap:focus-within .search-icon { color: var(--blue) }
+.search-input::placeholder { color: var(--gray-40) }
 
-  .uf-toggle.active {
-    background: var(--blue);
-    color: var(--white);
-    border-color: var(--blue);
-  }
+/* ════════════════════════════════════════════════
+   BUTTONS
+════════════════════════════════════════════════ */
+.btn {
+  font-family: var(--font);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid;
+  transition: background .18s, color .18s, transform .12s, box-shadow .18s;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
 
-  .overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(7,29,65,0.5);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 2rem;
-    gap: 10px;
-    color: var(--gray-50);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .overlay.visible { display: flex; }
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,.15);
+  opacity: 0;
+  transition: opacity .15s;
+}
 
-  .modal {
-    background: var(--white);
-    border-radius: 6px;
-    padding: 1.8rem;
-    max-width: 560px;
-    width: 90%;
-    position: relative;
-    border-top: 5px solid var(--blue);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
-  }
+.btn:active::after { opacity: 1 }
+.btn:active { transform: scale(.97) }
 
-  .modal-close {
-    position: absolute; top: 1rem; right: 1.2rem;
-    cursor: pointer; color: var(--gray-50); font-size: 1rem;
-    background: none; border: none; font-family: var(--font);
-  }
-  .modal-close:hover { color: var(--blue-dark); }
-  .modal-title { font-size: 0.95rem; font-weight: 700; color: var(--blue-dark); margin-bottom: 4px; }
-  .modal-sub   { font-size: 0.78rem; color: var(--gray-50); }
+.btn-ghost {
+  color: var(--blue);
+  background: transparent;
+  border-color: var(--blue);
+}
+
+.btn-ghost:hover {
+  background: var(--blue);
+  color: var(--white);
+  box-shadow: 0 2px 8px rgba(19,81,180,.3);
+}
+
+/* ════════════════════════════════════════════════
+   SIDE PANEL
+════════════════════════════════════════════════ */
+.side-panel {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-10);
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(68vh + 48px);
+  overflow: hidden;
+  animation: sidePanelIn .5s .38s var(--ease-out-expo) both;
+  transition: box-shadow .25s;
+}
+
+.side-panel:has(.side-item) { box-shadow: var(--shadow-md) }
+
+@keyframes sidePanelIn {
+  from { transform: translateX(20px); opacity: 0 }
+  to   { transform: translateX(0);    opacity: 1 }
+}
+
+.side-panel.hidden { display: none }
+
+.side-hdr {
+  padding: .65rem .875rem;
+  border-bottom: 1px solid var(--gray-10);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--gray-05);
+  flex-shrink: 0;
+}
+
+.side-hdr-title {
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gray-60);
+}
+
+.side-hdr-count {
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--blue);
+  background: var(--blue-pale);
+  padding: 1px 7px;
+  border-radius: 10px;
+  transition: transform .2s var(--ease-spring), background .2s;
+}
+
+.side-hdr-count.bump {
+  animation: countBump .3s var(--ease-spring);
+}
+
+@keyframes countBump {
+  0%   { transform: scale(1) }
+  50%  { transform: scale(1.35) }
+  100% { transform: scale(1) }
+}
+
+.side-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: .375rem 0;
+  background: var(--white);
+  min-height: 0;
+}
+
+.side-list::-webkit-scrollbar { width: 4px }
+.side-list::-webkit-scrollbar-thumb { background: var(--gray-20); border-radius: 10px }
+.side-list::-webkit-scrollbar-track { background: transparent }
+
+.side-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: .375rem .875rem;
+  cursor: pointer;
+  transition: background .12s;
+  border-bottom: 1px solid var(--gray-10);
+  animation: sideItemIn .3s var(--ease-out-expo) both;
+}
+
+@keyframes sideItemIn {
+  from { transform: translateX(16px); opacity: 0 }
+  to   { transform: translateX(0);    opacity: 1 }
+}
+
+.side-item:last-child { border-bottom: none }
+.side-item:hover { background: var(--gray-bg) }
+
+.side-item-cod {
+  font-family: var(--font-mono);
+  font-size: .6rem;
+  font-weight: 600;
+  color: var(--blue-mid);
+  background: var(--blue-pale);
+  padding: 1px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.side-item-body { flex: 1; min-width: 0 }
+.side-item-desc {
+  font-size: .72rem;
+  color: var(--gray-80);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.side-item-val {
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  color: var(--gray-60);
+  margin-top: 1px;
+}
+
+.side-item-rm {
+  color: var(--gray-40);
+  font-size: .75rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2px;
+  cursor: pointer;
+  transition: color .15s, transform .15s var(--ease-spring);
+}
+
+.side-item-rm:hover {
+  color: var(--red);
+  transform: scale(1.2) rotate(90deg);
+}
+
+.side-empty {
+  padding: 2rem .875rem;
+  text-align: center;
+  color: var(--gray-40);
+  font-size: .75rem;
+}
+
+.side-footer {
+  padding: .75rem .875rem;
+  border-top: 1px solid var(--gray-10);
+  background: var(--gray-05);
+  flex-shrink: 0;
+}
+
+.side-totals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .35rem .75rem;
+  margin-bottom: .625rem;
+}
+
+.side-total-item { display: flex; flex-direction: column; gap: 1px }
+.side-total-label { font-size: .52rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gray-40) }
+.side-total-val { font-size: .78rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--gray-90) }
+.side-total-item.wide { grid-column: 1/-1 }
+.side-actions { display: flex; gap: .5rem }
+
+.btn-side {
+  font-family: var(--font);
+  font-size: .62rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid;
+  transition: background .15s, color .15s, transform .1s, box-shadow .15s;
+  flex: 1;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-side:active { transform: scale(.96) }
+
+.btn-side.ghost { color: var(--blue); background: transparent; border-color: var(--blue) }
+.btn-side.ghost:hover { background: var(--blue); color: #fff; box-shadow: 0 2px 8px rgba(19,81,180,.25) }
+
+.btn-side.danger { color: var(--red); background: transparent; border-color: var(--red) }
+.btn-side.danger:hover { background: var(--red); color: #fff; box-shadow: 0 2px 8px rgba(229,34,7,.25) }
+
+/* ════════════════════════════════════════════════
+   TABLE
+════════════════════════════════════════════════ */
+.table-wrap { overflow: auto; max-height: 68vh }
+
+table { width: 100%; border-collapse: collapse; font-size: .75rem }
+
+thead th {
+  background: var(--gray-05);
+  color: var(--gray-60);
+  font-weight: 700;
+  font-size: .6rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: .5rem .875rem;
+  text-align: left;
+  border-bottom: 2px solid var(--gray-10);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  user-select: none;
+  cursor: default;
+  transition: color .15s, background .15s;
+}
+
+thead th[data-sort] { cursor: pointer }
+thead th[data-sort]:hover { color: var(--blue); background: #ECF1FB }
+thead th.sorted { color: var(--blue) }
+thead th.r { text-align: right }
+.sort-icon { font-size: .6em; opacity: .7; transition: transform .2s var(--ease-spring) }
+
+tbody tr {
+  border-bottom: 1px solid var(--gray-10);
+  cursor: pointer;
+  transition: background .1s;
+}
+
+/* Row entrance animation – applied per-batch by JS */
+tbody tr.row-enter {
+  animation: rowIn .3s var(--ease-out-expo) both;
+}
+
+@keyframes rowIn {
+  from { transform: translateX(-6px); opacity: 0 }
+  to   { transform: translateX(0);    opacity: 1 }
+}
+
+tbody td { padding: 4px 10px; vertical-align: middle }
+tbody td.r {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: .7rem;
+}
+
+/* Level styles */
+.lv0 { background: #fff }
+.lv0:hover { background: #F5F8FF }
+.lv1 { background: #FAFBFD }
+.lv1:hover { background: #EFF4FD }
+.lv2 { background: #F6F8FB }
+.lv2:hover { background: #ECF2F9 }
+.lv3 { background: #F3F5F8 }
+.lv3:hover { background: #E9EFF6 }
+.lv4 { background: #F0F3F7 }
+.lv4:hover { background: #E5ECF4 }
+
+.margem-normal { background: #F0FAF0 !important }
+.margem-normal:hover { background: #DCF5DC !important }
+.margem-adicional { background: #EEF3FC !important }
+.margem-adicional:hover { background: #DAE6FA !important }
+
+/* Search match */
+.match-row {
+  outline: 2px solid var(--yellow);
+  outline-offset: -2px;
+  animation: matchPulse .4s ease;
+}
+
+@keyframes matchPulse {
+  0%   { outline-color: var(--yellow); outline-offset: -2px }
+  50%  { outline-color: #f59e0b;       outline-offset: 2px }
+  100% { outline-color: var(--yellow); outline-offset: -2px }
+}
+
+/* Selected rows */
+.row-selected td { background: #FFF9C4 !important; transition: background .15s }
+.row-selected:hover td { background: #FFF176 !important }
+
+/* Selection ripple overlay */
+tbody tr .ripple-overlay {
+  position: absolute;
+  border-radius: 50%;
+  width: 100px; height: 100px;
+  background: rgba(19, 81, 180, .12);
+  transform: scale(0);
+  animation: ripple .5s var(--ease-out-expo) forwards;
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  to { transform: scale(6); opacity: 0 }
+}
+
+/* ════════════════════════════════════════════════
+   DESCRIPTION CELL
+════════════════════════════════════════════════ */
+.desc-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.indent { display: inline-block; flex-shrink: 0; position: relative }
+
+.toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px; height: 16px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: .5rem;
+  color: var(--blue);
+  background: var(--blue-pale);
+  border: none;
+  flex-shrink: 0;
+  transition: background .15s, color .15s, transform .2s var(--ease-spring);
+}
+
+.toggle-btn:hover {
+  background: var(--blue);
+  color: #fff;
+  transform: scale(1.15);
+}
+
+.toggle-btn.open {
+  background: var(--blue);
+  color: #fff;
+  transform: rotate(0deg); /* rotation handled by icon char */
+}
+
+.toggle-spacer { display: inline-block; width: 16px; flex-shrink: 0 }
+
+.toggle-na {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px; height: 16px;
+  border-radius: 3px;
+  font-size: .7rem;
+  color: var(--gray-40);
+  background: var(--gray-10);
+  flex-shrink: 0;
+}
+
+.code-pill {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  font-weight: 600;
+  color: var(--blue-mid);
+  background: var(--blue-pale);
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+}
+
+tbody tr:hover .code-pill { background: var(--blue-pale) }
+.lv0 .code-pill { font-size: .65rem }
+.lv2 .code-pill, .lv3 .code-pill, .lv4 .code-pill { color: var(--gray-60); background: var(--gray-10) }
+
+.desc-txt {
+  color: var(--gray-80);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 500px;
+  font-size: .75rem;
+}
+
+.desc-txt.empty { color: var(--gray-40); font-style: italic }
+.lv0 .desc-txt  { font-weight: 600; color: var(--gray-90) }
+
+/* Margem badge */
+.badge-m {
+  display: inline-flex;
+  align-items: center;
+  font-size: .5rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 2px;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+.badge-m.adicional { background: var(--blue-pale); color: var(--blue-mid); border: 1px solid #BBCEF8 }
+.badge-m.normal    { background: var(--green-pale); color: #1B5E20;         border: 1px solid #C8E6C9 }
+
+/* ════════════════════════════════════════════════
+   PCT BAR
+════════════════════════════════════════════════ */
+.pct-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.pct-bar-track {
+  width: 56px;
+  height: 4px;
+  background: var(--gray-10);
+  border-radius: 2px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.pct-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue-light), var(--blue));
+  border-radius: 2px;
+  opacity: .75;
+  /* width set inline, animated by JS */
+  transition: width .6s var(--ease-out-expo);
+  width: 0; /* start at 0, JS sets target */
+}
+
+/* Class added after render to trigger animation */
+.pct-bar-fill.animated { /* width from inline style takes over */ }
+
+.pct-txt {
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  color: var(--gray-60);
+  min-width: 44px;
+  text-align: right;
+}
+
+/* ════════════════════════════════════════════════
+   LEGEND
+════════════════════════════════════════════════ */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: .6rem;
+  flex-wrap: wrap;
+  animation: legendIn .5s .28s var(--ease-out-expo) both;
+}
+
+@keyframes legendIn {
+  from { opacity: 0; transform: translateY(8px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .65rem;
+  color: var(--gray-60);
+  font-weight: 500;
+}
+
+.leg-swatch { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0 }
+.empty-state { padding: 3rem; text-align: center; color: var(--gray-40); font-size: .85rem; font-weight: 600 }
+.num-zero { color: var(--gray-20) }
+
+.delta {
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: -.01em;
+}
+
+.delta.up   { color: var(--green) }
+.delta.down { color: var(--red) }
+
+/* ════════════════════════════════════════════════
+   TOAST NOTIFICATION
+════════════════════════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--gray-90);
+  color: var(--white);
+  font-size: .75rem;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  opacity: 0;
+  transition: transform .35s var(--ease-spring), opacity .25s;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ════════════════════════════════════════════════
+   LOADING SKELETON (initial state)
+════════════════════════════════════════════════ */
+@keyframes shimmer {
+  0%   { background-position: -400px 0 }
+  100% { background-position:  400px 0 }
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--gray-10) 25%, var(--gray-05) 50%, var(--gray-10) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+/* ════════════════════════════════════════════════
+   EXPAND ALL BUTTON — loading state
+════════════════════════════════════════════════ */
+.btn-ghost.loading {
+  pointer-events: none;
+  opacity: .6;
+}
+
+/* ── VIEW TABS ── */
+.view-tabs{display:flex;gap:0;border-bottom:2px solid var(--gray-10);margin-bottom:.75rem}
+.view-tab{font-family:var(--font);font-size:.72rem;font-weight:600;letter-spacing:.03em;
+  padding:.45rem 1.1rem;border:none;background:transparent;color:var(--gray-60);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .12s,border-color .12s}
+.view-tab:hover{color:var(--blue)}
+.view-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* ── CHART VIEWS ── */
+.chart-view{display:flex;flex-direction:column;gap:.75rem;padding:.875rem}
+.chart-ctrl-bar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.chart-canvas-wrap{position:relative;height:440px}
+
+/* ── QUICK SELECT ── */
+.quicksel-bar{display:flex;align-items:center;gap:.5rem;padding:.4rem .875rem;
+  border-bottom:1px solid var(--gray-10);background:var(--gray-05);flex-wrap:wrap}
+.quick-sel-input{font-family:var(--font-mono);font-size:.75rem;padding:3px 9px;
+  border:1px solid var(--gray-20);border-radius:4px;flex:1;min-width:260px;max-width:480px;
+  background:var(--white);color:var(--gray-90);transition:border-color .12s,box-shadow .12s}
+.quick-sel-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(19,81,180,.1)}
+.quick-sel-input::placeholder{color:var(--gray-40)}
+
+/* ── UF FILTER ── */
+.uf-group{display:flex;align-items:center;gap:4px}
+.uf-label{font-size:.58rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--gray-40);white-space:nowrap}
+.uf-select{font-family:var(--font);font-size:.75rem;font-weight:500;
+  padding:4px 24px 4px 9px;border:1px solid var(--gray-20);border-radius:4px;
+  background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath fill='%236C737F' d='M0 0l4.5 5L9 0z'/%3E%3C/svg%3E") no-repeat right 7px center;
+  -webkit-appearance:none;appearance:none;color:var(--gray-90);cursor:pointer;
+  transition:border-color .12s,box-shadow .12s;max-width:140px}
+.uf-select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(19,81,180,.1)}
+.uf-select.filtered{border-color:var(--blue);color:var(--blue-dark);font-weight:600}
 </style>
 </head>
 <body>
 
-<div class="panel-header">
-  <div class="tricolor"></div>
-  <div class="panel-header-text">
-    <div class="panel-orgao">MGI · Ministério da Gestão e da Inovação em Serviços Públicos</div>
-    <div class="panel-title">Compras Públicas — Cadeias NIB (NCM)</div>
-    <div class="panel-subtitle">Notas Fiscais Eletrônicas do Executivo Federal · 2023–2025</div>
+<!-- ══ HEADER ══════════════════════════════════ -->
+<div class="header">
+  <div class="header-inner">
+    <div class="tricolor"></div>
+    <div>
+      <div class="header-org">MGI · Ministério da Gestão e da Inovação em Serviços Públicos</div>
+      <div class="header-title">Consolidação das Notas Fiscais Eletrônicas (NF-e) de Contratações Públicas</div>
+      <div class="header-sub">Executivo Federal · 2025 · Fonte: Portal da Transparência (CGU)</div>
+    </div>
   </div>
 </div>
 <div class="accent-bar"></div>
 
+<!-- ══ LAYOUT ══════════════════════════════════ -->
 <div class="layout">
-  <div id="app">
-    <div id="loading"><div class="spinner"></div>Carregando dados…</div>
+  <div class="metric-bar" id="metricBar"></div>
 
-    <div id="main" class="hidden">
-      <div class="toolbar">
-        <label for="selCadeia">Cadeia:</label>
-        <select id="selCadeia"><option value="">Todas as cadeias</option></select>
+  <div class="legend">
+    <div class="leg-item">
+      <div class="leg-swatch" style="background:#F0FAF0;border:1px solid #4CAF50"></div>
+      <span>Margem normal</span>
+    </div>
+    <div class="leg-item">
+      <div class="leg-swatch" style="background:#EEF3FC;border:1px solid #BBCEF8"></div>
+      <span>Margem adicional</span>
+    </div>
+    <div class="leg-item" style="color:var(--gray-40)">▶ expande capítulo → posição → subposição → item</div>
+    <div class="leg-item" style="color:var(--gray-40)">✓ Clique numa linha da tabela para adicionar à lista</div>
+  </div>
+
+  <div class="view-tabs">
+    <button class="view-tab active" data-view="tabela">Tabela NCM</button>
+    <button class="view-tab" data-view="evolucao">Evolução Anual</button>
+    <button class="view-tab" data-view="ufs">Comparar UFs</button>
+  </div>
+
+  <div class="content-wrap">
+    <div class="panel">
+      <div class="panel-toolbar">
+        <div class="toolbar-left">
+          <span class="panel-title">Hierarquia NCM</span>
+          <div class="seg-ctrl" id="yearTabs">
+            <div class="seg-indicator" id="segIndicator"></div>
+          </div>
+        </div>
+        <div class="toolbar-right">
+          <div class="uf-group">
+            <span class="uf-label">UF Emit.</span>
+            <select id="ufEmitSelect" class="uf-select"></select>
+          </div>
+          <div class="uf-group">
+            <span class="uf-label">UF Dest.</span>
+            <select id="ufDestSelect" class="uf-select"></select>
+          </div>
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="search" class="search-input" id="searchInput" placeholder="Código ou descrição…">
+          </div>
+          <button class="btn btn-ghost" id="btnExpandAll">Expandir tudo</button>
+        </div>
       </div>
 
-      <div class="cards" id="cards"></div>
+      <div class="quicksel-bar">
+        <span class="uf-label">Selecionar NCMs</span>
+        <input type="text" id="quickSelInput" class="quick-sel-input"
+               placeholder="Cole códigos separados por vírgula: 01, 0101, 01011200, …">
+        <button class="btn btn-ghost" id="btnQuickSel">Selecionar</button>
+      </div>
 
-      <div class="panel">
-        <div class="tabs">
-          <div class="tab active" data-tab="cadeia">Resumo por Cadeia</div>
-          <div class="tab" data-tab="detalhe">Tabela Original Enriquecida</div>
-          <div class="tab" data-tab="evolucao">Evolução Anual por Cadeia</div>
-          <div class="tab" data-tab="uf">Vendas por UF</div>
+      <div id="viewTabela">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-sort="cod" style="min-width:340px">Capítulo / Posição / Subposição / Item <span class="sort-icon" data-sort="cod"></span></th>
+                <th data-sort="valor" class="r" id="thValor">Valor <span class="sort-icon" data-sort="valor">▼</span></th>
+                <th class="r" id="thPct" style="min-width:120px">% do Total</th>
+                <th class="r" id="thDelta">Var. VS 2022</th>
+                <th data-sort="emissores" class="r">Emissores <span class="sort-icon" data-sort="emissores"></span></th>
+                <th data-sort="notas" class="r">Notas Fiscais <span class="sort-icon" data-sort="notas"></span></th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+          <div class="empty-state" id="emptyState" style="display:none">Nenhum resultado encontrado.</div>
         </div>
+      </div>
 
-        <div id="tab-cadeia">
-          <div class="table-wrap"><table id="tblCadeia"><thead></thead><tbody></tbody></table></div>
+      <div id="viewEvolucao" class="chart-view" style="display:none">
+        <div class="chart-ctrl-bar">
+          <span class="panel-title" style="font-size:.68rem">Séries:</span>
+          <span id="evolHint" style="font-size:.7rem;color:var(--gray-60)">NCMs selecionados no painel, ou top 10 capítulos</span>
         </div>
-        <div id="tab-detalhe" class="hidden">
-          <div class="table-wrap"><table id="tblDetalhe"><thead></thead><tbody></tbody></table></div>
+        <div class="chart-canvas-wrap"><canvas id="chartEvolucao"></canvas></div>
+      </div>
+
+      <div id="viewUFs" class="chart-view" style="display:none">
+        <div class="chart-ctrl-bar">
+          <span class="panel-title" style="font-size:.68rem">Comparar UF:</span>
+          <div class="seg-ctrl" id="ufDimCtrl">
+            <div class="seg-indicator" id="ufDimInd"></div>
+            <button class="seg-btn active" data-dim="dest">Destinatária</button>
+            <button class="seg-btn" data-dim="emit">Emitente</button>
+          </div>
+          <span style="font-size:.7rem;color:var(--gray-60)" id="ufBarHint">Total ou soma dos NCMs selecionados</span>
         </div>
-        <div id="tab-evolucao" class="hidden">
-          <div class="chart-toolbar">
-            <button class="btn-toggle-all" id="btnToggleAll">Desmarcar tudo</button>
-          </div>
-          <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
+        <div class="chart-canvas-wrap"><canvas id="chartUFs"></canvas></div>
+      </div>
+    </div>
+
+    <div class="side-panel" id="sidePanel">
+      <div class="side-hdr">
+        <span class="side-hdr-title">Selecionados</span>
+        <span class="side-hdr-count" id="selCount">0</span>
+      </div>
+      <div class="side-list" id="sideList">
+        <div class="side-empty" id="sideEmpty">
+          Nenhum NCM selecionado.<br><br>
+          <span style="font-size:0.7rem">Clique numa linha da tabela<br>para adicionar à lista.</span>
         </div>
-        <div id="tab-uf" class="hidden">
-          <div class="chart-toolbar">
-            <button class="btn-toggle-all" id="btnToggleAllUF">Desmarcar todas</button>
+      </div>
+      <div class="side-footer">
+        <div class="side-totals">
+          <div class="side-total-item wide">
+            <span class="side-total-label" id="selValorLabel">Valor Total</span>
+            <span class="side-total-val" id="selValor">—</span>
           </div>
-          <div class="uf-toggles" id="ufToggles"></div>
-          <div class="chart-wrap" style="height:500px">
-            <canvas id="chartUF"></canvas>
-            <div id="chartUFMsg" style="display:none;align-items:center;justify-content:center;height:100%;color:var(--gray-50);font-size:0.85rem;font-weight:600;">
-              Selecione uma cadeia no filtro acima para ver o gráfico por UF e NCM
-            </div>
+          <div class="side-total-item">
+            <span class="side-total-label">Emissores</span>
+            <span class="side-total-val" id="selEmissores">—</span>
           </div>
+          <div class="side-total-item">
+            <span class="side-total-label">Notas</span>
+            <span class="side-total-val" id="selNotas">—</span>
+          </div>
+        </div>
+        <div class="side-actions">
+          <button class="btn-side ghost" id="btnCopySel">Copiar</button>
+          <button class="btn-side ghost" id="btnExportSel" style="border-color:var(--green);color:var(--green)">Exportar</button>
+          <button class="btn-side danger" id="btnClearSel">Limpar</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <button class="modal-close" id="modalClose">✕</button>
-    <div class="modal-title" id="modalTitle"></div>
-    <div class="modal-sub"   id="modalSub"></div>
-  </div>
-</div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script type="module">
-import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
+<script>
+/* ════════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════════ */
+const DATA = /*DATA_PLACEHOLDER*/;
 
-(async () => {
-  const bundle = await duckdb.selectBundle(duckdb.getJsDelivrBundles());
-  const workerUrl = URL.createObjectURL(
-    new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
-  );
-  const logger = new duckdb.ConsoleLogger();
-  const worker = new Worker(workerUrl);
-  const db = new duckdb.AsyncDuckDB(logger, worker);
-  await db.instantiate(bundle.mainModule);
-  URL.revokeObjectURL(workerUrl);
-  const conn = await db.connect();
+/* ════════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════════ */
+const fmt  = v => Number(v).toLocaleString('pt-BR', {style:'currency', currency:'BRL', maximumFractionDigits:0});
+const fmtN = v => Number(v).toLocaleString('pt-BR');
+const fmtV = v => v > 0 ? fmt(v) : `<span class="num-zero">—</span>`;
+const pctStr = (v,t) => t > 0 ? (v/t*100).toFixed(2).replace('.',',')+'%' : '—';
+const pctNum = (v,t) => t > 0 ? v/t*100 : 0;
 
-  async function registerParquet(file) {
-    const resp = await fetch(file);
-    const buf = new Uint8Array(await resp.arrayBuffer());
-    await db.registerFileBuffer(file, buf);
+/* ── Toast ── */
+let toastTimer;
+function showToast(msg, duration = 2200) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), duration);
+}
+
+/* ── Animated counter ── */
+function animateCounter(el, from, to, duration, formatter) {
+  const start = performance.now();
+  const isFloat = to % 1 !== 0;
+
+  function tick(now) {
+    const elapsed = Math.min(now - start, duration);
+    const progress = 1 - Math.pow(1 - elapsed / duration, 4); // ease-out-quart
+    const value = from + (to - from) * progress;
+    el.textContent = formatter(value);
+    if (elapsed < duration) requestAnimationFrame(tick);
+    else el.textContent = formatter(to);
   }
 
-  await registerParquet('resumo_cadeia_nib.parquet');
-  await registerParquet('resumo_nib.parquet');
-  await registerParquet('resumo_uf_cnae_nib.parquet');
-  await registerParquet('totais_nib.parquet');
+  requestAnimationFrame(tick);
+}
 
-  const fmt  = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
-  const fmtN = v => v == null ? '—' : Number(v).toLocaleString('pt-BR');
+/* ── Ripple on row click ── */
+function spawnRipple(tr, e) {
+  const rect = tr.getBoundingClientRect();
+  const x = e.clientX - rect.left - 50;
+  const y = e.clientY - rect.top  - 50;
+  const rip = document.createElement('span');
+  rip.className = 'ripple-overlay';
+  rip.style.cssText = `left:${x}px;top:${y}px;position:absolute;`;
+  tr.style.position = 'relative';
+  tr.appendChild(rip);
+  setTimeout(() => rip.remove(), 600);
+}
 
-  /* ── Animated counter ── */
-  function animateValue(el, endVal, formatter) {
-    if (endVal == null || isNaN(Number(endVal))) { el.textContent = '—'; return; }
-    const end = Number(endVal);
-    const duration = 600;
-    const start = Date.now();
-    const run = () => {
-      const t = Math.min((Date.now() - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - t, 3);
-      el.textContent = formatter(end * eased);
-      if (t < 1) requestAnimationFrame(run);
-      else el.textContent = formatter(end);
-    };
-    requestAnimationFrame(run);
+/* ════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════ */
+const caps = DATA.capitulos;
+const ANOS = DATA.anos;
+let anoAtivo = ANOS[ANOS.length - 1];
+let sortKey = `valor_${anoAtivo}`;
+let sortDir = -1;
+const expandedCods = new Set();
+let rows = [];
+let searchTerm = '';
+const selectedCods = new Set();
+let ufEmit = 'Todos';
+let ufDest = 'Todos';
+let activeView   = 'tabela';
+let chartEvolucao = null;
+let chartUFs      = null;
+let ufChartDim    = 'dest';
+
+function getValor(n, ano) {
+  const idx = DATA.anos.indexOf(ano);
+  if (ufEmit !== 'Todos') {
+    const v = DATA.uf_emit_vals?.[ufEmit]?.nodes?.[n.cod];
+    return v ? (v[idx] || 0) : 0;
   }
+  if (ufDest !== 'Todos') {
+    const v = DATA.uf_dest_vals?.[ufDest]?.nodes?.[n.cod];
+    return v ? (v[idx] || 0) : 0;
+  }
+  return n[`valor_${ano}`] ?? 0;
+}
 
-  /* ── Cadeia selector ── */
-  const cadeiaOpts = (await conn.query(
-    "SELECT DISTINCT codigo_cadeia || ' — ' || cadeia AS label, codigo_cadeia AS val FROM 'resumo_cadeia_nib.parquet' ORDER BY codigo_cadeia"
-  )).toArray();
-  const selCadeia = document.getElementById('selCadeia');
-  cadeiaOpts.forEach(r => {
-    const opt = document.createElement('option');
-    opt.value = r.val; opt.textContent = r.label;
-    selCadeia.appendChild(opt);
+function getActiveTotais(ano) {
+  if (ufEmit !== 'Todos') return DATA.uf_emit_vals?.[ufEmit]?.totais?.[String(ano)] || { valor:0, emissores:0, notas:0 };
+  if (ufDest !== 'Todos') return DATA.uf_dest_vals?.[ufDest]?.totais?.[String(ano)] || { valor:0, emissores:0, notas:0 };
+  return DATA.totais[String(ano)];
+}
+
+function refreshActiveChart() {
+  if (activeView === 'evolucao') renderEvolucaoChart();
+  if (activeView === 'ufs')      renderUFsChart();
+}
+
+/* ─ Build lookup maps ─ */
+const allNodes = new Map();
+const parentMap = new Map();
+
+(function walk(ns, pCod = null) {
+  for (const n of ns) {
+    allNodes.set(n.cod, n);
+    parentMap.set(n.cod, pCod);
+    if (n.children?.length) walk(n.children, n.cod);
+  }
+})(caps);
+
+function isAncestorSelected(cod) {
+  let p = parentMap.get(cod);
+  while (p) {
+    if (selectedCods.has(p)) return true;
+    p = parentMap.get(p);
+  }
+  return false;
+}
+
+/* ════════════════════════════════════════════════
+   METRIC CARDS
+════════════════════════════════════════════════ */
+const metricBar = document.getElementById('metricBar');
+const METRIC_DEFS = [
+  { key:'valor',    label:()=>`Total Valor ${anoAtivo}`,         cls:'blue',   icon:'R$' },
+  { key:'emissores',label:()=>`Emissores distintos ${anoAtivo}`, cls:'green',  icon:'👥' },
+  { key:'notas',    label:()=>`Notas fiscais ${anoAtivo}`,       cls:'yellow', icon:'📄' },
+];
+
+METRIC_DEFS.forEach(m => {
+  const d = document.createElement('div');
+  d.className = `metric-card ${m.cls}`;
+  d.innerHTML = `
+    <div class="metric-bg">${m.icon}</div>
+    <div class="metric-label" id="ml-${m.key}"></div>
+    <div class="metric-value" id="mv-${m.key}"></div>
+    <div class="metric-delta" id="md-${m.key}"></div>`;
+  metricBar.appendChild(d);
+});
+
+let prevMetricValues = { valor: 0, emissores: 0, notas: 0 };
+
+function updateMetrics(animate = true) {
+  const t = getActiveTotais(anoAtivo);
+  const prevAno = ANOS[ANOS.indexOf(anoAtivo) - 1];
+  const prev = prevAno ? getActiveTotais(prevAno) : null;
+
+  METRIC_DEFS.forEach(m => {
+    document.getElementById(`ml-${m.key}`).textContent = m.label();
+    const el = document.getElementById(`mv-${m.key}`);
+    const newVal = t[m.key];
+    const oldVal = prevMetricValues[m.key];
+
+    if (animate && oldVal !== newVal) {
+      if (m.key === 'valor') {
+        animateCounter(el, oldVal, newVal, 900, v => fmt(Math.round(v)));
+      } else {
+        animateCounter(el, oldVal, newVal, 900, v => fmtN(Math.round(v)));
+      }
+    } else {
+      el.textContent = m.key === 'valor' ? fmt(newVal) : fmtN(newVal);
+    }
+    prevMetricValues[m.key] = newVal;
   });
 
-  /* ── Overlay ── */
-  const overlay = document.getElementById('overlay');
-  document.getElementById('modalClose').addEventListener('click', () => overlay.classList.remove('visible'));
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('visible'); });
+  if (prev) {
+    const delta = (cur, prv) => {
+      const d = (cur - prv) / prv * 100;
+      return `<span style="color:${d >= 0 ? 'var(--green)' : 'var(--red)'}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)}%</span> vs ${prevAno}`;
+    };
+    document.getElementById('md-valor').innerHTML     = delta(t.valor,     prev.valor);
+    document.getElementById('md-emissores').innerHTML = delta(t.emissores, prev.emissores);
+    document.getElementById('md-notas').innerHTML     = delta(t.notas,     prev.notas);
+  } else {
+    ['valor','emissores','notas'].forEach(k => document.getElementById(`md-${k}`).textContent = '');
+  }
+}
 
-  /* ── buildTable ── */
-  let onRowClick = null;
+/* ════════════════════════════════════════════════
+   YEAR TABS + SLIDING INDICATOR
+════════════════════════════════════════════════ */
+const tabsEl = document.getElementById('yearTabs');
+const segIndicator = document.getElementById('segIndicator');
 
-  function buildTable(tableEl, rows, cols) {
-    const thead = tableEl.querySelector('thead');
-    const tbody = tableEl.querySelector('tbody');
-    let sortIdx = null, sortAsc = true;
+function positionIndicator(activeBtn) {
+  if (!activeBtn) return;
+  const ctrlRect = tabsEl.getBoundingClientRect();
+  const btnRect  = activeBtn.getBoundingClientRect();
+  segIndicator.style.width  = btnRect.width + 'px';
+  segIndicator.style.transform = `translateX(${btnRect.left - ctrlRect.left - 2}px)`;
+}
 
-    function renderBody(data) {
-      tbody.innerHTML = data.map((r, i) =>
-        `<tr${onRowClick ? ' class="clickable"' : ''} data-idx="${i}">` +
-        cols.map(c => {
-          const v = r[c.key];
-          const cls = c.numeric ? ' class="num"' : '';
-          const display = c.fmt ? c.fmt(v) : (v ?? '—');
-          return `<td${cls}>${display}</td>`;
-        }).join('') + '</tr>'
-      ).join('');
-      if (onRowClick) {
-        tbody.querySelectorAll('tr').forEach(tr =>
-          tr.addEventListener('click', () => onRowClick(data[+tr.dataset.idx]))
-        );
+function buildTabs() {
+  // remove existing buttons (keep indicator)
+  tabsEl.querySelectorAll('.seg-btn').forEach(b => b.remove());
+
+  ANOS.forEach(ano => {
+    const b = document.createElement('button');
+    b.className = 'seg-btn' + (ano === anoAtivo ? ' active' : '');
+    b.textContent = ano;
+    b.addEventListener('click', () => {
+      anoAtivo = ano;
+      sortKey = `valor_${ano}`;
+      tabsEl.querySelectorAll('.seg-btn').forEach(x => x.classList.toggle('active', +x.textContent === ano));
+      positionIndicator(b);
+      updateMetrics(true);
+      updateTheadLabels();
+      rebuildRows();
+      render();
+      updateSidePanel();
+      refreshActiveChart();
+    });
+    tabsEl.appendChild(b);
+  });
+
+  // Delay indicator positioning (buttons need layout)
+  requestAnimationFrame(() => {
+    const active = tabsEl.querySelector('.seg-btn.active');
+    // Set initial width without transition
+    segIndicator.style.transition = 'none';
+    positionIndicator(active);
+    requestAnimationFrame(() => {
+      segIndicator.style.transition = '';
+    });
+  });
+}
+
+function updateTheadLabels() {
+  const th = document.getElementById('thValor');
+  th.dataset.sort = `valor_${anoAtivo}`;
+  th.childNodes[0].textContent = `Valor ${anoAtivo} `;
+  document.getElementById('thPct').textContent = `% ${anoAtivo}`;
+  const prevAno = ANOS[ANOS.indexOf(anoAtivo) - 1];
+  document.getElementById('thDelta').textContent = prevAno ? `Var. vs ${prevAno}` : 'Var. 2022';
+}
+
+/* ════════════════════════════════════════════════
+   SORT HEADERS
+════════════════════════════════════════════════ */
+document.querySelectorAll('thead th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const k = th.dataset.sort;
+    if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = k === 'cod' ? 1 : -1; }
+    updateSortIcons();
+    rebuildRows();
+    render();
+  });
+});
+
+function updateSortIcons() {
+  document.querySelectorAll('thead .sort-icon').forEach(ic => {
+    const k = ic.dataset.sort;
+    ic.textContent = k === sortKey ? (sortDir === -1 ? ' ▼' : ' ▲') : '';
+  });
+  document.querySelectorAll('thead th[data-sort]').forEach(th => {
+    th.classList.toggle('sorted', th.dataset.sort === sortKey);
+  });
+}
+
+/* ════════════════════════════════════════════════
+   ROW BUILDING
+════════════════════════════════════════════════ */
+function collapseNode(n) {
+  expandedCods.delete(n.cod);
+  (n.children || []).forEach(collapseNode);
+}
+
+function rebuildRows() {
+  rows = [];
+  let uid = 0;
+  const sk = sortKey;
+  const sorted = [...caps].sort((a,b) =>
+    sk === 'cod'
+      ? sortDir * a.cod.localeCompare(b.cod, 'pt-BR')
+      : sortDir * (
+          (sk.startsWith('valor_') ? getValor(a, anoAtivo) : (a[sk] ?? 0)) -
+          (sk.startsWith('valor_') ? getValor(b, anoAtivo) : (b[sk] ?? 0))
+        )
+  );
+
+  function add(nodes, lv, pv) {
+    for (const n of nodes) {
+      const id   = uid++;
+      const kids = n.children || [];
+      const exp  = expandedCods.has(n.cod);
+      const vis  = lv === 0 || pv;
+      rows.push({ id, level:lv, node:n, hasKids:kids.length > 0, visible:vis, expanded:exp });
+      add(kids, lv + 1, exp && vis);
+    }
+  }
+
+  add(sorted, 0, true);
+}
+
+/* ════════════════════════════════════════════════
+   RENDER
+════════════════════════════════════════════════ */
+const tbody     = document.getElementById('tbody');
+const emptyState = document.getElementById('emptyState');
+
+// Track bars that need animation after render
+let pendingBarAnimations = [];
+
+function render() {
+  const total = getActiveTotais(anoAtivo).valor;
+  const frag  = document.createDocumentFragment();
+  let cnt = 0;
+  pendingBarAnimations = [];
+
+  for (const row of rows) {
+    if (!row.visible) continue;
+    const { level:lv, node:n, hasKids, expanded, id } = row;
+    const mt = searchTerm && (n.cod.includes(searchTerm) || (n.desc||'').toLowerCase().includes(searchTerm));
+    const mc = n.margem === 'adicional' ? ' margem-adicional' : n.margem === 'normal' ? ' margem-normal' : '';
+    const tr = document.createElement('tr');
+    tr.className = `lv${lv}${mc}${mt ? ' match-row' : ''}`;
+    tr.dataset.id = id;
+    if (selectedCods.has(n.cod)) tr.classList.add('row-selected');
+
+    const indent = `<span class="indent" style="width:${lv * 18}px"></span>`;
+    const tog = n.cod === 'outros'
+      ? `<span class="toggle-na" title="NCMs não classificados">⊘</span>`
+      : hasKids
+        ? `<button class="toggle-btn${expanded ? ' open' : ''}" data-id="${id}">${expanded ? '▼' : '▶'}</button>`
+        : `<span class="toggle-spacer"></span>`;
+
+    const desc = n.desc
+      ? `<span class="desc-txt" title="${n.desc.replace(/"/g,"'")}">${n.desc}</span>`
+      : `<span class="desc-txt empty">sem descrição</span>`;
+    const mbadge = n.margem
+      ? `<span class="badge-m ${n.margem}">${n.margem === 'adicional' ? 'Adicional' : 'Normal'}</span>`
+      : '';
+
+    const v    = getValor(n, anoAtivo);
+    const em   = n[`emissores_${anoAtivo}`] ?? 0;
+    const nt   = n[`notas_${anoAtivo}`] ?? 0;
+    const p    = pctNum(v, total);
+    const bw   = Math.max(2, Math.min(56, p * 0.56)).toFixed(1);
+    const prevAno = ANOS[ANOS.indexOf(anoAtivo) - 1];
+    const vPrev   = prevAno ? getValor(n, prevAno) : 0;
+    const deltaHtml = (prevAno && v > 0 && vPrev > 0)
+      ? `<span class="delta ${v >= vPrev ? 'up' : 'down'}">${v >= vPrev ? '▲' : '▼'} ${Math.abs((v - vPrev) / vPrev * 100).toFixed(1).replace('.',',')}%</span>`
+      : `<span class="num-zero">—</span>`;
+
+    // Bar starts at 0, JS will animate to bw
+    const barId = `bar-${id}`;
+    tr.innerHTML = `
+      <td><div class="desc-cell">${indent}${tog}<span class="code-pill">${n.cod}</span>${desc}${mbadge}</div></td>
+      <td class="r">${fmtV(v)}</td>
+      <td class="r"><div class="pct-wrap"><span class="pct-txt">${pctStr(v, total)}</span><div class="pct-bar-track"><div class="pct-bar-fill" id="${barId}" style="width:0"></div></div></div></td>
+      <td class="r">${deltaHtml}</td>
+      <td class="r">${em > 0 ? fmtN(em) : '<span class="num-zero">—</span>'}</td>
+      <td class="r">${nt > 0 ? fmtN(nt) : '<span class="num-zero">—</span>'}</td>`;
+
+    frag.appendChild(tr);
+    pendingBarAnimations.push({ barId, bw });
+    cnt++;
+  }
+
+  tbody.innerHTML = '';
+  tbody.appendChild(frag);
+  emptyState.style.display = cnt === 0 ? '' : 'none';
+
+  /* Staggered row entrance */
+  const trs = tbody.querySelectorAll('tr');
+  trs.forEach((tr, i) => {
+    tr.style.animationDelay = `${Math.min(i * 18, 300)}ms`;
+    tr.classList.add('row-enter');
+  });
+
+  /* Animate pct bars after paint */
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      pendingBarAnimations.forEach(({ barId, bw }) => {
+        const bar = document.getElementById(barId);
+        if (bar) bar.style.width = bw + 'px';
+      });
+    });
+  });
+
+  /* Toggle buttons */
+  tbody.querySelectorAll('.toggle-btn[data-id]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const r = rows[+btn.dataset.id];
+      if (r.expanded) collapseNode(r.node);
+      else expandedCods.add(r.node.cod);
+      rebuildRows();
+      render();
+    });
+  });
+}
+
+/* ════════════════════════════════════════════════
+   ROW SELECTION + RIPPLE
+════════════════════════════════════════════════ */
+tbody.addEventListener('click', e => {
+  const tr = e.target.closest('tr');
+  if (!tr || e.target.closest('.toggle-btn')) return;
+
+  const r = rows[+tr.dataset.id];
+  if (!r) return;
+
+  spawnRipple(tr, e);
+
+  const isSelecting = !selectedCods.has(r.node.cod);
+
+  function setCascade(node, select) {
+    if (select) selectedCods.add(node.cod);
+    else selectedCods.delete(node.cod);
+    if (node.children) node.children.forEach(c => setCascade(c, select));
+  }
+
+  setCascade(r.node, isSelecting);
+
+  if (!isSelecting) {
+    let p = parentMap.get(r.node.cod);
+    while (p) { selectedCods.delete(p); p = parentMap.get(p); }
+  } else {
+    function checkParent(pCod) {
+      if (!pCod) return;
+      const pNode = allNodes.get(pCod);
+      const allKids = pNode.children.every(c => selectedCods.has(c.cod));
+      if (allKids) { selectedCods.add(pCod); checkParent(parentMap.get(pCod)); }
+    }
+    checkParent(parentMap.get(r.node.cod));
+  }
+
+  rebuildRows();
+  render();
+  updateSidePanel();
+  refreshActiveChart();
+});
+
+/* ════════════════════════════════════════════════
+   SIDE PANEL
+════════════════════════════════════════════════ */
+function updateSidePanel() {
+  const topSelected = [...selectedCods].filter(c => !isAncestorSelected(c));
+  const n = topSelected.length;
+
+  const countEl = document.getElementById('selCount');
+  const prevCount = +countEl.textContent;
+  countEl.textContent = n;
+  if (n !== prevCount) {
+    countEl.classList.remove('bump');
+    requestAnimationFrame(() => countEl.classList.add('bump'));
+  }
+
+  const list = document.getElementById('sideList');
+
+  if (n === 0) {
+    list.innerHTML = `<div class="side-empty">Nenhum NCM selecionado.<br><br><span style="font-size:0.7rem">Clique numa linha da tabela<br>para adicionar à lista.</span></div>`;
+    document.getElementById('selValorLabel').textContent = `Valor Total`;
+    document.getElementById('selValor').textContent     = '—';
+    document.getElementById('selEmissores').textContent  = '—';
+    document.getElementById('selNotas').textContent      = '—';
+    return;
+  }
+
+  list.innerHTML = '';
+  let sumV = 0, sumE = 0, sumN = 0;
+
+  topSelected.forEach((cod, i) => {
+    const node = allNodes.get(cod);
+    const div = document.createElement('div');
+    div.className = 'side-item';
+    div.dataset.cod = cod;
+    div.style.animationDelay = `${i * 40}ms`;
+
+    const v = getValor(node, anoAtivo);
+
+    div.innerHTML = `
+      <div class="side-item-cod">${cod}</div>
+      <div class="side-item-body">
+        <div class="side-item-desc" title="${(node.desc||'').replace(/"/g,"'")}">${node.desc || 'Sem descrição'}</div>
+        <div class="side-item-val">${fmtV(v)}</div>
+      </div>
+      <div class="side-item-rm" title="Remover seleção">✕</div>`;
+
+    div.querySelector('.side-item-rm').addEventListener('click', e => {
+      e.stopPropagation();
+      function deselectCascade(nd) {
+        selectedCods.delete(nd.cod);
+        if (nd.children) nd.children.forEach(c => deselectCascade(c));
+      }
+      deselectCascade(node);
+      let p = parentMap.get(cod);
+      while (p) { selectedCods.delete(p); p = parentMap.get(p); }
+      rebuildRows(); render(); updateSidePanel();
+    });
+
+    list.appendChild(div);
+    sumV += v;
+    sumE += node[`emissores_${anoAtivo}`] || 0;
+    sumN += node[`notas_${anoAtivo}`]     || 0;
+  });
+
+  document.getElementById('selValorLabel').textContent = `Valor Total ${anoAtivo}`;
+  document.getElementById('selValor').textContent      = fmt(sumV);
+  document.getElementById('selEmissores').textContent   = fmtN(sumE);
+  document.getElementById('selNotas').textContent       = fmtN(sumN);
+}
+
+/* ════════════════════════════════════════════════
+   SIDE PANEL BUTTONS
+════════════════════════════════════════════════ */
+document.getElementById('btnClearSel').addEventListener('click', () => {
+  selectedCods.clear();
+  rebuildRows(); render(); updateSidePanel();
+  showToast('Seleção limpa');
+});
+
+document.getElementById('btnCopySel').addEventListener('click', () => {
+  const top = [...selectedCods].filter(c => !isAncestorSelected(c));
+  if (!top.length) return;
+  navigator.clipboard.writeText(top.join(', '));
+  showToast(`✓ ${top.length} código(s) copiado(s)`);
+});
+
+document.getElementById('btnExportSel').addEventListener('click', () => {
+  const top = [...selectedCods].filter(c => !isAncestorSelected(c));
+  if (!top.length) { showToast('Nenhum item selecionado'); return; }
+
+  let csv = '\ufeff';
+  csv += 'Codigo;Descricao;Valor;Emissores;Notas\n';
+  top.forEach(cod => {
+    const n   = allNodes.get(cod);
+    const v   = getValor(n, anoAtivo);
+    const em  = n[`emissores_${anoAtivo}`] || 0;
+    const nt  = n[`notas_${anoAtivo}`]     || 0;
+    const desc = (n.desc || '').replace(/;/g, ',');
+    csv += `${n.cod};${desc};${v.toFixed(2)};${em};${nt}\n`;
+  });
+
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href     = URL.createObjectURL(blob);
+  link.download = `selecao_ncm_${anoAtivo}.csv`;
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast(`✓ CSV exportado — ${top.length} item(s)`);
+});
+
+/* ════════════════════════════════════════════════
+   EXPAND ALL
+════════════════════════════════════════════════ */
+let allExp = false;
+document.getElementById('btnExpandAll').addEventListener('click', function () {
+  allExp = !allExp;
+  this.textContent = allExp ? 'Recolher tudo' : 'Expandir tudo';
+  this.classList.add('loading');
+  setTimeout(() => {
+    if (allExp) {
+      (function ea(ns) {
+        for (const n of ns) { expandedCods.add(n.cod); if (n.children?.length) ea(n.children); }
+      })(caps);
+    } else {
+      expandedCods.clear();
+    }
+    rebuildRows(); render();
+    this.classList.remove('loading');
+  }, 30);
+});
+
+/* ════════════════════════════════════════════════
+   SEARCH
+════════════════════════════════════════════════ */
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchTerm = e.target.value.trim().toLowerCase();
+  expandedCods.clear();
+  if (searchTerm) {
+    const toExpand = new Set();
+    (function fm(ns, anc) {
+      for (const n of ns) {
+        if (n.cod.includes(searchTerm) || (n.desc||'').toLowerCase().includes(searchTerm)) {
+          anc.forEach(a => toExpand.add(a.cod));
+        }
+        if (n.children?.length) fm(n.children, [...anc, n]);
+      }
+    })(caps, []);
+    toExpand.forEach(c => expandedCods.add(c));
+  }
+  rebuildRows(); render();
+});
+
+/* ════════════════════════════════════════════════
+   UF SELECTS
+════════════════════════════════════════════════ */
+function buildUfSelects() {
+  function populate(selId, ufsKey, setFn, resetOtherId, resetOtherFn) {
+    const sel = document.getElementById(selId);
+    const ufs = DATA[ufsKey] || [];
+    if (!ufs.length) { sel.closest('.uf-group').style.display = 'none'; return; }
+    sel.innerHTML = '<option value="Todos">Todos</option>';
+    ufs.forEach(uf => {
+      const o = document.createElement('option');
+      o.value = o.textContent = uf;
+      sel.appendChild(o);
+    });
+    sel.addEventListener('change', () => {
+      if (sel.value !== 'Todos') {
+        resetOtherFn();
+        const other = document.getElementById(resetOtherId);
+        other.value = 'Todos';
+        other.classList.remove('filtered');
+      }
+      setFn(sel.value);
+      sel.classList.toggle('filtered', sel.value !== 'Todos');
+      updateMetrics(true);
+      rebuildRows();
+      render();
+      updateSidePanel();
+      refreshActiveChart();
+    });
+  }
+
+  populate('ufEmitSelect', 'ufs_emit',
+    v => { ufEmit = v; },
+    'ufDestSelect', () => { ufDest = 'Todos'; }
+  );
+  populate('ufDestSelect', 'ufs_dest',
+    v => { ufDest = v; },
+    'ufEmitSelect', () => { ufEmit = 'Todos'; }
+  );
+}
+
+/* ════════════════════════════════════════════════
+   VIEW SWITCHING
+════════════════════════════════════════════════ */
+function switchView(view) {
+  activeView = view;
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+  document.getElementById('viewTabela').style.display   = view === 'tabela'   ? '' : 'none';
+  document.getElementById('viewEvolucao').style.display = view === 'evolucao' ? '' : 'none';
+  document.getElementById('viewUFs').style.display      = view === 'ufs'      ? '' : 'none';
+  if (view === 'evolucao') renderEvolucaoChart();
+  if (view === 'ufs')      renderUFsChart();
+}
+
+document.querySelectorAll('.view-tab').forEach(t => t.addEventListener('click', () => switchView(t.dataset.view)));
+
+/* ════════════════════════════════════════════════
+   CHART — EVOLUÇÃO ANUAL
+════════════════════════════════════════════════ */
+const CHART_COLORS = [
+  '#1351B4','#168821','#E52207','#D4A017','#9C27B0',
+  '#FF5722','#00838F','#795548','#E91E63','#4CAF50','#FF9800','#607D8B'
+];
+const fmtCompact = v =>
+  v >= 1e9 ? `R$ ${(v/1e9).toFixed(1).replace('.',',')}B`
+  : v >= 1e6 ? `R$ ${(v/1e6).toFixed(0)}M`
+  : v >= 1e3 ? `R$ ${(v/1e3).toFixed(0)}K`
+  : `R$ ${v.toFixed(0)}`;
+
+const CHART_FONT = { family: "'IBM Plex Sans', system-ui, sans-serif" };
+const CHART_MONO = { family: "'IBM Plex Mono', monospace", size: 11 };
+
+function renderEvolucaoChart() {
+  const ctx = document.getElementById('chartEvolucao').getContext('2d');
+  if (chartEvolucao) { chartEvolucao.destroy(); chartEvolucao = null; }
+
+  const topSel = [...selectedCods].filter(c => !isAncestorSelected(c));
+  let nodesToShow;
+  if (topSel.length > 0) {
+    nodesToShow = topSel.map(c => allNodes.get(c)).filter(Boolean).slice(0, 12);
+    document.getElementById('evolHint').textContent = `${nodesToShow.length} NCM(s) selecionado(s)`;
+  } else {
+    nodesToShow = [...allNodes.values()]
+      .filter(n => n.cod.length === 2 && n.cod !== 'outros')
+      .sort((a,b) => getValor(b, anoAtivo) - getValor(a, anoAtivo))
+      .slice(0, 10);
+    document.getElementById('evolHint').textContent = 'Top 10 capítulos (sem seleção)';
+  }
+
+  const datasets = nodesToShow.map((n, i) => ({
+    label: `${n.cod} — ${(n.desc || 'Sem descrição').slice(0, 45)}`,
+    data:  ANOS.map(ano => getValor(n, ano)),
+    borderColor:     CHART_COLORS[i % CHART_COLORS.length],
+    backgroundColor: CHART_COLORS[i % CHART_COLORS.length] + '18',
+    tension: 0.3, pointRadius: 5, pointHoverRadius: 8,
+    fill: false, borderWidth: 2.5,
+  }));
+
+  chartEvolucao = new Chart(ctx, {
+    type: 'line',
+    data: { labels: ANOS.map(String), datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { ...CHART_FONT, boxWidth: 12, padding: 14 } },
+        tooltip: {
+          mode: 'index', intersect: false,
+          callbacks: { label: c => ` ${c.dataset.label.slice(0,30)}: ${fmt(c.parsed.y)}` }
+        }
+      },
+      scales: {
+        x: { grid: { color: '#E8EAED' }, ticks: { ...CHART_MONO } },
+        y: { grid: { color: '#E8EAED' }, ticks: { ...CHART_MONO, callback: fmtCompact } }
+      },
+      interaction: { mode: 'index', intersect: false }
+    }
+  });
+}
+
+/* ════════════════════════════════════════════════
+   CHART — COMPARAR UFs
+════════════════════════════════════════════════ */
+function renderUFsChart() {
+  const ctx = document.getElementById('chartUFs').getContext('2d');
+  if (chartUFs) { chartUFs.destroy(); chartUFs = null; }
+
+  const valsKey = ufChartDim === 'dest' ? 'uf_dest_vals' : 'uf_emit_vals';
+  const ufsKey  = ufChartDim === 'dest' ? 'ufs_dest'     : 'ufs_emit';
+  const ufs     = DATA[ufsKey] || [];
+  const idx     = DATA.anos.indexOf(anoAtivo);
+  const topSel  = [...selectedCods].filter(c => !isAncestorSelected(c));
+
+  const pts = ufs.map(uf => {
+    const uv = DATA[valsKey]?.[uf];
+    if (!uv) return { uf, valor: 0 };
+    if (!topSel.length) return { uf, valor: uv.totais?.[String(anoAtivo)]?.valor || 0 };
+    const valor = topSel.reduce((s, cod) => { const v = uv.nodes?.[cod]; return s + (v ? (v[idx]||0) : 0); }, 0);
+    return { uf, valor };
+  }).sort((a,b) => b.valor - a.valor);
+
+  const label = ufChartDim === 'dest' ? 'UF Destinatária' : 'UF Emitente';
+  document.getElementById('ufBarHint').textContent =
+    topSel.length ? `${topSel.length} NCM(s) selecionado(s)` : 'Total geral';
+
+  chartUFs = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: pts.map(d => d.uf),
+      datasets: [{ label: `Valor ${anoAtivo} · ${label}`,
+        data: pts.map(d => d.valor),
+        backgroundColor: '#1351B4bb', borderColor: '#1351B4',
+        borderWidth: 1, borderRadius: 3 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ` ${fmt(c.parsed.y)}` } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { ...CHART_MONO } },
+        y: { grid: { color: '#E8EAED' }, ticks: { ...CHART_MONO, callback: fmtCompact } }
       }
     }
-
-    function renderHead() {
-      thead.innerHTML = '<tr>' + cols.map((c, i) => {
-        const active = i === sortIdx;
-        const arrow  = active ? (sortAsc ? ' ▲' : ' ▼') : '';
-        return `<th data-colidx="${i}"${active ? ' class="sorted"' : ''}>${c.label}${arrow}</th>`;
-      }).join('') + '</tr>';
-      thead.querySelectorAll('th').forEach(th => {
-        th.addEventListener('click', () => {
-          const i = +th.dataset.colidx;
-          sortAsc = sortIdx === i ? !sortAsc : true;
-          sortIdx = i;
-          const col = cols[sortIdx];
-          const key = col.key;
-          const sorted = [...rows].sort((a, b) => {
-            const va = a[key], vb = b[key];
-            if (va == null && vb == null) return 0;
-            if (va == null) return sortAsc ? 1 : -1;
-            if (vb == null) return sortAsc ? -1 : 1;
-            if (col.numeric)
-              return sortAsc ? Number(va) - Number(vb) : Number(vb) - Number(va);
-            return sortAsc
-              ? String(va).localeCompare(String(vb), 'pt-BR')
-              : String(vb).localeCompare(String(va), 'pt-BR');
-          });
-          renderHead();
-          renderBody(sorted);
-        });
-      });
-    }
-
-    renderHead();
-    renderBody(rows);
-  }
-
-  /* ── Chart ── */
-  const ANOS = ['2023', '2024', '2025'];
-  const PALETTE = [
-    '#1351B4','#168821','#A07800','#0C326F','#2E7D32','#8B6914',
-    '#2670E8','#388E3C','#C8961A','#1565C0','#43A047','#9E7B1E',
-    '#0D47A1','#2E7D32','#6D4C00','#1A237E','#1B5E20','#4E342E',
-    '#283593','#33691E'
-  ];
-
-  let chartInstance = null;
-  let chartUFInstance = null;
-  let allVisible = true;
-
-  function buildChart(rows) {
-    const ctx = document.getElementById('chartEvolucao').getContext('2d');
-    if (chartInstance) chartInstance.destroy();
-    allVisible = true;
-    document.getElementById('btnToggleAll').textContent = 'Desmarcar tudo';
-
-    const top = [...rows]
-      .sort((a, b) => {
-        const totA = ANOS.reduce((s, yr) => s + (Number(a[`valor_${yr}`]) || 0), 0);
-        const totB = ANOS.reduce((s, yr) => s + (Number(b[`valor_${yr}`]) || 0), 0);
-        return totB - totA;
-      })
-      .slice(0, 20);
-
-    const datasets = top.map((r, i) => ({
-      label: r.cadeia,
-      data: ANOS.map(yr => (Number(r[`valor_${yr}`]) || 0) / 1e9),
-      borderColor: PALETTE[i % PALETTE.length],
-      backgroundColor: PALETTE[i % PALETTE.length] + '18',
-      tension: 0.3,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      borderWidth: 2,
-    }));
-
-    chartInstance = new Chart(ctx, {
-      type: 'line',
-      data: { labels: ANOS, datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: '#4A5057',
-              font: { size: 11, family: "'Raleway',sans-serif", weight: '600' },
-              boxWidth: 12,
-              padding: 16,
-            },
-          },
-          tooltip: {
-            backgroundColor: '#071D41',
-            titleColor: '#FFCD07',
-            bodyColor: '#FFFFFF',
-            padding: 10,
-            callbacks: {
-              label: c => ` ${c.dataset.label}: ${(c.parsed.y * 1e9).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}`,
-            },
-          },
-        },
-        scales: {
-          x: {
-            ticks: { color: '#8A9099', font: { family: "'Raleway',sans-serif", weight: '600' } },
-            grid: { color: '#E6E8EC' },
-          },
-          y: {
-            ticks: {
-              color: '#8A9099',
-              font: { family: "'Raleway',sans-serif" },
-              callback: v => `R$ ${v.toFixed(1)} B`,
-            },
-            grid: { color: '#E6E8EC' },
-            title: {
-              display: true,
-              text: 'Valor (R$ bilhões)',
-              color: '#8A9099',
-              font: { family: "'Raleway',sans-serif", size: 11 },
-            },
-          },
-        },
-      },
-    });
-  }
-
-  let ufChartState = null;
-
-  function renderUFToggles() {
-    const { allUFs, visibleUFs } = ufChartState;
-    const container = document.getElementById('ufToggles');
-    const btnAll    = document.getElementById('btnToggleAllUF');
-    container.innerHTML = '';
-    allUFs.forEach(uf => {
-      const btn = document.createElement('button');
-      btn.className = 'uf-toggle' + (visibleUFs.has(uf) ? ' active' : '');
-      btn.textContent = uf || 'N/D';
-      btn.addEventListener('click', () => {
-        if (visibleUFs.has(uf)) visibleUFs.delete(uf); else visibleUFs.add(uf);
-        btn.classList.toggle('active', visibleUFs.has(uf));
-        btnAll.textContent = visibleUFs.size === allUFs.length ? 'Desmarcar todas' : 'Marcar todas';
-        updateUFChart();
-      });
-      container.appendChild(btn);
-    });
-    btnAll.textContent = visibleUFs.size === allUFs.length ? 'Desmarcar todas' : 'Marcar todas';
-  }
-
-  function updateUFChart() {
-    const { allUFs, topNCMs, lookup, ufTotals, visibleUFs } = ufChartState;
-    /* allUFs já está em ordem decrescente — só filtra mantendo essa ordem */
-    const labels = allUFs.filter(uf => visibleUFs.has(uf));
-    chartUFInstance.data.labels = labels;
-    chartUFInstance.data.datasets.forEach((ds, i) => {
-      ds.data = labels.map(uf => lookup[uf]?.[topNCMs[i]] || 0);
-    });
-    chartUFInstance.update();
-  }
-
-  document.getElementById('btnToggleAllUF').addEventListener('click', () => {
-    if (!ufChartState) return;
-    const { allUFs, visibleUFs } = ufChartState;
-    const allOn = visibleUFs.size === allUFs.length;
-    if (allOn) allUFs.forEach(uf => visibleUFs.delete(uf));
-    else       allUFs.forEach(uf => visibleUFs.add(uf));
-    renderUFToggles();
-    updateUFChart();
   });
+}
 
-  function buildChartUF(cnaeRows, cadeia) {
-    const canvas = document.getElementById('chartUF');
-    const msg    = document.getElementById('chartUFMsg');
-    if (chartUFInstance) { chartUFInstance.destroy(); chartUFInstance = null; }
-    document.getElementById('ufToggles').innerHTML = '';
-
-    if (!cadeia || cnaeRows.length === 0) {
-      canvas.style.display = 'none';
-      msg.style.display = 'flex';
-      return;
-    }
-    canvas.style.display = '';
-    msg.style.display = 'none';
-
-    /* totais por UF */
-    const ufTotals = {};
-    cnaeRows.forEach(r => {
-      const uf = r.uf || 'N/D';
-      ufTotals[uf] = (ufTotals[uf] || 0) + (Number(r.valor_2025) || 0);
-    });
-
-    /* todas as UFs ordenadas por gasto */
-    const allUFs = Object.entries(ufTotals)
-      .sort((a, b) => b[1] - a[1]).map(([uf]) => uf);
-
-    /* top 8 NCMs por gasto total */
-    const ncmTotals = {};
-    cnaeRows.forEach(r => {
-      const key = r.ncm ? String(r.ncm).slice(0, 4) : 'N/D';
-      ncmTotals[key] = (ncmTotals[key] || 0) + (Number(r.valor_2025) || 0);
-    });
-    const topNCMs = Object.entries(ncmTotals)
-      .sort((a, b) => b[1] - a[1]).map(([c]) => c);
-
-    /* lookup uf → ncm → valor */
-    const lookup = {};
-    cnaeRows.forEach(r => {
-      const uf = r.uf || 'N/D';
-      const nc = r.ncm ? String(r.ncm).slice(0, 4) : 'N/D';
-      if (!lookup[uf]) lookup[uf] = {};
-      lookup[uf][nc] = (lookup[uf][nc] || 0) + (Number(r.valor_2025) || 0);
-    });
-
-    ufChartState = { allUFs, topNCMs, lookup, ufTotals, visibleUFs: new Set(allUFs) };
-    renderUFToggles();
-
-    const datasets = topNCMs.map((ncm, i) => ({
-      label: ncm,
-      data: allUFs.map(uf => lookup[uf]?.[ncm] || 0),
-      backgroundColor: PALETTE[i % PALETTE.length],
-      borderWidth: 0,
-    }));
-
-    chartUFInstance = new Chart(canvas.getContext('2d'), {
-      type: 'bar',
-      data: { labels: [...allUFs], datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: '#4A5057',
-              font: { size: 10, family: "'Raleway',sans-serif", weight: '600' },
-              boxWidth: 12, padding: 12,
-            },
-          },
-          tooltip: {
-            backgroundColor: '#071D41',
-            titleColor: '#FFCD07',
-            bodyColor: '#FFFFFF',
-            padding: 10,
-            callbacks: {
-              title: items => {
-                const uf    = chartUFInstance.data.labels[items[0].dataIndex];
-                const total = ufChartState.ufTotals[uf] || 0;
-                return `${uf}  —  Total: ${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}`;
-              },
-              label: c => {
-                const uf    = chartUFInstance.data.labels[c.dataIndex];
-                const abs   = c.raw;                              /* valor do segmento, não cumulativo */
-                const total = ufChartState.ufTotals[uf] || 1;
-                const pct   = (abs / total * 100).toFixed(1);
-                return ` ${c.dataset.label}: ${abs.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })} (${pct}% do total da UF na cadeia)`;
-              },
-            },
-          },
-        },
-        scales: {
-          x: {
-            stacked: true,
-            ticks: { color: '#8A9099', font: { family: "'Raleway',sans-serif", weight: '600' } },
-            grid:  { color: '#E6E8EC' },
-          },
-          y: {
-            stacked: true,
-            ticks: {
-              color: '#8A9099',
-              font: { family: "'Raleway',sans-serif" },
-              callback: v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }),
-            },
-            grid: { color: '#E6E8EC' },
-            title: {
-              display: true,
-              text: 'Valor Total (R$)',
-              color: '#8A9099',
-              font: { family: "'Raleway',sans-serif", size: 11 },
-            },
-          },
-        },
-      },
-    });
-  }
-
-  document.getElementById('btnToggleAll').addEventListener('click', () => {
-    if (!chartInstance) return;
-    allVisible = !allVisible;
-    chartInstance.data.datasets.forEach((_, i) => {
-      chartInstance.setDatasetVisibility(i, allVisible);
-    });
-    chartInstance.update();
-    document.getElementById('btnToggleAll').textContent = allVisible ? 'Desmarcar tudo' : 'Marcar tudo';
+/* Dimensão UF no gráfico de barras */
+document.querySelectorAll('#ufDimCtrl .seg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    ufChartDim = btn.dataset.dim;
+    document.querySelectorAll('#ufDimCtrl .seg-btn').forEach(b => b.classList.toggle('active', b === btn));
+    if (activeView === 'ufs') renderUFsChart();
   });
-
-  /* ── Tabs ── */
-  let activeTab = 'cadeia';
-  const tabIds = { cadeia: 'tab-cadeia', detalhe: 'tab-detalhe', evolucao: 'tab-evolucao', uf: 'tab-uf' };
-
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      activeTab = tab.dataset.tab;
-      Object.entries(tabIds).forEach(([key, id]) => {
-        document.getElementById(id).classList.toggle('hidden', key !== activeTab);
-      });
-      refresh();
-    });
-  });
-
-  /* ── Refresh ── */
-  async function refresh() {
-    const cadeia = selCadeia.value;
-    const w = cadeia ? `WHERE codigo_cadeia = '${cadeia}'` : '';
-
-    const g = (await conn.query(`
-      SELECT
-        COALESCE(SUM(valor_2025), 0)::DOUBLE              AS total,
-        COALESCE(SUM(qtd_emitentes_2025), 0)::DOUBLE      AS emitentes,
-        COALESCE(SUM(qtd_notas_fiscais_2025), 0)::DOUBLE  AS notas,
-        COUNT(DISTINCT codigo_cadeia)::DOUBLE              AS ncadeias
-      FROM 'resumo_cadeia_nib.parquet' ${w}
-    `)).toArray()[0];
-
-    const gTotal = cadeia
-      ? (await conn.query(`
-          SELECT
-            COALESCE(SUM(valor_2025), 0)::DOUBLE              AS total,
-            COALESCE(SUM(qtd_emitentes_2025), 0)::DOUBLE      AS emitentes,
-            COALESCE(SUM(qtd_notas_fiscais_2025), 0)::DOUBLE  AS notas
-          FROM 'resumo_cadeia_nib.parquet'
-          WHERE codigo_cadeia = '${cadeia}'
-        `)).toArray()[0]
-      : (await conn.query(`
-          SELECT
-            COALESCE(valor_2025, 0)::DOUBLE             AS total,
-            COALESCE(qtd_emitentes_2025, 0)::DOUBLE     AS emitentes,
-            COALESCE(qtd_notas_fiscais_2025, 0)::DOUBLE AS notas
-          FROM 'totais_nib.parquet'
-        `)).toArray()[0];
-
-    document.getElementById('cards').innerHTML = `
-      <div class="card">
-        <div class="card-label">Valor Total Comprado (2025)</div>
-        <div class="card-value" id="cv-total"></div>
-      </div>
-      <div class="card green">
-        <div class="card-label">Emitentes Distintos (2025)</div>
-        <div class="card-value" id="cv-emit"></div>
-      </div>
-      <div class="card yellow">
-        <div class="card-label">Notas Fiscais Distintas (2025)</div>
-        <div class="card-value" id="cv-notas"></div>
-      </div>
-      <div class="card slate">
-        <div class="card-label">Cadeias NIB</div>
-        <div class="card-value" id="cv-cadeias"></div>
-      </div>
-    `;
-    animateValue(document.getElementById('cv-total'),   gTotal?.total,    fmt);
-    animateValue(document.getElementById('cv-emit'),    gTotal?.emitentes, fmtN);
-    animateValue(document.getElementById('cv-notas'),   gTotal?.notas,    fmtN);
-    animateValue(document.getElementById('cv-cadeias'), g.ncadeias, fmtN);
-
-    const cadrRows = (await conn.query(
-      `SELECT * FROM 'resumo_cadeia_nib.parquet' ${w} ORDER BY valor_2025 DESC`
-    )).toArray();
-
-    const detRows = (await conn.query(
-      `SELECT * FROM 'resumo_nib.parquet' ${w} ORDER BY codigo_cadeia, valor_2025 DESC`
-    )).toArray();
-
-    const cnaeRows = cadeia
-      ? (await conn.query(
-          `SELECT uf, ncm, valor_2025
-           FROM 'resumo_uf_cnae_nib.parquet'
-           WHERE codigo_cadeia = '${cadeia}'`
-        )).toArray()
-      : [];
-
-    buildChart(cadrRows);
-    buildChartUF(cnaeRows, cadeia);
-
-    buildTable(document.getElementById('tblCadeia'), cadrRows, [
-      { key: 'codigo_cadeia',          label: 'Código' },
-      { key: 'cadeia',                 label: 'Cadeia' },
-      { key: 'valor_2023',             label: 'Valor Total 2023',       numeric: true, fmt },
-      { key: 'valor_2024',             label: 'Valor Total 2024',       numeric: true, fmt },
-      { key: 'valor_2025',             label: 'Valor Total 2025',       numeric: true, fmt },
-      { key: 'qtd_emitentes_2023',     label: 'Fornecedores 2023', numeric: true, fmt: fmtN },
-      { key: 'qtd_emitentes_2024',     label: 'Fornecedores 2024', numeric: true, fmt: fmtN },
-      { key: 'qtd_emitentes_2025',     label: 'Fornecedores 2025', numeric: true, fmt: fmtN },
-      { key: 'qtd_notas_fiscais_2023', label: 'NFs 2023',   numeric: true, fmt: fmtN },
-      { key: 'qtd_notas_fiscais_2024', label: 'NFs 2024',   numeric: true, fmt: fmtN },
-      { key: 'qtd_notas_fiscais_2025', label: 'NFs 2025',   numeric: true, fmt: fmtN },
-    ]);
-
-    buildTable(document.getElementById('tblDetalhe'), detRows, [
-      { key: 'missao',                  label: 'Missão' },
-      { key: 'codigo_cadeia',           label: 'Código' },
-      { key: 'cadeia',                  label: 'Cadeia' },
-      { key: 'nome_missao',             label: 'Nome da Missão' },
-      { key: 'cnae',                    label: 'CNAE' },
-      { key: 'desc_cnae',               label: 'Descrição CNAE' },
-      { key: 'criterio',                label: 'Critério' },
-      { key: 'icp',                     label: 'ICP',        numeric: true },
-      { key: 'missoes',                 label: 'Missões' },
-      { key: 'secao_cnae',              label: 'Seção CNAE' },
-      { key: 'sh_correspondente',       label: 'SH Correspondente' },
-      { key: 'valor_2023',              label: 'Valor Total 2023',       numeric: true, fmt },
-      { key: 'valor_2024',              label: 'Valor Total 2024',       numeric: true, fmt },
-      { key: 'valor_2025',              label: 'Valor Total 2025',       numeric: true, fmt },
-      { key: 'qtd_emitentes_2023',      label: 'Fornecedores 2023', numeric: true, fmt: fmtN },
-      { key: 'qtd_emitentes_2024',      label: 'Fornecedores 2024', numeric: true, fmt: fmtN },
-      { key: 'qtd_emitentes_2025',      label: 'Fornecedores 2025', numeric: true, fmt: fmtN },
-      { key: 'qtd_notas_fiscais_2023',  label: 'NFs 2023',   numeric: true, fmt: fmtN },
-      { key: 'qtd_notas_fiscais_2024',  label: 'NFs 2024',   numeric: true, fmt: fmtN },
-      { key: 'qtd_notas_fiscais_2025',  label: 'NFs 2025',   numeric: true, fmt: fmtN },
-    ]);
-  }
-
-  selCadeia.addEventListener('change', refresh);
-
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('main').classList.remove('hidden');
-
-  await refresh();
-})().catch(err => {
-  document.getElementById('loading').innerHTML =
-    `<span style="color:#C53030">Erro ao carregar: ${err.message}</span>`;
 });
+
+/* ════════════════════════════════════════════════
+   QUICK SELECT por NCM
+════════════════════════════════════════════════ */
+function applyQuickSel() {
+  const raw = document.getElementById('quickSelInput').value;
+  const codes = raw.split(',').map(s => s.trim()).filter(Boolean);
+  if (!codes.length) return;
+
+  let found = 0, notFound = [];
+  codes.forEach(code => {
+    const n = allNodes.get(code);
+    if (!n) { notFound.push(code); return; }
+    (function sel(node) {
+      selectedCods.add(node.cod);
+      if (node.children) node.children.forEach(sel);
+    })(n);
+    (function checkParent(pCod) {
+      if (!pCod) return;
+      const pNode = allNodes.get(pCod);
+      if (pNode?.children?.every(c => selectedCods.has(c.cod))) {
+        selectedCods.add(pCod);
+        checkParent(parentMap.get(pCod));
+      }
+    })(parentMap.get(code));
+    found++;
+  });
+
+  rebuildRows(); render(); updateSidePanel(); refreshActiveChart();
+
+  const msg = found
+    ? `✓ ${found} NCM(s) selecionado(s)${notFound.length ? ` · não encontrado: ${notFound.join(', ')}` : ''}`
+    : `Nenhum código encontrado: ${notFound.join(', ')}`;
+  showToast(msg);
+  document.getElementById('quickSelInput').value = '';
+}
+
+document.getElementById('btnQuickSel').addEventListener('click', applyQuickSel);
+document.getElementById('quickSelInput').addEventListener('keydown', e => { if (e.key === 'Enter') applyQuickSel(); });
+
+/* ════════════════════════════════════════════════
+   BOOT
+════════════════════════════════════════════════ */
+buildTabs();
+buildUfSelects();
+switchView('tabela');
+updateMetrics(true);
+updateTheadLabels();
+rebuildRows();
+render();
+updateSidePanel();
 </script>
 </body>
 </html>

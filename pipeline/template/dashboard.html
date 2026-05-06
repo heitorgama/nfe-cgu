@@ -40,6 +40,11 @@
   --font: 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 
+  /* Spacing */
+  --sp-sm: .5rem;
+  --sp-md: .875rem;
+  --sp-lg: 1.25rem;
+
   /* Animation timing */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -274,14 +279,14 @@ body {
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
-  color: var(--gray-40);
+  color: var(--gray-60);
   margin-bottom: .2rem;
 }
 
 .metric-value {
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  letter-spacing: -.025em;
+  letter-spacing: -.03em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   transition: color .3s;
@@ -314,16 +319,15 @@ body {
 .panel-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: .6rem .875rem;
+  padding: var(--sp-sm) var(--sp-md);
   border-bottom: 1px solid var(--gray-10);
-  gap: .75rem;
-  flex-wrap: wrap;
+  gap: .5rem;
   background: var(--gray-05);
+  min-height: 44px;
 }
-
-.toolbar-left  { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap }
-.toolbar-right { display: flex; align-items: center; gap: .625rem; flex-wrap: wrap }
+.toolbar-g { display: flex; align-items: center; gap: .5rem; flex-shrink: 0 }
+.toolbar-g--grow { flex: 1; justify-content: flex-end }
+.toolbar-sep { width: 1px; height: 20px; background: var(--gray-20); flex-shrink: 0; margin: 0 4px }
 .panel-title {
   font-size: .62rem;
   font-weight: 700;
@@ -379,44 +383,6 @@ body {
   pointer-events: none;
   z-index: 0;
 }
-
-/* ════════════════════════════════════════════════
-   SEARCH
-════════════════════════════════════════════════ */
-.search-wrap { position: relative }
-
-.search-icon {
-  position: absolute;
-  left: 9px; top: 50%;
-  transform: translateY(-50%);
-  color: var(--gray-40);
-  font-size: .75rem;
-  pointer-events: none;
-  transition: color .2s;
-}
-
-.search-input {
-  padding: 4px 10px 4px 28px;
-  border: 1px solid var(--gray-20);
-  border-radius: 4px;
-  font-family: var(--font);
-  font-size: .8rem;
-  min-width: 200px;
-  background: var(--white);
-  color: var(--gray-90);
-  transition: border-color .2s, box-shadow .2s, min-width .25s var(--ease-smooth);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(19,81,180,.12);
-  min-width: 260px;
-}
-
-.search-input:focus + .search-icon,
-.search-wrap:focus-within .search-icon { color: var(--blue) }
-.search-input::placeholder { color: var(--gray-40) }
 
 /* ════════════════════════════════════════════════
    BUTTONS
@@ -636,7 +602,7 @@ body {
   font-weight: 600;
   letter-spacing: .05em;
   text-transform: uppercase;
-  padding: 5px 10px;
+  padding: 7px 10px;
   border-radius: 4px;
   cursor: pointer;
   border: 1px solid;
@@ -651,6 +617,9 @@ body {
 
 .btn-side.ghost { color: var(--blue); background: transparent; border-color: var(--blue) }
 .btn-side.ghost:hover { background: var(--blue); color: #fff; box-shadow: 0 2px 8px rgba(19,81,180,.25) }
+
+.btn-side.primary { color: var(--white); background: var(--green); border-color: var(--green) }
+.btn-side.primary:hover { background: #0f6b1a; border-color: #0f6b1a; box-shadow: 0 2px 8px rgba(22,136,33,.3) }
 
 .btn-side.danger { color: var(--red); background: transparent; border-color: var(--red) }
 .btn-side.danger:hover { background: var(--red); color: #fff; box-shadow: 0 2px 8px rgba(229,34,7,.25) }
@@ -728,19 +697,6 @@ tbody td.r {
 .margem-normal:hover { background: #DCF5DC !important }
 .margem-adicional { background: #EEF3FC !important }
 .margem-adicional:hover { background: #DAE6FA !important }
-
-/* Search match */
-.match-row {
-  outline: 2px solid var(--yellow);
-  outline-offset: -2px;
-  animation: matchPulse .4s ease;
-}
-
-@keyframes matchPulse {
-  0%   { outline-color: var(--yellow); outline-offset: -2px }
-  50%  { outline-color: #f59e0b;       outline-offset: 2px }
-  100% { outline-color: var(--yellow); outline-offset: -2px }
-}
 
 /* Selected rows */
 .row-selected td { background: #FFF9C4 !important; transition: background .15s }
@@ -993,12 +949,19 @@ tbody tr:hover .code-pill { background: var(--blue-pale) }
 }
 
 /* ── VIEW TABS ── */
-.view-tabs{display:flex;gap:0;border-bottom:2px solid var(--gray-10);margin-bottom:.75rem}
-.view-tab{font-family:var(--font);font-size:.72rem;font-weight:600;letter-spacing:.03em;
-  padding:.45rem 1.1rem;border:none;background:transparent;color:var(--gray-60);cursor:pointer;
-  border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .12s,border-color .12s}
-.view-tab:hover{color:var(--blue)}
-.view-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.view-tabs{display:flex;gap:0;padding:0 var(--sp-md);
+  border-bottom:2px solid var(--gray-10);margin-bottom:var(--sp-md)}
+.view-tab{display:flex;align-items:center;gap:6px;
+  font-family:var(--font);font-size:.8rem;font-weight:600;letter-spacing:.01em;
+  padding:.6rem 1.1rem;border:1px solid transparent;
+  border-radius:6px 6px 0 0;margin-bottom:-2px;
+  background:transparent;color:var(--gray-60);cursor:pointer;
+  transition:color .15s,background .15s,border-color .15s}
+.view-tab svg{flex-shrink:0;opacity:.7}
+.view-tab:hover{color:var(--blue);background:var(--blue-pale)}
+.view-tab:hover svg{opacity:1}
+.view-tab.active{color:var(--blue);background:var(--blue-pale);
+  border-color:var(--gray-10) var(--gray-10) var(--blue-pale);border-bottom:2px solid var(--blue)}
 
 /* ── CHART VIEWS ── */
 .chart-view{display:flex;flex-direction:column;gap:.75rem;padding:.875rem}
@@ -1006,25 +969,51 @@ tbody tr:hover .code-pill { background: var(--blue-pale) }
 .chart-canvas-wrap{position:relative;height:440px}
 
 /* ── QUICK SELECT ── */
-.quicksel-bar{display:flex;align-items:center;gap:.5rem;padding:.4rem .875rem;
-  border-bottom:1px solid var(--gray-10);background:var(--gray-05);flex-wrap:wrap}
-.quick-sel-input{font-family:var(--font-mono);font-size:.75rem;padding:3px 9px;
-  border:1px solid var(--gray-20);border-radius:4px;flex:1;min-width:260px;max-width:480px;
+.quick-sel-input{font-family:var(--font-mono);font-size:.72rem;padding:4px 9px;
+  border:1px solid var(--gray-20);border-radius:4px;width:180px;
   background:var(--white);color:var(--gray-90);transition:border-color .12s,box-shadow .12s}
 .quick-sel-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(19,81,180,.1)}
 .quick-sel-input::placeholder{color:var(--gray-40)}
 
-/* ── UF FILTER ── */
-.uf-group{display:flex;align-items:center;gap:4px}
-.uf-label{font-size:.58rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+/* ── UF / FILTER ── */
+.uf-group{display:flex;align-items:center;gap:3px}
+.uf-label{font-size:.55rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
   color:var(--gray-40);white-space:nowrap}
-.uf-select{font-family:var(--font);font-size:.75rem;font-weight:500;
-  padding:4px 24px 4px 9px;border:1px solid var(--gray-20);border-radius:4px;
-  background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath fill='%236C737F' d='M0 0l4.5 5L9 0z'/%3E%3C/svg%3E") no-repeat right 7px center;
-  -webkit-appearance:none;appearance:none;color:var(--gray-90);cursor:pointer;
-  transition:border-color .12s,box-shadow .12s;max-width:140px}
-.uf-select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(19,81,180,.1)}
-.uf-select.filtered{border-color:var(--blue);color:var(--blue-dark);font-weight:600}
+
+/* ── CUSTOM SELECT ── */
+.csel{position:relative}
+.csel-trigger{
+  display:flex;align-items:center;gap:5px;
+  padding:4px 8px 4px 9px;
+  border:1px solid var(--gray-20);border-radius:4px;
+  background:var(--white);cursor:pointer;
+  font-family:var(--font);font-size:.75rem;font-weight:500;color:var(--gray-90);
+  transition:border-color .12s,box-shadow .12s,color .12s;
+  white-space:nowrap;user-select:none;min-width:72px
+}
+.csel-trigger:hover{border-color:var(--gray-40)}
+.csel.open .csel-trigger{border-color:var(--blue);box-shadow:0 0 0 3px rgba(19,81,180,.1)}
+.csel.filtered .csel-trigger{border-color:var(--blue);color:var(--blue-dark);font-weight:600}
+.csel-val{flex:1;overflow:hidden;text-overflow:ellipsis;max-width:100px}
+.csel--wide .csel-val{max-width:155px}
+.csel-arrow{width:10px;height:6px;flex-shrink:0;transition:transform .15s;color:var(--gray-60)}
+.csel.open .csel-arrow{transform:rotate(180deg)}
+.csel-panel{
+  display:none;position:absolute;top:calc(100% + 3px);left:0;
+  min-width:100%;max-height:260px;overflow-y:auto;
+  background:var(--white);border:1px solid var(--gray-20);
+  border-radius:var(--radius);box-shadow:var(--shadow-md);
+  z-index:200;padding:3px 0
+}
+.csel-panel::-webkit-scrollbar{width:4px}
+.csel-panel::-webkit-scrollbar-thumb{background:var(--gray-20);border-radius:4px}
+.csel.open .csel-panel{display:block}
+.csel-opt{
+  padding:5px 12px;font-size:.78rem;cursor:pointer;
+  transition:background .08s,color .08s;white-space:nowrap
+}
+.csel-opt:hover{background:var(--blue-pale);color:var(--blue)}
+.csel-opt.active{color:var(--blue);font-weight:600;background:var(--blue-pale)}
 </style>
 </head>
 <body>
@@ -1060,42 +1049,74 @@ tbody tr:hover .code-pill { background: var(--blue-pale) }
   </div>
 
   <div class="view-tabs">
-    <button class="view-tab active" data-view="tabela">Tabela NCM</button>
-    <button class="view-tab" data-view="evolucao">Evolução Anual</button>
-    <button class="view-tab" data-view="ufs">Comparar UFs</button>
+    <button class="view-tab active" data-view="tabela">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="11" height="2.5" rx="1" fill="currentColor"/><rect x="1" y="5.25" width="11" height="2.5" rx="1" fill="currentColor" opacity=".6"/><rect x="1" y="9.5" width="11" height="2.5" rx="1" fill="currentColor" opacity=".35"/></svg>
+      Tabela NCM
+    </button>
+    <button class="view-tab" data-view="evolucao">
+      <svg width="14" height="12" viewBox="0 0 14 12" fill="none"><path d="M1 10 C3 10 3 2 5.5 2 S8 8 10 6 S12 3 13 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Evolução Anual
+    </button>
+    <button class="view-tab" data-view="ufs">
+      <svg width="13" height="12" viewBox="0 0 13 12" fill="none"><rect x="1" y="6" width="3" height="5" rx="1" fill="currentColor" opacity=".4"/><rect x="5" y="3" width="3" height="8" rx="1" fill="currentColor" opacity=".65"/><rect x="9" y="1" width="3" height="10" rx="1" fill="currentColor"/></svg>
+      Comparar
+    </button>
   </div>
 
   <div class="content-wrap">
     <div class="panel">
       <div class="panel-toolbar">
-        <div class="toolbar-left">
-          <span class="panel-title">Hierarquia NCM</span>
+        <!-- Grupo 1: título + anos -->
+        <div class="toolbar-g">
+          <span class="panel-title">NCM</span>
           <div class="seg-ctrl" id="yearTabs">
             <div class="seg-indicator" id="segIndicator"></div>
           </div>
         </div>
-        <div class="toolbar-right">
+
+        <div class="toolbar-sep"></div>
+
+        <!-- Grupo 2: filtros -->
+        <div class="toolbar-g">
           <div class="uf-group">
             <span class="uf-label">UF Emit.</span>
-            <select id="ufEmitSelect" class="uf-select"></select>
+            <div class="csel" id="ufEmitSelect">
+              <button class="csel-trigger" type="button"><span class="csel-val">Todos</span><svg class="csel-arrow" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="csel-panel"></div>
+            </div>
           </div>
           <div class="uf-group">
             <span class="uf-label">UF Dest.</span>
-            <select id="ufDestSelect" class="uf-select"></select>
+            <div class="csel" id="ufDestSelect">
+              <button class="csel-trigger" type="button"><span class="csel-val">Todos</span><svg class="csel-arrow" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="csel-panel"></div>
+            </div>
           </div>
-          <div class="search-wrap">
-            <span class="search-icon">🔍</span>
-            <input type="search" class="search-input" id="searchInput" placeholder="Código ou descrição…">
+          <div class="uf-group">
+            <span class="uf-label">Ministério</span>
+            <div class="csel csel--wide" id="orgSupSelect">
+              <button class="csel-trigger" type="button"><span class="csel-val">Todos</span><svg class="csel-arrow" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="csel-panel"></div>
+            </div>
           </div>
-          <button class="btn btn-ghost" id="btnExpandAll">Expandir tudo</button>
+          <div class="uf-group">
+            <span class="uf-label">Órgão</span>
+            <div class="csel csel--wide" id="orgDestSelect">
+              <button class="csel-trigger" type="button"><span class="csel-val">Todos</span><svg class="csel-arrow" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="csel-panel"></div>
+            </div>
+          </div>
+          <button class="btn btn-ghost" id="btnClearFilters" style="display:none">✕ Limpar</button>
         </div>
-      </div>
 
-      <div class="quicksel-bar">
-        <span class="uf-label">Selecionar NCMs</span>
-        <input type="text" id="quickSelInput" class="quick-sel-input"
-               placeholder="Cole códigos separados por vírgula: 01, 0101, 01011200, …">
-        <button class="btn btn-ghost" id="btnQuickSel">Selecionar</button>
+        <div class="toolbar-sep"></div>
+
+        <!-- Grupo 3: seleção rápida -->
+        <div class="toolbar-g toolbar-g--grow">
+          <input type="text" id="quickSelInput" class="quick-sel-input" placeholder="NCMs: 01, 0101, …">
+          <button class="btn btn-ghost" id="btnQuickSel">Selecionar</button>
+          <button class="btn btn-ghost" id="btnSelectAll">Todos</button>
+        </div>
       </div>
 
       <div id="viewTabela">
@@ -1127,11 +1148,13 @@ tbody tr:hover .code-pill { background: var(--blue-pale) }
 
       <div id="viewUFs" class="chart-view" style="display:none">
         <div class="chart-ctrl-bar">
-          <span class="panel-title" style="font-size:.68rem">Comparar UF:</span>
+          <span class="panel-title" style="font-size:.68rem">Comparar:</span>
           <div class="seg-ctrl" id="ufDimCtrl">
             <div class="seg-indicator" id="ufDimInd"></div>
-            <button class="seg-btn active" data-dim="dest">Destinatária</button>
-            <button class="seg-btn" data-dim="emit">Emitente</button>
+            <button class="seg-btn active" data-dim="uf_dest">UF Dest.</button>
+            <button class="seg-btn" data-dim="uf_emit">UF Emit.</button>
+            <button class="seg-btn" data-dim="org_sup">Ministério</button>
+            <button class="seg-btn" data-dim="org_dest">Órgão</button>
           </div>
           <span style="font-size:.7rem;color:var(--gray-60)" id="ufBarHint">Total ou soma dos NCMs selecionados</span>
         </div>
@@ -1166,9 +1189,9 @@ tbody tr:hover .code-pill { background: var(--blue-pale) }
           </div>
         </div>
         <div class="side-actions">
-          <button class="btn-side ghost" id="btnCopySel">Copiar</button>
-          <button class="btn-side ghost" id="btnExportSel" style="border-color:var(--green);color:var(--green)">Exportar</button>
-          <button class="btn-side danger" id="btnClearSel">Limpar</button>
+          <button class="btn-side ghost" id="btnCopySel">📋 Copiar</button>
+          <button class="btn-side primary" id="btnExportSel">⬇ Exportar</button>
+          <button class="btn-side danger" id="btnClearSel">✕ Limpar</button>
         </div>
       </div>
     </div>
@@ -1243,32 +1266,33 @@ let sortKey = `valor_${anoAtivo}`;
 let sortDir = -1;
 const expandedCods = new Set();
 let rows = [];
-let searchTerm = '';
 const selectedCods = new Set();
-let ufEmit = 'Todos';
-let ufDest = 'Todos';
-let activeView   = 'tabela';
+let ufEmit  = 'Todos';
+let ufDest  = 'Todos';
+let orgSup  = 'Todos';
+let orgDest = 'Todos';
+let activeView    = 'tabela';
 let chartEvolucao = null;
 let chartUFs      = null;
-let ufChartDim    = 'dest';
+let ufChartDim    = 'uf_dest';
 
 function getValor(n, ano) {
   const idx = DATA.anos.indexOf(ano);
-  if (ufEmit !== 'Todos') {
-    const v = DATA.uf_emit_vals?.[ufEmit]?.nodes?.[n.cod];
-    return v ? (v[idx] || 0) : 0;
-  }
-  if (ufDest !== 'Todos') {
-    const v = DATA.uf_dest_vals?.[ufDest]?.nodes?.[n.cod];
-    return v ? (v[idx] || 0) : 0;
-  }
+  const lookup = (key, dim) => { const v = DATA[key]?.[dim]?.nodes?.[n.cod]; return v ? (v[idx]||0) : 0; };
+  if (ufEmit  !== 'Todos') return lookup('uf_emit_vals',   ufEmit);
+  if (ufDest  !== 'Todos') return lookup('uf_dest_vals',   ufDest);
+  if (orgSup  !== 'Todos') return lookup('orgao_sup_vals', orgSup);
+  // orgDest: sem nodes — árvore mostra valores globais
   return n[`valor_${ano}`] ?? 0;
 }
 
 function getActiveTotais(ano) {
-  if (ufEmit !== 'Todos') return DATA.uf_emit_vals?.[ufEmit]?.totais?.[String(ano)] || { valor:0, emissores:0, notas:0 };
-  if (ufDest !== 'Todos') return DATA.uf_dest_vals?.[ufDest]?.totais?.[String(ano)] || { valor:0, emissores:0, notas:0 };
-  return DATA.totais[String(ano)];
+  const s = String(ano), z = { valor:0, emissores:0, notas:0 };
+  if (ufEmit  !== 'Todos') return DATA.uf_emit_vals?.[ufEmit]?.totais?.[s]   || z;
+  if (ufDest  !== 'Todos') return DATA.uf_dest_vals?.[ufDest]?.totais?.[s]   || z;
+  if (orgSup  !== 'Todos') return DATA.orgao_sup_vals?.[orgSup]?.totais?.[s]  || z;
+  if (orgDest !== 'Todos') return DATA.orgao_org_vals?.[orgDest]?.totais?.[s] || z;
+  return DATA.totais[s];
 }
 
 function refreshActiveChart() {
@@ -1490,10 +1514,9 @@ function render() {
   for (const row of rows) {
     if (!row.visible) continue;
     const { level:lv, node:n, hasKids, expanded, id } = row;
-    const mt = searchTerm && (n.cod.includes(searchTerm) || (n.desc||'').toLowerCase().includes(searchTerm));
     const mc = n.margem === 'adicional' ? ' margem-adicional' : n.margem === 'normal' ? ' margem-normal' : '';
     const tr = document.createElement('tr');
-    tr.className = `lv${lv}${mc}${mt ? ' match-row' : ''}`;
+    tr.className = `lv${lv}${mc}`;
     tr.dataset.id = id;
     if (selectedCods.has(n.cod)) tr.classList.add('row-selected');
 
@@ -1702,109 +1725,130 @@ document.getElementById('btnExportSel').addEventListener('click', () => {
   const top = [...selectedCods].filter(c => !isAncestorSelected(c));
   if (!top.length) { showToast('Nenhum item selecionado'); return; }
 
-  let csv = '\ufeff';
-  csv += 'Codigo;Descricao;Valor;Emissores;Notas\n';
+  const NCM_NIVEL = { 2:'Capítulo', 4:'Posição', 5:'Subposição 1', 6:'Subposição 2', 7:'Item', 8:'Subitem' };
+  const anos = DATA.anos;
+
+  const ctx = [
+    ['UF Emitente',      ufEmit  !== 'Todos' ? ufEmit  : 'Todos'],
+    ['UF Destinatária',  ufDest  !== 'Todos' ? ufDest  : 'Todos'],
+    ['Ministério',       orgSup  !== 'Todos' ? orgSup  : 'Todos'],
+    ['Órgão',            orgDest !== 'Todos' ? orgDest : 'Todos'],
+    ['Ano de referência', anoAtivo],
+    ['NCMs exportados',  top.length],
+    ['Exportado em',     new Date().toLocaleString('pt-BR')],
+  ];
+
+  let csv = '﻿';
+  ctx.forEach(([k, v]) => { csv += `${k};${String(v).replace(/;/g, ',')}\n`; });
+  csv += '\n';
+
+  const valCols = anos.map(a => `Valor ${a}`).join(';');
+  const emCols  = anos.map(a => `Emissores ${a}`).join(';');
+  const ntCols  = anos.map(a => `Notas ${a}`).join(';');
+  csv += `Código NCM;Nível;Descrição;Margem;${valCols};${emCols};${ntCols}\n`;
+
   top.forEach(cod => {
-    const n   = allNodes.get(cod);
-    const v   = getValor(n, anoAtivo);
-    const em  = n[`emissores_${anoAtivo}`] || 0;
-    const nt  = n[`notas_${anoAtivo}`]     || 0;
-    const desc = (n.desc || '').replace(/;/g, ',');
-    csv += `${n.cod};${desc};${v.toFixed(2)};${em};${nt}\n`;
+    const n     = allNodes.get(cod);
+    const nivel = NCM_NIVEL[cod.length] || `${cod.length} dígitos`;
+    const desc  = (n.desc || '').replace(/;/g, ',');
+    const marg  = n.margem || '—';
+    const vals  = anos.map(a => getValor(n, a).toFixed(2)).join(';');
+    const ems   = anos.map(a => n[`emissores_${a}`] || 0).join(';');
+    const nts   = anos.map(a => n[`notas_${a}`] || 0).join(';');
+    csv += `${n.cod};${nivel};${desc};${marg};${vals};${ems};${nts}\n`;
   });
 
-  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
-  link.href     = URL.createObjectURL(blob);
-  link.download = `selecao_ncm_${anoAtivo}.csv`;
+  link.href = URL.createObjectURL(blob);
+
+  const sufixo = [
+    ufEmit  !== 'Todos' ? `UF_emit_${ufEmit}`          : '',
+    ufDest  !== 'Todos' ? `UF_dest_${ufDest}`          : '',
+    orgSup  !== 'Todos' ? `Min_${orgSup.slice(0, 20)}`  : '',
+    orgDest !== 'Todos' ? `Org_${orgDest.slice(0, 20)}` : '',
+  ].filter(Boolean).join('_') || 'todos_filtros';
+  link.download = `ncm_${anoAtivo}_${sufixo}.csv`.replace(/[\\/:*?"<>|]/g, '_');
+
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  showToast(`✓ CSV exportado — ${top.length} item(s)`);
+  showToast(`✓ ${top.length} NCM(s) exportados`);
 });
 
 /* ════════════════════════════════════════════════
-   EXPAND ALL
+   FILTERS (custom selects)
 ════════════════════════════════════════════════ */
-let allExp = false;
-document.getElementById('btnExpandAll').addEventListener('click', function () {
-  allExp = !allExp;
-  this.textContent = allExp ? 'Recolher tudo' : 'Expandir tudo';
-  this.classList.add('loading');
-  setTimeout(() => {
-    if (allExp) {
-      (function ea(ns) {
-        for (const n of ns) { expandedCods.add(n.cod); if (n.children?.length) ea(n.children); }
-      })(caps);
-    } else {
-      expandedCods.clear();
-    }
-    rebuildRows(); render();
-    this.classList.remove('loading');
-  }, 30);
-});
+const FILTERS = [
+  { id:'ufEmitSelect',  listKey:'ufs_emit',   get:()=>ufEmit,  set:v=>{ufEmit=v;}  },
+  { id:'ufDestSelect',  listKey:'ufs_dest',   get:()=>ufDest,  set:v=>{ufDest=v;}  },
+  { id:'orgSupSelect',  listKey:'orgaos_sup', get:()=>orgSup,  set:v=>{orgSup=v;}  },
+  { id:'orgDestSelect', listKey:'orgaos_org', get:()=>orgDest, set:v=>{orgDest=v;} },
+];
 
-/* ════════════════════════════════════════════════
-   SEARCH
-════════════════════════════════════════════════ */
-document.getElementById('searchInput').addEventListener('input', e => {
-  searchTerm = e.target.value.trim().toLowerCase();
-  expandedCods.clear();
-  if (searchTerm) {
-    const toExpand = new Set();
-    (function fm(ns, anc) {
-      for (const n of ns) {
-        if (n.cod.includes(searchTerm) || (n.desc||'').toLowerCase().includes(searchTerm)) {
-          anc.forEach(a => toExpand.add(a.cod));
-        }
-        if (n.children?.length) fm(n.children, [...anc, n]);
-      }
-    })(caps, []);
-    toExpand.forEach(c => expandedCods.add(c));
-  }
-  rebuildRows(); render();
-});
+function buildFilters() {
+  const btnClear = document.getElementById('btnClearFilters');
 
-/* ════════════════════════════════════════════════
-   UF SELECTS
-════════════════════════════════════════════════ */
-function buildUfSelects() {
-  function populate(selId, ufsKey, setFn, resetOtherId, resetOtherFn) {
-    const sel = document.getElementById(selId);
-    const ufs = DATA[ufsKey] || [];
-    if (!ufs.length) { sel.closest('.uf-group').style.display = 'none'; return; }
-    sel.innerHTML = '<option value="Todos">Todos</option>';
-    ufs.forEach(uf => {
-      const o = document.createElement('option');
-      o.value = o.textContent = uf;
-      sel.appendChild(o);
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.csel'))
+      document.querySelectorAll('.csel.open').forEach(el => el.classList.remove('open'));
+  });
+
+  function applyFilter(activeId, newVal) {
+    FILTERS.forEach(other => {
+      if (other.id === activeId) return;
+      other.set('Todos');
+      const w = document.getElementById(other.id);
+      w.querySelector('.csel-val').textContent = 'Todos';
+      w.querySelectorAll('.csel-opt').forEach((o, i) => o.classList.toggle('active', i === 0));
+      w.classList.remove('filtered');
     });
-    sel.addEventListener('change', () => {
-      if (sel.value !== 'Todos') {
-        resetOtherFn();
-        const other = document.getElementById(resetOtherId);
-        other.value = 'Todos';
-        other.classList.remove('filtered');
-      }
-      setFn(sel.value);
-      sel.classList.toggle('filtered', sel.value !== 'Todos');
-      updateMetrics(true);
-      rebuildRows();
-      render();
-      updateSidePanel();
-      refreshActiveChart();
-    });
+    const f = FILTERS.find(fi => fi.id === activeId);
+    f.set(newVal);
+    const wrap = document.getElementById(activeId);
+    wrap.querySelector('.csel-val').textContent = newVal;
+    wrap.querySelectorAll('.csel-opt').forEach(o => o.classList.toggle('active', o.dataset.val === newVal));
+    wrap.classList.toggle('filtered', newVal !== 'Todos');
+    wrap.classList.remove('open');
+    btnClear.style.display = FILTERS.some(fi => fi.get() !== 'Todos') ? '' : 'none';
+    updateMetrics(true); rebuildRows(); render(); updateSidePanel(); refreshActiveChart();
   }
 
-  populate('ufEmitSelect', 'ufs_emit',
-    v => { ufEmit = v; },
-    'ufDestSelect', () => { ufDest = 'Todos'; }
-  );
-  populate('ufDestSelect', 'ufs_dest',
-    v => { ufDest = v; },
-    'ufEmitSelect', () => { ufEmit = 'Todos'; }
-  );
+  FILTERS.forEach(f => {
+    const wrap  = document.getElementById(f.id);
+    const list  = DATA[f.listKey] || [];
+    if (!list.length) { wrap.closest('.uf-group').style.display = 'none'; return; }
+
+    wrap.querySelector('.csel-trigger').addEventListener('click', e => {
+      e.stopPropagation();
+      const isOpen = wrap.classList.contains('open');
+      document.querySelectorAll('.csel.open').forEach(el => el.classList.remove('open'));
+      if (!isOpen) wrap.classList.add('open');
+    });
+
+    const panel = wrap.querySelector('.csel-panel');
+    ['Todos', ...list].forEach((val, i) => {
+      const div = document.createElement('div');
+      div.className = 'csel-opt' + (i === 0 ? ' active' : '');
+      div.dataset.val = val;
+      div.textContent = val;
+      div.addEventListener('click', e => { e.stopPropagation(); applyFilter(f.id, val); });
+      panel.appendChild(div);
+    });
+  });
+
+  btnClear.addEventListener('click', () => {
+    FILTERS.forEach(f => {
+      f.set('Todos');
+      const wrap = document.getElementById(f.id);
+      wrap.querySelector('.csel-val').textContent = 'Todos';
+      wrap.querySelectorAll('.csel-opt').forEach((o, i) => o.classList.toggle('active', i === 0));
+      wrap.classList.remove('filtered');
+    });
+    btnClear.style.display = 'none';
+    updateMetrics(true); rebuildRows(); render(); updateSidePanel(); refreshActiveChart();
+  });
 }
 
 /* ════════════════════════════════════════════════
@@ -1858,9 +1902,14 @@ function renderEvolucaoChart() {
   const datasets = nodesToShow.map((n, i) => ({
     label: `${n.cod} — ${(n.desc || 'Sem descrição').slice(0, 45)}`,
     data:  ANOS.map(ano => getValor(n, ano)),
-    borderColor:     CHART_COLORS[i % CHART_COLORS.length],
-    backgroundColor: CHART_COLORS[i % CHART_COLORS.length] + '18',
-    tension: 0.3, pointRadius: 5, pointHoverRadius: 8,
+    borderColor:      CHART_COLORS[i % CHART_COLORS.length],
+    backgroundColor:  CHART_COLORS[i % CHART_COLORS.length] + '18',
+    tension: 0.3,
+    pointRadius:      ANOS.map(ano => ano === anoAtivo ? 8 : 4),
+    pointHoverRadius: 10,
+    pointBackgroundColor: ANOS.map(ano => ano === anoAtivo
+      ? CHART_COLORS[i % CHART_COLORS.length]
+      : CHART_COLORS[i % CHART_COLORS.length] + '88'),
     fill: false, borderWidth: 2.5,
   }));
 
@@ -1892,21 +1941,26 @@ function renderUFsChart() {
   const ctx = document.getElementById('chartUFs').getContext('2d');
   if (chartUFs) { chartUFs.destroy(); chartUFs = null; }
 
-  const valsKey = ufChartDim === 'dest' ? 'uf_dest_vals' : 'uf_emit_vals';
-  const ufsKey  = ufChartDim === 'dest' ? 'ufs_dest'     : 'ufs_emit';
-  const ufs     = DATA[ufsKey] || [];
-  const idx     = DATA.anos.indexOf(anoAtivo);
-  const topSel  = [...selectedCods].filter(c => !isAncestorSelected(c));
+  const DIM_MAP = {
+    uf_dest:  { valsKey:'uf_dest_vals',   listKey:'ufs_dest',   label:'UF Destinatária' },
+    uf_emit:  { valsKey:'uf_emit_vals',   listKey:'ufs_emit',   label:'UF Emitente' },
+    org_sup:  { valsKey:'orgao_sup_vals', listKey:'orgaos_sup', label:'Ministério' },
+    org_dest: { valsKey:'orgao_org_vals', listKey:'orgaos_org', label:'Órgão' },
+  };
+  const dim    = DIM_MAP[ufChartDim] || DIM_MAP['uf_dest'];
+  const items  = DATA[dim.listKey] || [];
+  const idx    = DATA.anos.indexOf(anoAtivo);
+  const topSel = [...selectedCods].filter(c => !isAncestorSelected(c));
 
-  const pts = ufs.map(uf => {
-    const uv = DATA[valsKey]?.[uf];
-    if (!uv) return { uf, valor: 0 };
-    if (!topSel.length) return { uf, valor: uv.totais?.[String(anoAtivo)]?.valor || 0 };
+  const pts = items.map(item => {
+    const uv = DATA[dim.valsKey]?.[item];
+    if (!uv) return { uf: item, valor: 0 };
+    if (!topSel.length) return { uf: item, valor: uv.totais?.[String(anoAtivo)]?.valor || 0 };
     const valor = topSel.reduce((s, cod) => { const v = uv.nodes?.[cod]; return s + (v ? (v[idx]||0) : 0); }, 0);
-    return { uf, valor };
+    return { uf: item, valor };
   }).sort((a,b) => b.valor - a.valor);
 
-  const label = ufChartDim === 'dest' ? 'UF Destinatária' : 'UF Emitente';
+  const label = dim.label;
   document.getElementById('ufBarHint').textContent =
     topSel.length ? `${topSel.length} NCM(s) selecionado(s)` : 'Total geral';
 
@@ -1981,11 +2035,22 @@ function applyQuickSel() {
 document.getElementById('btnQuickSel').addEventListener('click', applyQuickSel);
 document.getElementById('quickSelInput').addEventListener('keydown', e => { if (e.key === 'Enter') applyQuickSel(); });
 
+document.getElementById('btnSelectAll').addEventListener('click', () => {
+  for (const cap of caps) {
+    (function sel(node) {
+      selectedCods.add(node.cod);
+      if (node.children) node.children.forEach(sel);
+    })(cap);
+  }
+  rebuildRows(); render(); updateSidePanel(); refreshActiveChart();
+  showToast(`✓ ${selectedCods.size} NCMs selecionados`);
+});
+
 /* ════════════════════════════════════════════════
    BOOT
 ════════════════════════════════════════════════ */
 buildTabs();
-buildUfSelects();
+buildFilters();
 switchView('tabela');
 updateMetrics(true);
 updateTheadLabels();

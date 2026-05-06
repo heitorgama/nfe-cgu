@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
+from sentence_transformers import SentenceTransformer, util
 
 import duckdb
 from slugify import slugify
@@ -179,9 +180,36 @@ def exportar_parquets(con: duckdb.DuckDBPyConnection, tabelas: list, memoria: st
     con.execute("RESET memory_limit")
 
 
+def validar_ncm_semanticamente(df, model, threshold=0.75):
+    """Aplica o modelo E5 para validar a descrição contra o tipo de produto"""
+    if df.empty:
+        return df
+        
+    # Preparação com prefixos do E5
+    queries = ("query: " + df['descricao_do_produto_servico'].astype(str)).tolist()
+    passages = ("passage: " + df['ncm_sh_tipo_de_produto'].astype(str)).tolist()
+    
+    # Gerar embeddings
+    emb_item = model.encode(queries, convert_to_tensor=True, show_progress_bar=False)
+    emb_ncm = model.encode(passages, convert_to_tensor=True, show_progress_bar=False)
+    
+    # Similaridade (diagonal da matriz)
+    scores = util.cos_sim(emb_item, emb_ncm).diagonal().tolist()
+    
+    df['ncm_similaridade'] = scores
+    df['ncm_status'] = ['Correto' if s >= threshold else 'Inconsistente' for s in scores]
+    
+    return df
+
+
 def main():
-    """Lê bronze por período, converte tipos, deduplica e salva em silver (duckdb + parquet)"""
+    """Lê bronze por período, converte tipos, valida NCM semântico e salva em silver."""
     os.makedirs(DIRETORIO_SILVER, exist_ok=True)
+    
+    # Inicializa o modelo E5-small uma única vez
+    tqdm.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Carregando modelo E5-Small...")
+    model = SentenceTransformer('intfloat/multilingual-e5-small')
+    
     con = duckdb.connect(SILVER_DB)
     con.execute(f"ATTACH '{BRONZE_DB}' AS bronze (READ_ONLY)")
 
@@ -193,12 +221,17 @@ def main():
 
     for nome, tipos in tqdm(tabelas, desc='tabelas', unit='tabela'):
         ja_no_silver = periodos_no_silver(con, nome)
-        periodos = [
-            r[0] for r in con.execute(
-                f"SELECT DISTINCT periodo FROM bronze.{nome} ORDER BY periodo"
-            ).fetchall()
-            if r[0] not in ja_no_silver
-        ]
+        
+        # Busca períodos que ainda não foram processados
+        try:
+            periodos = [
+                r[0] for r in con.execute(
+                    f"SELECT DISTINCT periodo FROM bronze.{nome} ORDER BY periodo"
+                ).fetchall()
+                if r[0] not in ja_no_silver
+            ]
+        except duckdb.CatalogException:
+            continue
 
         if not periodos:
             tqdm.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {nome}: já atualizado.")
@@ -211,20 +244,27 @@ def main():
             if nome in ('itens', 'nf'):
                 rel = rel.distinct()
             rel = converter_colunas_para_snake_case(rel, con)
+
             if nome == 'itens':
                 rel = aplicar_ncm_pad(rel, con)
-            # Remove item inválido, após consulta manual no portal eletrônico da CGU
+                
+                # Conversão para DataFrame para aplicar o modelo de ML
+                df_periodo = rel.to_df()
+                df_validado = validar_ncm_semanticamente(df_periodo, model)
+                
+                # Retorna para Relation do DuckDB
+                rel = con.from_df(df_validado)
+
             rel = con.sql("SELECT * FROM rel WHERE chave_de_acesso != '12250804034484000140558910000282551122697618'")
             inserir_no_silver(con, nome, rel)
 
         count = con.execute(f"SELECT COUNT(*) FROM {nome}").fetchone()[0]
-        tqdm.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {nome}: {count} linhas.")
+        tqdm.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {nome}: {count} linhas totais em silver.")
 
     tqdm.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Exportando parquets...")
     exportar_parquets(con, tabelas)
     con.close()
-    tqdm.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Silver salvo.")
-
+    tqdm.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Processamento concluído.")
 
 if __name__ == "__main__":
     main()
